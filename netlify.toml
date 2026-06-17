@@ -1,0 +1,16 @@
+# Despliegue del Informe Gerencial de Flota en Netlify.
+# El informe es estático: se publica la carpeta web/ con el data.json ya generado.
+# Para refrescar los datos antes de publicar, define la variable de entorno
+# MAPON_KEY en Netlify y descomenta el bloque [build] de abajo.
+
+[build]
+  publish = "web"
+  # command = "node scripts/fetch-data.mjs"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[headers]]
+  for = "/data.json"
+  [headers.values]
+    Cache-Control = "no-cache"

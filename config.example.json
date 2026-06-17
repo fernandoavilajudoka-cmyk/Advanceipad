@@ -1,0 +1,4 @@
+{
+  "_comment": "Copia este archivo como config.local.json y coloca tu API key. config.local.json está en .gitignore y NUNCA se sube al repositorio. Alternativamente usa la variable de entorno MAPON_KEY.",
+  "key": "TU_API_KEY_DE_TELEMATICS_ADVANCE"
+}

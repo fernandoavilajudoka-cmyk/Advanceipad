@@ -1,0 +1,14 @@
+{
+  "name": "informe-flota-advance",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Informe gerencial de flota (estilo Canva/ejecutivo) generado desde las APIs de Telematics Advance — Concretos Técnicos de México.",
+  "type": "module",
+  "scripts": {
+    "fetch": "node scripts/fetch-data.mjs",
+    "serve": "node --version >/dev/null && python3 -m http.server 8080 --directory web"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

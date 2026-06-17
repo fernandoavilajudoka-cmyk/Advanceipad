@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Informe Gerencial de Flota — Concretos Técnicos</title>
+  <meta name="description" content="Informe gerencial de flota generado desde las APIs de Telematics Advance." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="toolbar">
+    <div class="tb-brand"><span class="logo">A</span> Advance · Informe de Flota
+      <img class="tb-client" src="assets/concretos-tecnicos.png" alt="Concretos Técnicos" />
+    </div>
+    <div class="tb-actions">
+      <button class="btn ghost" onclick="window.print()">⬇ Descargar PDF</button>
+    </div>
+  </div>
+
+  <div class="filters" id="filters"></div>
+
+  <main class="deck" id="deck">
+    <!-- El contenido se inyecta desde app.js usando data.json -->
+    <div class="slide"><p>Cargando informe…</p></div>
+  </main>
+
+  <script src="assets/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
