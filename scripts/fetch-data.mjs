@@ -40,7 +40,7 @@ const MAX_DAYS_PER_CALL = 28; // la API limita a 31 días por llamada
 
 // Parámetros de negocio (editables también en el informe → sección Metodología)
 const PARAMS = {
-  precio_diesel_mxn: 25.0,
+  precio_diesel_mxn: 25.99,        // precio de referencia del diésel (MXN/L)
   consumo_norma_l100: 40.0,
   benchmark_kml: 2.5,
   consumo_ralenti_lh: 3.0,
@@ -68,12 +68,12 @@ function parseArgs() {
   return out;
 }
 
-// Ventana por defecto: desde el inicio del mes anterior hasta ayer
-// (cubre ≥2 meses y varias semanas para los conectores).
+// Ventana por defecto: TODO el año en curso (1 de enero → ayer),
+// para tener todos los meses y semanas en los conectores.
 function defaultWindow() {
   const now = new Date();
   const till = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
-  const from = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
+  const from = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
   const fmt = (d) => d.toISOString().slice(0, 10);
   return { from: fmt(from), till: fmt(till) };
 }
@@ -290,14 +290,22 @@ async function main() {
     if (!m.weeksMap.has(wId)) m.weeksMap.set(wId, []);
     m.weeksMap.get(wId).push(k);
   }
-  const monthsOut = [...months.values()].map((m) => ({
-    id: m.id, label: m.label, days: m.days,
-    weeks: [...m.weeksMap.entries()].map(([wId, days]) => ({
-      id: wId,
-      label: `${dayShort.format(new Date(`${days[0]}T12:00:00Z`))} – ${dayShort.format(new Date(`${days[days.length - 1]}T12:00:00Z`))}`,
-      days,
-    })),
-  }));
+  // Días con actividad real (alguna unidad recorrió distancia)
+  const activeDays = new Set();
+  for (const u of unitsOut) for (const [k, v] of Object.entries(u.days)) if (v.dist_m > 0 || v.drive_s > 0) activeDays.add(k);
+
+  const monthsOut = [...months.values()]
+    .filter((m) => m.days.some((k) => activeDays.has(k)))   // omite meses sin datos
+    .map((m) => ({
+      id: m.id, label: m.label, days: m.days,
+      weeks: [...m.weeksMap.entries()]
+        .filter(([, days]) => days.some((k) => activeDays.has(k)))  // omite semanas vacías
+        .map(([wId, days]) => ({
+          id: wId,
+          label: `${dayShort.format(new Date(`${days[0]}T12:00:00Z`))} – ${dayShort.format(new Date(`${days[days.length - 1]}T12:00:00Z`))}`,
+          days,
+        })),
+    }));
 
   const result = {
     meta: {

@@ -209,6 +209,14 @@ table.tbl td.num, table.tbl th.num { text-align: right; font-variant-numeric: ta
   background: var(--ink); color: #fff;
   padding: 20px 26px; border-radius: 16px;
 }
+.fuel-chip {
+  display: inline-flex; align-items: baseline; gap: 6px; flex: none;
+  background: rgba(196,230,0,.18); border: 1px solid rgba(138,163,0,.35);
+  color: var(--ink-soft); padding: 8px 14px; border-radius: 999px; font-size: 13px; font-weight: 600;
+}
+.fuel-chip b { font-size: 18px; color: var(--lime-deep); font-variant-numeric: tabular-nums; }
+.fuel-chip span { font-size: 12px; color: var(--muted); }
+
 .total-band .lbl { font-size: 13px; color: var(--lime); text-transform: uppercase; letter-spacing: .08em; }
 .total-band .v { font-size: 35px; font-weight: 800; font-variant-numeric: tabular-nums; color: #fff; }
 

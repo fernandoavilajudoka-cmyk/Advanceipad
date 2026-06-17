@@ -11,6 +11,7 @@ const nf = new Intl.NumberFormat('es-MX');
 const nf1 = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 1 });
 const nf2 = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 2 });
 const money = (n) => '$' + new Intl.NumberFormat('es-MX', { maximumFractionDigits: 0 }).format(Math.round(n || 0));
+const price = (n) => '$' + new Intl.NumberFormat('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n || 0);
 const dateLabel = (s) => new Date(s + 'T12:00:00Z').toLocaleDateString('es-MX', { day: '2-digit', month: 'short' });
 const weekdayOf = (s) => new Date(s + 'T12:00:00Z').toLocaleDateString('es-MX', { weekday: 'short' }).replace('.', '');
 
@@ -439,9 +440,13 @@ function moneySlide() {
       <div style="font-size:11.5px;color:var(--muted)">por semana · ${sub}</div>
       <div class="proj"><div>Mensual<b id="${id}-men">${money(m[id].mensual)}</b></div><div>Anual<b id="${id}-anu">${money(m[id].anual)}</b></div></div>
     </div>`;
+  const diesel = STATE.params.precio_diesel_mxn;
   return el(`
   <section class="slide" id="s07">
-    <div class="slide-head"><span class="snum">08</span><div><h2>Monetización del desempeño</h2><div class="sub">Impacto económico estimado (MXN) · ${esc(plantLabel())}</div></div></div>
+    <div class="slide-head"><span class="snum">08</span><div><h2>Monetización del desempeño</h2><div class="sub">Impacto económico estimado (MXN) · ${esc(plantLabel())}</div></div>
+      <div class="f-spacer"></div>
+      <div class="fuel-chip">⛽ Diésel <b>${price(diesel)}</b><span>/L</span></div>
+    </div>
     <div class="money-grid">
       ${card('seguridad', '🚨 Seguridad', 'Costo por eventos de exceso de velocidad.', `<span id="m-viol">${nf.format(VIEW.fleet.violations)}</span> excesos`)}
       ${card('ralenti', '🅿️ Ralentí', 'Combustible por motor en detención.', `<span id="m-idle">${nf.format(m.idleFuel)}</span> L/sem`)}

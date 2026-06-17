@@ -52,9 +52,19 @@ MAPON_KEY=tu_api_key node scripts/fetch-data.mjs --from 2026-06-09 --till 2026-0
 Alternativa: copia `config.example.json` a `config.local.json` y coloca tu key
 (ese archivo está en `.gitignore`).
 
-Por defecto analiza los **últimos 7 días**.
+Por defecto analiza **todo el año en curso** (1 de enero → ayer), de modo que
+los conectores de **Mes** y **Semana** incluyen todos los meses con actividad.
 
-### 2. Ver el informe localmente
+### 2. (Opcional) Empaquetar en un solo archivo HTML
+
+```bash
+node scripts/build-standalone.mjs
+# → web/informe-concretos-tecnicos.html  (CSS, JS, datos, Chart.js y logo incrustados)
+```
+
+Archivo autónomo que se abre directo en el navegador o se comparte por correo.
+
+### 3. Ver el informe localmente
 
 ```bash
 python3 -m http.server 8080 --directory web
