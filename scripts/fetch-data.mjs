@@ -98,6 +98,27 @@ async function api(path, params = {}) {
 
 // ----------------------------------------------------------------------------
 const secondsBetween = (a, b) => Math.max(0, (new Date(b) - new Date(a)) / 1000);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Geocodificación inversa (OpenStreetMap/Nominatim) → municipio real.
+// Cachea por coordenada redondeada y respeta el límite de 1 req/seg.
+const geoCache = new Map();
+async function reverseMuni(lat, lng) {
+  if (lat == null || lng == null) return null;
+  const key = `${lat.toFixed(3)},${lng.toFixed(3)}`;
+  if (geoCache.has(key)) return geoCache.get(key);
+  let muni = null;
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&zoom=10&addressdetails=1&lat=${lat}&lon=${lng}`;
+    const res = await fetch(url, { headers: { 'User-Agent': 'ConcretosTecnicosFleetReport/1.0' } });
+    const j = await res.json();
+    const a = j.address || {};
+    muni = a.city || a.town || a.municipality || a.village || a.county || null;
+  } catch { /* sin red: fallback */ }
+  geoCache.set(key, muni);
+  await sleep(1100);
+  return muni;
+}
 const round = (n, d = 1) => { const p = 10 ** d; return Math.round((Number(n) + Number.EPSILON) * p) / p; };
 const addDays = (date, n) => { const d = new Date(date); d.setUTCDate(d.getUTCDate() + n); return d; };
 const ymd = (d) => d.toISOString().slice(0, 10);
@@ -233,6 +254,7 @@ async function main() {
     const routes = routesByUnit.get(u.unit_id) || [];
     const days = {};
     const baseDur = new Map(); // address → { sec, lat, lng }
+    const muniDur = new Map(); // municipio → segundos de presencia (define la planta)
 
     const ensureDay = (k) => (days[k] || (days[k] = { dist_m: 0, drive_s: 0, stop_s: 0, segs: 0, stops: 0, viol: 0, maxspeed: 0 }));
 
@@ -241,6 +263,9 @@ async function main() {
       const dur = secondsBetween(r.start.time, r.end.time);
       const k = dayKey(r.start.time);
       const day = ensureDay(k);
+      // Municipio de mayor circulación (acumula tiempo de TODOS los tramos)
+      const muni = muniFromAddr(r.start.address);
+      if (muni) muniDur.set(muni, (muniDur.get(muni) || 0) + dur);
       if (r.type === 'route') {
         day.dist_m += r.distance || 0;
         day.drive_s += dur;
@@ -257,11 +282,14 @@ async function main() {
       }
     }
 
-    // Base dominante de la unidad
+    // Base dominante (dirección donde más se estaciona) — solo referencia
     let base = null;
     for (const [addr, acc] of baseDur) {
       if (!base || acc.sec > base.sec) base = { addr, ...acc };
     }
+    // Planta = municipio de mayor circulación
+    let plantMuni = null, bestMuni = -1;
+    for (const [m, s] of muniDur) { if (s > bestMuni) { bestMuni = s; plantMuni = m; } }
     const stale = (periodEnd - new Date(u.last_update)) / 1000 > 86400;
 
     const uo = {
@@ -269,10 +297,10 @@ async function main() {
       make: u.make, model: u.model, icon: u.icon,
       odometer_km: round(u.mileage / 1000, 0), last_update: u.last_update, stale,
       base: base ? { addr: base.addr, lat: base.lat, lng: base.lng } : null,
+      plant_muni: plantMuni || 'Sin ubicación',
       days,
     };
     unitsOut.push(uo);
-    if (base) baseAccumGlobal.push({ uo, base });
   }
 
   // ---- Atribuir combustible real y eventos del sensor a cada unidad/día ----
@@ -290,40 +318,28 @@ async function main() {
     }
   }
 
-  // ---- Clustering de bases → plantas (greedy por distancia ≤ 1.2 km) ----
-  const CLUSTER_RADIUS_M = 1200;
-  const clusterList = []; // { lat, lng, addrs:Map, units:[] }
-  for (const { uo, base } of baseAccumGlobal.sort((a, b) => b.base.sec - a.base.sec)) {
-    let cl = null;
-    for (const c of clusterList) { if (distM(c, base) <= CLUSTER_RADIUS_M) { cl = c; break; } }
-    if (!cl) { cl = { lat: base.lat, lng: base.lng, addrs: new Map(), units: [] }; clusterList.push(cl); }
-    cl.units.push(uo);
-    cl.addrs.set(base.addr, (cl.addrs.get(base.addr) || 0) + 1);
+  // ---- Municipio real por geocodificación inversa de la coordenada base ----
+  console.error('  Geocodificando municipios (Nominatim)…');
+  for (const uo of unitsOut) {
+    const muni = uo.base ? await reverseMuni(uo.base.lat, uo.base.lng) : null;
+    uo.plant_muni = muni || muniFromAddr(uo.base?.addr) || 'Sin ubicación';
   }
 
-  // Nombre de planta: "Municipio — Calle" (único y legible)
+  // ---- Plantas = municipio de mayor circulación (agrupa por municipio) ----
+  const muniGroups = new Map(); // municipio → [unidades]
+  for (const uo of unitsOut) {
+    const m = uo.plant_muni || 'Sin ubicación';
+    if (!muniGroups.has(m)) muniGroups.set(m, []);
+    muniGroups.get(m).push(uo);
+  }
   const plants = [];
   let pid = 0;
-  const nameSeen = new Map();
-  for (const cl of clusterList.sort((a, b) => b.units.length - a.units.length)) {
-    const topAddr = [...cl.addrs.entries()].sort((a, b) => b[1] - a[1])[0][0];
-    const city = muniFromAddr(topAddr);
-    const site = streetShort(topAddr);
-    const lc = city.toLowerCase(), ls = site.toLowerCase();
-    let name = (!site || lc.includes(ls) || ls.includes(lc)) ? city : `${city} — ${site}`;
-    if (nameSeen.has(name)) { nameSeen.set(name, nameSeen.get(name) + 1); name = `${name} (${nameSeen.get(name)})`; } else nameSeen.set(name, 1);
+  for (const [muni, list] of [...muniGroups.entries()].sort((a, b) => b[1].length - a[1].length)) {
     const id = `P${++pid}`;
-    plants.push({ id, name, city, site, lat: round(cl.lat, 5), lng: round(cl.lng, 5), addr: topAddr, unit_count: cl.units.length });
-    for (const uo of cl.units) { uo.plant_id = id; uo.plant = name; }
+    plants.push({ id, name: muni, city: muni, unit_count: list.length });
+    for (const uo of list) { uo.plant_id = id; uo.plant = muni; }
   }
-  // Unidades sin base
-  const noBase = unitsOut.filter((u) => !u.plant_id);
-  if (noBase.length) {
-    const id = `P${++pid}`;
-    plants.push({ id, name: 'Sin base definida', city: '', site: '', lat: null, lng: null, addr: '', unit_count: noBase.length });
-    for (const uo of noBase) { uo.plant_id = id; uo.plant = 'Sin base definida'; }
-  }
-  console.error(`  ${plants.length} plantas detectadas: ${plants.map((p) => `${p.name} (${p.unit_count})`).join(', ')}`);
+  console.error(`  ${plants.length} plantas (municipios): ${plants.map((p) => `${p.name} (${p.unit_count})`).join(', ')}`);
 
   // ---- Catálogo de MESES y SEMANAS presentes en el rango ----
   const allDays = [];

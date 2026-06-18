@@ -317,7 +317,7 @@ function execSlide() {
     <div class="slide-head"><span class="snum">02</span><div><h2>Resumen ejecutivo</h2><div class="sub">${esc(scopeLabel())} · ${esc(plantLabel())}</div></div></div>
     <h4 style="margin:2px 0 8px">Tendencia: rendimiento de flota (km/L) vs. distancia recorrida (km)</h4>
     <div class="chart-box bleed"><canvas id="chTrend"></canvas></div>
-    <div class="kpis" style="margin-top:20px">
+    <div class="kpis cols3" style="margin-top:20px">
       ${kpi('green', nf.format(f.distance_km), 'km', 'Distancia total recorrida')}
       ${kpi('teal', nf.format(f.motor_hours), 'h', 'Tiempo total de motor (est.)')}
       ${kpi('green', nf.format(f.real_fuel_l), 'L', 'Consumo total de combustible')}
@@ -376,7 +376,7 @@ function boardSlide() {
       case 'num': return `<td>${v != null ? nf.format(v) : '—'}</td>`;
       case 'num1': return `<td>${nf1.format(v || 0)}</td>`;
       case 'num2': return `<td>${v != null ? nf2.format(v) : '—'}</td>`;
-      case 'pct': return `<td>${nf1.format(v || 0)}%</td>`;
+      case 'pct': { const sc = (v || 0) <= 30 ? 'verde' : (v || 0) <= 40 ? 'naranja' : 'rojo'; return `<td><span class="sem ${sc}">${nf1.format(v || 0)}%</span></td>`; }
       case 'bool': return `<td>${u.has_fuel_sensor ? '<span class="badge verde">Sí</span>' : '<span class="badge naranja">No</span>'}</td>`;
       case 'warn': return `<td class="${v ? 'b-warn' : ''}">${v || '—'}</td>`;
       case 'alert': return `<td class="${v ? 'b-alert' : ''}">${v ? nf.format(v) : '—'}</td>`;
@@ -716,11 +716,12 @@ function drawCharts() {
     data: {
       labels: td.map((x) => x.weekday + ' ' + dateLabel(x.date)),
       datasets: [
-        { type: 'bar', label: 'Distancia (km)', data: td.map((x) => x.distance_km), backgroundColor: 'rgba(182,212,0,.55)', borderRadius: 5, maxBarThickness: 46, yAxisID: 'y' },
+        { type: 'bar', label: 'Distancia (km)', data: td.map((x) => x.distance_km), backgroundColor: 'rgba(182,212,0,.55)', borderRadius: 5, categoryPercentage: 0.92, barPercentage: 0.96, yAxisID: 'y' },
         { type: 'line', label: 'Rendimiento (km/L)', data: td.map((x) => x.efficiency_kml), borderColor: C.green, backgroundColor: C.green, borderWidth: 2.5, tension: .35, pointRadius: 2.5, yAxisID: 'y1' },
       ],
     },
     options: {
+      maintainAspectRatio: false,
       plugins: { legend: { display: true, labels: { boxWidth: 12, font: { size: 11 } } } },
       scales: {
         y: { beginAtZero: true, position: 'left', grid: { color: GRID }, title: { display: true, text: 'km', font: { size: 10 } } },
