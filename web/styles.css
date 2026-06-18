@@ -195,6 +195,7 @@ code { background: #eef2e6; padding: 1px 6px; border-radius: 6px; font-size: .9e
 .board-tbl tbody tr:nth-child(even) { background: rgba(255,255,255,.5); }
 .board-tbl tbody tr:hover { background: rgba(196,230,0,.12); }
 .board-tbl td.b-unit { text-align: left; color: var(--ink); font-weight: 800; letter-spacing: 0; }
+.can-tag { display: inline-block; margin-left: 5px; font-size: 8.5px; font-weight: 800; letter-spacing: .04em; color: #1d6b41; background: rgba(46,160,104,.18); border: 1px solid rgba(46,160,104,.35); border-radius: 5px; padding: 0 4px; vertical-align: middle; }
 .board-tbl td.b-plant { text-align: left; color: var(--muted); }
 .board-tbl .sem { padding: 2px 6px; font-size: 11px; }
 .board-tbl .badge { padding: 2px 7px; font-size: 11px; }

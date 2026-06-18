@@ -159,18 +159,18 @@ function aggregate() {
 
   const perUnit = [];
   let f = { distance_km: 0, drive_h: 0, stop_h: 0, segs: 0, stops: 0, viol: 0, maxspeed: 0, fuel_l: 0, active: 0, no_signal: 0,
-    real_fuel_l: 0, idle_fuel_l: 0, idle_h: 0, rf_l: 0, rf_n: 0, dr_l: 0, dr_n: 0, sensors: 0 };
+    real_fuel_l: 0, idle_fuel_l: 0, idle_h: 0, idle_meas: 0, eng_h: 0, rf_l: 0, rf_n: 0, dr_l: 0, dr_n: 0, sensors: 0 };
   const secHours = new Array(24).fill(0), secDow = new Array(7).fill(0), secBands = { b40: 0, b50: 0, b60: 0 };
 
   for (const u of units) {
     let dist = 0, drive = 0, stop = 0, segs = 0, stops = 0, viol = 0, mx = 0;
-    let rfL = 0, rfN = 0, drL = 0, drN = 0, nightH = 0, fatigue = 0, dowW = 0, ev40 = 0, ev50 = 0, ev60 = 0;
+    let rfL = 0, rfN = 0, drL = 0, drN = 0, nightH = 0, fatigue = 0, dowW = 0, ev40 = 0, ev50 = 0, ev60 = 0, engH = 0, canFuel = 0;
     for (const k of sortedDays) {
       const d = u.days[k]; if (!d) continue;
       dist += d.dist_km; drive += d.drive_h; stop += d.stop_h; segs += d.segs; stops += d.stops; viol += d.viol;
       if (d.maxspeed > mx) mx = d.maxspeed;
       rfL += d.rf_l || 0; rfN += d.rf_n || 0; drL += d.dr_l || 0; drN += d.dr_n || 0;
-      nightH += d.night_h || 0; fatigue += d.fatigue || 0;
+      nightH += d.night_h || 0; fatigue += d.fatigue || 0; engH += d.eng_h || 0; canFuel += d.can_fuel_l || 0;
       dowW += (d.dist_km || 0) * DOW_THEFT[new Date(k + 'T12:00:00Z').getUTCDay()];   // exposición por día de semana
       ev40 += d.ev_b40 || 0; ev50 += d.ev_b50 || 0; ev60 += d.ev_b60 || 0;
       if (d.ev_h) { const dw = new Date(k + 'T12:00:00Z').getUTCDay(); for (const h in d.ev_h) { secHours[+h] += d.ev_h[h]; secDow[dw] += d.ev_h[h]; } }
@@ -181,10 +181,15 @@ function aggregate() {
     const fuel = dist * p.consumo_norma_l100 / 100;            // estimado (norma configurable)
     const realFuel = (u.real_l100 != null) ? dist * u.real_l100 / 100 : null; // real (flujo/sensor)
     const realEff = (realFuel && realFuel > 0) ? dist / realFuel : null;
-    // Ralentí = consumo real − consumo en movimiento (siempre ≤ total real)
+    // Ralentí en combustible (consumo real − consumo en movimiento)
     const idleFuel = (realFuel != null) ? Math.max(0, realFuel - dist * p.consumo_ruta_l100 / 100) : null;
-    // Horas de ralentí (motor encendido detenido): no pueden exceder el tiempo detenido medido
-    const idleHours = (idleFuel != null && p.consumo_ralenti_lh > 0) ? Math.min(stop, idleFuel / p.consumo_ralenti_lh) : null;
+    // Ralentí en TIEMPO: medido por CAN (motor encendido − movimiento) si la unidad tiene RPM;
+    // si no, estimado (combustible de ralentí ÷ tasa L/h, topado al tiempo detenido).
+    const idleMeasured = !!(u.has_can && engH > 0);
+    const idleHours = idleMeasured
+      ? Math.max(0, engH - drive)
+      : ((idleFuel != null && p.consumo_ralenti_lh > 0) ? Math.min(stop, idleFuel / p.consumo_ralenti_lh) : null);
+    const motorHours = drive + (idleHours || 0);
     const idlePctFuel = (realFuel && realFuel > 0 && idleFuel != null) ? idleFuel / realFuel * 100 : 0;
     const eff = fuel > 0 ? dist / fuel : 0;
     const vp100 = dist > 0 ? viol / dist * 100 : 0;
@@ -211,7 +216,9 @@ function aggregate() {
       real_l100: u.real_l100, real_fuel_l: realFuel != null ? round(realFuel, 1) : null,
       real_efficiency_kml: realEff != null ? round(realEff, 2) : null, has_fuel_sensor: !!u.has_fuel_sensor,
       idle_fuel_l: idleFuel != null ? round(idleFuel, 1) : null, idle_hours: idleHours != null ? round(idleHours, 1) : null,
-      idle_pct_fuel: round(idlePctFuel, 1),
+      idle_pct_fuel: round(idlePctFuel, 1), idle_measured: idleMeasured, has_can: !!u.has_can,
+      eng_hours: round(engH, 1), motor_hours: round(motorHours, 1),
+      idle_pct_time: round(motorHours > 0 ? (idleHours || 0) / motorHours * 100 : 0, 1),
       refuel_l: Math.round(rfL), refuel_n: rfN, drain_l: Math.round(drL), drain_n: drN,
       max_speed: Math.round(mx), violations: viol, violations_per_100km: round(vp100, 2),
       move_ratio: round(moveRatio * 100, 1),
@@ -223,6 +230,8 @@ function aggregate() {
     if (realFuel != null) f.real_fuel_l += realFuel;
     if (idleFuel != null) f.idle_fuel_l += idleFuel;
     if (idleHours != null) f.idle_h += idleHours;
+    if (idleMeasured) f.idle_meas += 1;
+    f.eng_h += engH;
     if (u.has_fuel_sensor) f.sensors += 1;
     f.rf_l += rfL; f.rf_n += rfN; f.dr_l += drL; f.dr_n += drN;
     if (dist > 0.1) f.active += 1;
@@ -260,6 +269,7 @@ function aggregate() {
     real_fuel_l: round(f.real_fuel_l, 0), real_efficiency_kml: round(realEffFleet, 2),
     idle_fuel_l: round(f.idle_fuel_l, 0), idle_cost: Math.round(idleCost), idle_hours: round(idleHoursFleet, 0),
     motor_hours: round(driveH + idleHoursFleet, 0),
+    idle_measured: f.idle_meas, eng_hours: round(f.eng_h, 0),
     idle_pct_fuel: round(f.real_fuel_l > 0 ? f.idle_fuel_l / f.real_fuel_l * 100 : 0, 1),
     fuel_sensors: f.sensors,
     refuel_l: Math.round(f.rf_l), refuel_n: f.rf_n, drain_l: Math.round(f.dr_l), drain_n: f.dr_n,
@@ -409,7 +419,7 @@ function execSlide() {
       ${kpi('teal', nf.format(f.motor_hours), 'h', 'Tiempo total de motor (est.)')}
       ${kpi('green', nf.format(f.real_fuel_l), 'L', 'Consumo total de combustible')}
       ${kpi('amber', nf.format(f.idle_fuel_l), 'L', 'Consumo de combustible en ralentí')}
-      <div class="kpi amber"><div class="k-val">${nf.format(f.idle_hours)}<span class="k-unit"> h</span></div><div class="k-lbl">Tiempo en ralentí (est.)</div><div class="k-note neutral">${nf1.format(idlePctTime)}% del tiempo de motor encendido</div></div>
+      <div class="kpi amber"><div class="k-val">${nf.format(f.idle_hours)}<span class="k-unit"> h</span></div><div class="k-lbl">Tiempo en ralentí ${f.idle_measured >= f.units_total ? '(medido)' : f.idle_measured > 0 ? `(${f.idle_measured} medido${f.idle_measured > 1 ? 's' : ''})` : '(est.)'}</div><div class="k-note neutral">${nf1.format(idlePctTime)}% del tiempo de motor encendido</div></div>
       ${kpi('blue', nf2.format(f.real_efficiency_kml), 'km/L', 'Rendimiento general')}
       <div class="kpi red"><div class="k-val">${nf.format(f.violations)}</div><div class="k-lbl">Eventos de seguridad registrados</div><div class="k-note">${nf1.format(f.violations_per_100km)} por cada 100 km</div></div>
       <div class="kpi ${f.acc_rating === 'rojo' ? 'red' : f.acc_rating === 'naranja' ? 'amber' : 'green'}"><div class="k-val">${f.acc_level}<span class="k-unit"> · ${f.acc_risk}</span></div><div class="k-lbl">Probabilidad de accidente</div><div class="k-note neutral">${f.acc_high} unidad(es) en riesgo alto</div></div>
@@ -458,7 +468,7 @@ function boardSlide() {
   const cell = (u, c) => {
     const v = u[c.key];
     switch (c.t) {
-      case 'txt': return `<td class="b-unit">${esc(u.number || u.label)}</td>`;
+      case 'txt': return `<td class="b-unit">${esc(u.number || u.label)}${u.has_can ? '<span class="can-tag" title="Ralentí medido por CAN/RPM">CAN</span>' : ''}</td>`;
       case 'plant': return `<td class="b-plant" title="${esc(u.plant || '')}">${esc(shortPlant(u.plant) || '—')}</td>`;
       case 'num': return `<td>${v != null ? nf.format(v) : '—'}</td>`;
       case 'num1': return `<td>${nf1.format(v || 0)}</td>`;

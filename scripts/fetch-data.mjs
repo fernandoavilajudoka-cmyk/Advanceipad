@@ -34,7 +34,8 @@ const ROOT = resolve(__dirname, '..');
 const OUT_DIR = resolve(ROOT, 'web');
 const OUT_FILE = resolve(OUT_DIR, 'data.json');
 
-const BASE = process.env.MAPON_BASE || 'https://portal.telematicsadvance.com.mx/api/v1';
+// Dominio smart-connect: incluye los mismos métodos + CAN (unit_data/can_period)
+const BASE = process.env.MAPON_BASE || 'https://portal.smart-connect.com.mx/api/v1';
 const TZ = 'America/Monterrey';
 const MAX_DAYS_PER_CALL = 28; // la API limita a 31 días por llamada
 
@@ -100,23 +101,35 @@ async function api(path, params = {}) {
 const secondsBetween = (a, b) => Math.max(0, (new Date(b) - new Date(a)) / 1000);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// Geocodificación inversa (OpenStreetMap/Nominatim) → municipio real.
-// Cachea por coordenada redondeada y respeta el límite de 1 req/seg.
-const geoCache = new Map();
+// Geocodificación inversa (BigDataCloud, sin API key ni rate-limit) → municipio real.
+// Caché PERSISTENTE en geocache.json: una vez resuelto, el municipio es estable
+// sin depender del servicio remoto en cada corrida.
+const GEO_FILE = resolve(ROOT, 'geocache.json');
+const geoCache = new Map(existsSync(GEO_FILE) ? Object.entries(JSON.parse(readFileSync(GEO_FILE, 'utf8'))) : []);
+function saveGeoCache() {
+  const obj = {}; for (const [k, v] of geoCache) if (v) obj[k] = v;
+  writeFileSync(GEO_FILE, JSON.stringify(obj, null, 0));
+}
+// Normaliza nombres oficiales largos a su municipio corto/usual
+const MUNI_NORM = {
+  'Ciudad Benito Juárez': 'Juárez', 'General Escobedo': 'Escobedo',
+  'Atotonilco el Alto': 'Atotonilco', 'San Nicolás de los Garza': 'San Nicolás',
+};
 async function reverseMuni(lat, lng) {
   if (lat == null || lng == null) return null;
   const key = `${lat.toFixed(3)},${lng.toFixed(3)}`;
-  if (geoCache.has(key)) return geoCache.get(key);
+  if (geoCache.get(key)) return geoCache.get(key);   // solo usa caché si tiene valor (reintenta nulos)
   let muni = null;
   try {
-    const url = `https://nominatim.openstreetmap.org/reverse?format=json&zoom=10&addressdetails=1&lat=${lat}&lon=${lng}`;
-    const res = await fetch(url, { headers: { 'User-Agent': 'ConcretosTecnicosFleetReport/1.0' } });
+    const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=es`;
+    const res = await fetch(url);
     const j = await res.json();
-    const a = j.address || {};
-    muni = a.city || a.town || a.municipality || a.village || a.county || null;
+    muni = j.city || j.locality || null;
+    if (muni) muni = muni.replace(/^Municipio de\s+/i, '').trim();
+    if (muni) muni = MUNI_NORM[muni] || muni;
   } catch { /* sin red: fallback */ }
-  geoCache.set(key, muni);
-  await sleep(1100);
+  if (muni) { geoCache.set(key, muni); saveGeoCache(); }
+  await sleep(250);
   return muni;
 }
 const round = (n, d = 1) => { const p = 10 ** d; return Math.round((Number(n) + Number.EPSILON) * p) / p; };
@@ -247,6 +260,34 @@ async function main() {
     }
   }
 
+  // ---- CAN (Ruptela Pro5/HCV5): RPM + combustible reales para ralentí MEDIDO ----
+  // Identifica unidades con rastreador Ruptela y baja la serie temporal CAN.
+  const devices = await api('device/list').catch(() => ({ devices: [] }));
+  const ruptelaIds = (devices.devices || []).filter((d) => /RUPTELA/i.test(d.model || '')).map((d) => d.unit_id);
+  console.error(`  ${ruptelaIds.length} unidades Ruptela con CAN → midiendo ralentí real`);
+  const ON_RPM = 350, GAP_CAP = 600;            // motor encendido si RPM>350; corta gaps > 10 min
+  const canEngByUnit = new Map();               // unit_id → { dayKey → segundos motor encendido }
+  const canFuelByUnit = new Map();              // unit_id → { dayKey → litros (delta total_fuel) }
+  const parseGmt = (s) => new Date((s.includes('T') ? s : s.replace(' ', 'T')) + (s.endsWith('Z') ? '' : 'Z'));
+  for (const uid of ruptelaIds) {
+    const eng = {}, cf = {};
+    for (const c of chunks) {
+      const data = await api('unit_data/can_period', { unit_id: uid, from: c.from, till: c.till }).catch(() => null);
+      const u = data?.units?.[0]; if (!u) continue;
+      const rpm = (u.rpm_average || []).map((p) => [parseGmt(p.gmt), p.value]).sort((a, b) => a[0] - b[0]);
+      for (let i = 0; i < rpm.length - 1; i++) {
+        const gap = (rpm[i + 1][0] - rpm[i][0]) / 1000;
+        if (gap > 0 && gap <= GAP_CAP && rpm[i][1] > ON_RPM) eng[dayKey(rpm[i][0].toISOString())] = (eng[dayKey(rpm[i][0].toISOString())] || 0) + gap;
+      }
+      const fuel = (u.total_fuel || []).map((p) => [parseGmt(p.gmt), p.value]).sort((a, b) => a[0] - b[0]);
+      for (let i = 0; i < fuel.length - 1; i++) {
+        const delta = fuel[i + 1][1] - fuel[i][1];
+        if (delta > 0 && delta < 200) cf[dayKey(fuel[i + 1][0].toISOString())] = (cf[dayKey(fuel[i + 1][0].toISOString())] || 0) + delta;
+      }
+    }
+    canEngByUnit.set(uid, eng); canFuelByUnit.set(uid, cf);
+  }
+
   // ---- Agregación por unidad y por día + base dominante ----
   const periodEnd = new Date(`${TILL_DATE}T23:59:59Z`);
   const unitsOut = [];
@@ -334,6 +375,19 @@ async function main() {
     uo.real_consumed_l = round(consumed, 0);
     uo.real_l100 = (km > 1 && consumed > 0) ? round(consumed / (km / 100), 1) : null;
     uo.has_fuel_sensor = !!fuelHasSensor.get(uo.unit_id);
+    // CAN: motor encendido (RPM) y combustible real por día
+    const eng = canEngByUnit.get(uo.unit_id), cf = canFuelByUnit.get(uo.unit_id);
+    uo.has_can = !!eng;
+    if (eng) {
+      for (const [k, sec] of Object.entries(eng)) {
+        const day = uo.days[k] || (uo.days[k] = { dist_m: 0, drive_s: 0, stop_s: 0, segs: 0, stops: 0, viol: 0, maxspeed: 0 });
+        day.eng_s = (day.eng_s || 0) + sec;
+      }
+      for (const [k, l] of Object.entries(cf || {})) {
+        const day = uo.days[k] || (uo.days[k] = { dist_m: 0, drive_s: 0, stop_s: 0, segs: 0, stops: 0, viol: 0, maxspeed: 0 });
+        day.can_fuel_l = (day.can_fuel_l || 0) + l;
+      }
+    }
     for (const e of cleanFuelEvents(fuelEvents.get(uo.unit_id) || [])) {
       const k = dayKey(e.gmt);
       const day = uo.days[k] || (uo.days[k] = { dist_m: 0, drive_s: 0, stop_s: 0, segs: 0, stops: 0, viol: 0, maxspeed: 0 });
@@ -343,7 +397,7 @@ async function main() {
   }
 
   // ---- Municipio real por geocodificación inversa de la coordenada base ----
-  console.error('  Geocodificando municipios (Nominatim)…');
+  console.error('  Geocodificando municipios (BigDataCloud)…');
   for (const uo of unitsOut) {
     const muni = uo.base ? await reverseMuni(uo.base.lat, uo.base.lng) : null;
     uo.plant_muni = muni || muniFromAddr(uo.base?.addr) || 'Sin ubicación';
@@ -417,12 +471,12 @@ async function main() {
       company: company.name,
       timezone: TZ,
       range: { from: FROM_DATE, till: TILL_DATE },
-      source: 'Telematics Advance (Mapon API) — portal.telematicsadvance.com.mx',
+      source: 'Telematics Advance / Smart-Connect (Mapon API) — portal.smart-connect.com.mx',
       params: PARAMS,
       naturaleza_datos: {
-        medido: ['Distancia (GPS)', 'Tiempo de manejo', 'Tiempo de detención', 'Tramos / paradas', 'Velocidad promedio por tramo', 'Odómetro', 'Base / planta (ubicación dominante)', 'Consumo real de combustible (flujo/CAN)', 'Nivel y eventos del sensor Escort de varilla (recargas y descargas)'],
-        estimado: ['Combustible por norma l/100km (comparativo)', 'Consumo en ralentí', 'Costos de monetización'],
-        nota: 'El consumo de combustible se reporta de forma REAL desde el medidor de flujo/CAN y el sensor Escort de varilla (BLE) vía fuel/summary y fuel/changes. El TIEMPO en ralentí se ESTIMA (combustible no asociado a distancia ÷ tasa L/h) porque la API actual no expone RPM/estado de motor (los endpoints CAN/RPM dan "Method not available"); para medir el ralentí real (motor encendido + unidad detenida) hay que habilitar el módulo CAN — 5 unidades ya traen rastreador Ruptela HCV5 que capta RPM. Recargas y descargas: sensor de varilla tras filtrar ruido, a validar en sitio. La planta se deriva por geocodificación de la base dominante.',
+        medido: ['Distancia (GPS)', 'Tiempo de manejo', 'Tiempo de detención', 'Tramos / paradas', 'Velocidad promedio por tramo', 'Odómetro', 'Base / planta (ubicación dominante)', 'Consumo real de combustible (flujo/CAN)', 'Nivel y eventos del sensor Escort de varilla', 'RALENTÍ MEDIDO por RPM (CAN) en unidades Ruptela'],
+        estimado: ['Combustible por norma l/100km (comparativo)', 'Ralentí estimado en unidades sin CAN', 'Costos de monetización'],
+        nota: 'En las unidades con rastreador Ruptela (CAN) el ralentí se MIDE: tiempo de motor encendido por RPM (>350) menos tiempo en movimiento, vía unit_data/can_period (rpm_average, total_fuel). En el resto se ESTIMA (combustible no asociado a distancia ÷ tasa L/h). El consumo de combustible es real (flujo/CAN + sensor Escort de varilla). Recargas/descargas del sensor, a validar en sitio. La planta se deriva por geocodificación de la base dominante.',
       },
       months: monthsOut,
     },
@@ -441,10 +495,13 @@ async function main() {
         if (v.ev_b40) d.ev_b40 = v.ev_b40;
         if (v.ev_b50) d.ev_b50 = v.ev_b50;
         if (v.ev_b60) d.ev_b60 = v.ev_b60;
+        if (v.eng_s) d.eng_h = round(v.eng_s / 3600, 2);
+        if (v.can_fuel_l) d.can_fuel_l = round(v.can_fuel_l, 1);
         days[k] = d;
       }
       return {
         unit_id: u.unit_id, label: u.label, number: u.number, make: u.make, model: u.model, icon: u.icon,
+        has_can: !!u.has_can,
         odometer_km: u.odometer_km, last_update: u.last_update, stale: u.stale,
         plant_id: u.plant_id, plant: u.plant, base_addr: u.base?.addr || null,
         real_l100: u.real_l100, real_consumed_l: u.real_consumed_l, has_fuel_sensor: u.has_fuel_sensor,
