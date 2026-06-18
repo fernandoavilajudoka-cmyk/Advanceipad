@@ -183,18 +183,26 @@ function streetShort(addr) {
 // lecturas imposibles y oscilaciones recuperadas (ruido del sensor BLE).
 function cleanFuelEvents(events) {
   const MAXT = 1000; // litros máximos plausibles (tractocamiones FOTON EST: tanque ~800 L)
+  // Solo el sensor de varilla (nivel físico del tanque) revela recargas/descargas.
+  // Los eventos CAN provienen del contador acumulado de combustible del motor y
+  // generan falsos negativos pequeños (ruido), no descargas reales del tanque.
   const ev = events
+    .filter((e) => e.src === 'sensor')
     .filter((e) => (e.before == null || (e.before >= 0 && e.before <= MAXT)) && Math.abs(e.chg) <= MAXT && e.gmt)
     .sort((a, b) => new Date(a.gmt) - new Date(b.gmt));
-  const used = new Array(ev.length).fill(false);
+  // Filtro de oscilación: un sensor "atascado" alterna ±igual (p. ej. 320↔23 L
+  // durante horas). Se marca como ruido todo evento que tenga un opuesto de
+  // magnitud similar (±15%) dentro de ±3 h en CUALQUIER dirección, así se
+  // limpian las cadenas completas sin dejar residuos por paridad impar. Una
+  // descarga REAL (caída sin recarga simétrica de regreso) sí sobrevive.
+  const WIN = 3 * 60 * 60 * 1000, used = new Array(ev.length).fill(false);
   for (let i = 0; i < ev.length; i++) {
-    if (used[i]) continue;
-    for (let j = i + 1; j < ev.length; j++) {
-      if (used[j]) continue;
-      if (new Date(ev[j].gmt) - new Date(ev[i].gmt) > 3 * 3600 * 1000) break; // ventana 3 h
-      // par opuesto de magnitud similar (subió y bajó) ⇒ ruido
+    const ti = new Date(ev[i].gmt).getTime();
+    for (let j = 0; j < ev.length; j++) {
+      if (j === i) continue;
+      if (Math.abs(new Date(ev[j].gmt).getTime() - ti) > WIN) continue;
       if (ev[i].chg * ev[j].chg < 0 && Math.abs(Math.abs(ev[i].chg) - Math.abs(ev[j].chg)) <= 0.15 * Math.abs(ev[i].chg)) {
-        used[i] = used[j] = true; break;
+        used[i] = true; break;
       }
     }
   }

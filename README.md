@@ -100,7 +100,11 @@ Base: `https://portal.telematicsadvance.com.mx/api/v1/` · autenticación con
   ralentí y costos de monetización.
 
 **Sensores Escort de varilla (BLE):** se leen vía `fuel/summary` y `fuel/changes`
-(20 de 23 unidades equipadas). Los eventos de recarga/descarga se limpian de ruido
-(lecturas imposibles y oscilaciones recuperadas); las **descargas son indicios a
-validar en sitio**, no conclusiones de robo. La velocidad instantánea aún requiere
-telemetría ampliada.
+(20 de 23 unidades equipadas). Las recargas/descargas se toman **únicamente del
+sensor de varilla** (nivel físico del tanque); los eventos de la fuente CAN se
+descartan porque provienen del contador acumulado de combustible del motor y
+generan falsos negativos pequeños (ruido), no descargas reales del tanque. Además
+se filtran las **oscilaciones del sensor** (un opuesto de magnitud similar dentro
+de ±3 h se considera ruido), de modo que solo sobreviven las caídas reales sin
+recarga simétrica de regreso. Las **descargas son indicios a validar en sitio**,
+no conclusiones de robo. La velocidad instantánea aún requiere telemetría ampliada.
