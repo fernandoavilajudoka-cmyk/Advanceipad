@@ -639,9 +639,6 @@ function render() {
   deck.appendChild(boardSlide());
   deck.appendChild(perfSlide());
   deck.appendChild(safetySlide());
-  deck.appendChild(forkliftSlide());
-  deck.appendChild(rankingSlide());
-  deck.appendChild(moneySlide());
   deck.appendChild(methodSlide());
   deck.appendChild(el(`<div class="foot">Generado el ${new Date(DATA.meta.generated_at).toLocaleString('es-MX')} · Datos del rango ${dateLabel(DATA.meta.range.from)}–${dateLabel(DATA.meta.range.till)} · Fuente: ${esc(DATA.meta.source)}</div>`));
   numberSections();
