@@ -189,6 +189,7 @@ async function main() {
     const ensureDay = (k) => (days[k] || (days[k] = { dist_m: 0, drive_s: 0, stop_s: 0, segs: 0, stops: 0, viol: 0, maxspeed: 0 }));
 
     for (const r of routes) {
+      if (!r || !r.start || !r.end || !r.start.time || !r.end.time) continue; // tramo incompleto
       const dur = secondsBetween(r.start.time, r.end.time);
       const k = dayKey(r.start.time);
       const day = ensureDay(k);
@@ -318,7 +319,7 @@ async function main() {
       naturaleza_datos: {
         medido: ['Distancia (GPS)', 'Tiempo de manejo', 'Tiempo de detención', 'Tramos / paradas', 'Velocidad promedio por tramo', 'Odómetro', 'Base / planta (ubicación dominante)'],
         estimado: ['Combustible (norma l/100km)', 'Eficiencia km/L', 'Consumo en ralentí', 'Costos de monetización'],
-        nota: 'El combustible y la eficiencia se estiman con una norma de consumo configurable. La planta se deriva de la base operativa dominante de cada unidad (GPS). La telemetría CAN/combustible real y la velocidad instantánea requieren ampliar los permisos de la API key.',
+        nota: 'El combustible y la eficiencia se estiman con una norma de consumo configurable. La planta se deriva de la base operativa dominante de cada unidad (GPS). Los sensores de combustible (varilla), el consumo real, las recargas y las descargas/extracciones de diésel NO están disponibles con la API key actual (todos los métodos de combustible/sensores/CAN devuelven "Method not available"); para incluirlos hay que habilitar esos permisos en la plataforma. La velocidad instantánea también requiere telemetría ampliada.',
       },
       months: monthsOut,
     },

@@ -70,12 +70,9 @@ function buildFilters() {
   const plantOpts = `<option value="all">Todas las plantas (${DATA.units.length})</option>` +
     DATA.plants.map((p) => `<option value="${p.id}">${esc(p.name)} · ${p.unit_count}</option>`).join('');
   bar.innerHTML = `
-    <div class="f-group"><span class="f-ico">📅</span>
-      <label>Mes</label><select id="selMonth">${monthOpts}</select></div>
-    <div class="f-group"><span class="f-ico">🗓️</span>
-      <label>Semana</label><select id="selWeek"></select></div>
-    <div class="f-group"><span class="f-ico">🏭</span>
-      <label>Planta</label><select id="selPlant">${plantOpts}</select></div>
+    <div class="f-group"><label>Mes</label><select id="selMonth">${monthOpts}</select></div>
+    <div class="f-group"><label>Semana</label><select id="selWeek"></select></div>
+    <div class="f-group"><label>Planta</label><select id="selPlant">${plantOpts}</select></div>
     <div class="f-spacer"></div>
     <div class="f-tag" id="fTag"></div>`;
   document.getElementById('selMonth').value = STATE.monthId;
@@ -219,7 +216,7 @@ function coverSlide() {
     <div class="eyebrow" style="margin-top:30px">Informe Gerencial de Flota</div>
     <h1>Inteligencia operativa<br/>de tu <span class="hl">flota</span></h1>
     <div class="client">${esc(DATA.meta.company)}</div>
-    <div class="period">📅 ${esc(scopeLabel())} &nbsp;·&nbsp; 🏭 ${esc(plantLabel())} &nbsp;·&nbsp; Zona ${tzShort(DATA.meta.timezone)}</div>
+    <div class="period">${esc(scopeLabel())} &nbsp;·&nbsp; ${esc(plantLabel())} &nbsp;·&nbsp; Zona ${tzShort(DATA.meta.timezone)}</div>
     <div class="meta-row">
       <div class="m"><b>${nf.format(f.units_total)}</b><span>Unidades</span></div>
       <div class="m"><b>${nf.format(f.units_active)}</b><span>Activas</span></div>
@@ -256,22 +253,22 @@ function tocSlide() {
 function execSlide() {
   const f = VIEW.fleet;
   const kpi = (cls, ico, val, unit, lbl) =>
-    `<div class="kpi ${cls}"><div class="k-ico">${ico}</div><div class="k-val">${val}<span class="k-unit"> ${unit || ''}</span></div><div class="k-lbl">${lbl}</div></div>`;
+    `<div class="kpi ${cls}"><div class="k-val">${val}<span class="k-unit"> ${unit || ''}</span></div><div class="k-lbl">${lbl}</div></div>`;
   const alertHtml = f.units_no_signal > 0
-    ? `<div class="alert">⚠ <div><b>${f.units_no_signal} unidad(es) sin señal GPS reciente.</b> Posible apagado del equipo, pérdida de cobertura o manipulación.</div></div>`
-    : `<div class="alert ok">✓ <div><b>Cobertura GPS completa.</b> Todas las unidades del filtro reportaron posición.</div></div>`;
+    ? `<div class="alert"><div><b>${f.units_no_signal} unidad(es) sin señal GPS reciente.</b> Posible apagado del equipo, pérdida de cobertura o manipulación.</div></div>`
+    : `<div class="alert ok"><div><b>Cobertura GPS completa.</b> Todas las unidades del filtro reportaron posición.</div></div>`;
   return el(`
   <section class="slide" id="s02">
     <div class="slide-head"><span class="snum">02</span><div><h2>Resumen ejecutivo</h2><div class="sub">${esc(scopeLabel())} · ${esc(plantLabel())}</div></div></div>
     <div class="kpis">
-      ${kpi('blue', '🛣️', nf.format(f.distance_km), 'km', 'Distancia total recorrida')}
-      ${kpi('teal', '⏱️', nf.format(f.drive_hours), 'h', 'Tiempo de manejo')}
-      ${kpi('amber', '🅿️', nf.format(f.stop_hours), 'h', 'Tiempo detenido')}
-      ${kpi('green', '⛽', nf.format(f.fuel_l), 'L', 'Combustible estimado')}
-      ${kpi('blue', '📊', nf2.format(f.efficiency_kml), 'km/L', 'Eficiencia estimada')}
-      ${kpi('red', '🚨', nf.format(f.violations), '', 'Excesos de velocidad (prom.)')}
-      ${kpi('teal', '🧭', nf.format(f.segments), '', 'Tramos de viaje')}
-      ${kpi('amber', '🅿️', nf1.format(f.idle_share_pct), '%', 'Proporción detenido / total')}
+      ${kpi('blue', '', nf.format(f.distance_km), 'km', 'Distancia total recorrida')}
+      ${kpi('teal', '', nf.format(f.drive_hours), 'h', 'Tiempo de manejo')}
+      ${kpi('amber', '', nf.format(f.stop_hours), 'h', 'Tiempo detenido')}
+      ${kpi('green', '', nf.format(f.fuel_l), 'L', 'Combustible estimado')}
+      ${kpi('blue', '', nf2.format(f.efficiency_kml), 'km/L', 'Eficiencia estimada')}
+      ${kpi('red', '', nf.format(f.violations), '', 'Excesos de velocidad (prom.)')}
+      ${kpi('teal', '', nf.format(f.segments), '', 'Tramos de viaje')}
+      ${kpi('amber', '', nf1.format(f.idle_share_pct), '%', 'Proporción detenido / total')}
     </div>
     <div class="cols c-7-5" style="margin-top:22px">
       <div>
@@ -308,8 +305,8 @@ function perfSlide() {
     <h4 style="margin:0 0 8px">Distancia recorrida por día (km)</h4>
     <div class="chart-box"><canvas id="chDaily"></canvas></div>
     <div class="cols" style="margin-top:24px">
-      <div class="panel"><h4>🏆 Top 5 — mayor distancia</h4><table class="tbl"><tbody>${rows(top, 'dist')}</tbody></table></div>
-      <div class="panel"><h4>🐢 Menor actividad (manejo / tiempo total)</h4><table class="tbl"><tbody>${rows(low, 'act')}</tbody></table></div>
+      <div class="panel"><h4>Top 5 — mayor distancia</h4><table class="tbl"><tbody>${rows(top, 'dist')}</tbody></table></div>
+      <div class="panel"><h4>Menor actividad (manejo / tiempo total)</h4><table class="tbl"><tbody>${rows(low, 'act')}</tbody></table></div>
     </div>
     <div class="note">Distancia y tiempos provienen de GPS (medidos). La eficiencia km/L se estima con una norma de consumo configurable, por lo que el desempeño se ordena por métricas medidas.</div>
   </section>`);
@@ -347,7 +344,7 @@ function plantsSlide() {
       <div class="chart-box"><canvas id="chPlant"></canvas></div>
       <div class="panel">
         <h4>${DATA.plants.length} plantas detectadas</h4>
-        <p style="font-size:13px;margin:.2em 0">La planta de cada unidad se deriva de su <b>base operativa dominante</b> (ubicación GPS donde acumula más tiempo detenido). Usa el filtro <b>🏭 Planta</b> para aislar una sola base.</p>
+        <p style="font-size:13px;margin:.2em 0">La planta de cada unidad se deriva de su <b>base operativa dominante</b> (ubicación GPS donde acumula más tiempo detenido). Usa el filtro <b>Planta</b> para aislar una sola base.</p>
         <div class="note" style="margin-top:10px">Selecciona una planta en la barra superior para ver todo el informe enfocado en esa base.</div>
       </div>
     </div>
@@ -445,12 +442,12 @@ function moneySlide() {
   <section class="slide" id="s07">
     <div class="slide-head"><span class="snum">08</span><div><h2>Monetización del desempeño</h2><div class="sub">Impacto económico estimado (MXN) · ${esc(plantLabel())}</div></div>
       <div class="f-spacer"></div>
-      <div class="fuel-chip">⛽ Diésel <b>${price(diesel)}</b><span>/L</span></div>
+      <div class="fuel-chip">Diésel <b>${price(diesel)}</b><span>/L</span></div>
     </div>
     <div class="money-grid">
-      ${card('seguridad', '🚨 Seguridad', 'Costo por eventos de exceso de velocidad.', `<span id="m-viol">${nf.format(VIEW.fleet.violations)}</span> excesos`)}
-      ${card('ralenti', '🅿️ Ralentí', 'Combustible por motor en detención.', `<span id="m-idle">${nf.format(m.idleFuel)}</span> L/sem`)}
-      ${card('eficiencia', '⛽ Eficiencia', 'Pérdida vs. benchmark del fabricante.', `<span id="m-extra">${nf.format(m.extraFuel)}</span> L extra/sem`)}
+      ${card('seguridad', 'Seguridad', 'Costo por eventos de exceso de velocidad.', `<span id="m-viol">${nf.format(VIEW.fleet.violations)}</span> excesos`)}
+      ${card('ralenti', 'Ralentí', 'Combustible por motor en detención.', `<span id="m-idle">${nf.format(m.idleFuel)}</span> L/sem`)}
+      ${card('eficiencia', 'Eficiencia', 'Pérdida vs. benchmark del fabricante.', `<span id="m-extra">${nf.format(m.extraFuel)}</span> L extra/sem`)}
     </div>
     <div class="total-band">
       <div><div class="lbl">Exposición total estimada</div><div style="font-size:12px;color:#8fb0d8">semanal · mensual · anual</div></div>
@@ -480,7 +477,7 @@ function methodSlide() {
           ${inp('p-limite', 'Límite velocidad (km/h)', P.limite_velocidad_kmh, 'Umbral de exceso', '5')}
           ${inp('p-exceso', 'Costo por exceso (MXN)', P.costo_por_exceso_mxn, 'Penalización por evento', '10')}
         </div>
-        <div style="margin-top:14px"><button class="btn" onclick="onParam()">↻ Recalcular informe</button></div>
+        <div style="margin-top:14px"><button class="btn" onclick="onParam()">Recalcular informe</button></div>
       </div>
       <div class="panel">
         <h4>Naturaleza de los datos</h4>
