@@ -465,6 +465,10 @@ const charts = {};
    con el riesgo regional de INEGI. NL es la entidad #1 nacional en accidentes
    (≈20% del país); por municipio (INEGI/ZMM): Monterrey ~38%, Guadalupe ~14%,
    Apodaca ~8%, San Nicolás ~7%, Escobedo en aumento.                         */
+// Umbrales (calibración laxa, generalizable a toda la cartera de clientes):
+// una operación sana cae en verde; solo comportamiento claramente riesgoso sube.
+const riskLevel = (r) => (r >= 70 ? 'Alta' : r >= 45 ? 'Media' : 'Baja');
+const riskRating = (r) => (r >= 70 ? 'rojo' : r >= 45 ? 'naranja' : 'verde');
 const MUNI_RISK = {
   'Monterrey': 1.0, 'Guadalupe': 0.85, 'Apodaca': 0.72, 'General Escobedo': 0.70,
   'San Nicolás de los Garza': 0.65, 'García': 0.65, 'Juárez': 0.50, 'Santiago': 0.30,
@@ -479,9 +483,7 @@ function accidentRisk(u) {
   const r = MUNI_RISK[u.plant] ?? 0.5;                       // riesgo regional INEGI
   const e = clamp(u.distance_km / 800, 0, 1);                // exposición (km recorridos)
   const risk = Math.round(100 * (ACC_W.velocidad * v + ACC_W.fatiga * f + ACC_W.regional * r + ACC_W.nocturna * n + ACC_W.eventos * s + ACC_W.exposicion * e));
-  const level = risk >= 66 ? 'Alta' : risk >= 33 ? 'Media' : 'Baja';
-  const rating = risk >= 66 ? 'rojo' : risk >= 33 ? 'naranja' : 'verde';
-  return { risk, level, rating, factors: { velocidad: Math.round(v * 100), fatiga: Math.round(f * 100), regional: Math.round(r * 100), nocturna: Math.round(n * 100), eventos: Math.round(s * 100), exposicion: Math.round(e * 100) } };
+  return { risk, level: riskLevel(risk), rating: riskRating(risk), factors: { velocidad: Math.round(v * 100), fatiga: Math.round(f * 100), regional: Math.round(r * 100), nocturna: Math.round(n * 100), eventos: Math.round(s * 100), exposicion: Math.round(e * 100) } };
 }
 
 /* ===== Modelo predictivo: probabilidad de robo ==========================
@@ -501,15 +503,13 @@ const DOW_THEFT = [0.35, 0.57, 1.0, 0.87, 0.57, 0.61, 0.39]; // Dom..Sáb (marte
 const THEFT_W = { regional: 0.30, descargas: 0.20, nocturna: 0.15, dia_semana: 0.10, marca: 0.10, sin_senal: 0.15 };
 function theftRisk(u) {
   const r = THEFT_RISK[u.plant] ?? 0.30;                     // robo de vehículo por municipio (SESNSP)
-  const d = clamp(u.drain_n / 2, 0, 1);                      // descargas de diésel detectadas
+  const d = clamp(u.drain_n / 4, 0, 1);                      // descargas de diésel detectadas (laxo: requiere varios eventos)
   const n = clamp(u.nightPct / 40, 0, 1);                    // exposición horaria nocturna (18:00–06:00)
   const w = clamp(u.weekdayRisk, 0, 1);                      // día de la semana de mayor robo
   const m = BRAND_RISK;                                      // marca/modelo (uniforme)
   const g = u.stale ? 1 : 0;                                 // pérdida de señal GPS (unidad sin reportar)
   const risk = Math.round(100 * (THEFT_W.regional * r + THEFT_W.descargas * d + THEFT_W.nocturna * n + THEFT_W.dia_semana * w + THEFT_W.marca * m + THEFT_W.sin_senal * g));
-  const level = risk >= 66 ? 'Alta' : risk >= 33 ? 'Media' : 'Baja';
-  const rating = risk >= 66 ? 'rojo' : risk >= 33 ? 'naranja' : 'verde';
-  return { risk, level, rating, factors: { regional: Math.round(r * 100), descargas: Math.round(d * 100), nocturna: Math.round(n * 100), dia: Math.round(w * 100), marca: Math.round(m * 100), senal: g * 100 } };
+  return { risk, level: riskLevel(risk), rating: riskRating(risk), factors: { regional: Math.round(r * 100), descargas: Math.round(d * 100), nocturna: Math.round(n * 100), dia: Math.round(w * 100), marca: Math.round(m * 100), senal: g * 100 } };
 }
 const STATE = { monthId: null, weekId: 'all', plantId: 'all', params: null, boardSort: { key: 'distance_km', dir: 'desc' } };
 
@@ -676,12 +676,10 @@ function aggregate() {
   const idleHoursFleet = p.consumo_ralenti_lh > 0 ? f.idle_fuel_l / p.consumo_ralenti_lh : 0;
   const accAvg = perUnit.length ? Math.round(perUnit.reduce((a, u) => a + u.acc_risk, 0) / perUnit.length) : 0;
   const accHigh = perUnit.filter((u) => u.acc_rating === 'rojo').length;
-  const accLevel = accAvg >= 66 ? 'Alta' : accAvg >= 33 ? 'Media' : 'Baja';
-  const accRating = accAvg >= 66 ? 'rojo' : accAvg >= 33 ? 'naranja' : 'verde';
+  const accLevel = riskLevel(accAvg), accRating = riskRating(accAvg);
   const theftAvg = perUnit.length ? Math.round(perUnit.reduce((a, u) => a + u.theft_risk, 0) / perUnit.length) : 0;
   const theftHigh = perUnit.filter((u) => u.theft_rating === 'rojo').length;
-  const theftLevel = theftAvg >= 66 ? 'Alta' : theftAvg >= 33 ? 'Media' : 'Baja';
-  const theftRating = theftAvg >= 66 ? 'rojo' : theftAvg >= 33 ? 'naranja' : 'verde';
+  const theftLevel = riskLevel(theftAvg), theftRating = riskRating(theftAvg);
 
   const fleet = {
     units_total: units.length, units_active: f.active, units_no_signal: f.no_signal, drivers: DATA.drivers.length,
@@ -919,7 +917,7 @@ function boardSlide() {
         <tbody>${rows || `<tr><td colspan="${BOARD_COLS.length}" style="color:var(--muted)">Sin datos en la selección.</td></tr>`}</tbody>
       </table>
     </div>
-    <div class="note"><b>Prob. accidente</b> (0–100): velocidad 25%, fatiga &gt;6 h 20%, riesgo regional INEGI 15%, nocturna 15%, eventos/100 km 15%, exposición km 10%. &nbsp; <b>Prob. robo</b> (0–100): riesgo regional SESNSP 30%, descargas de diésel 20%, exposición nocturna 15%, pérdida de señal 15%, día de la semana 10%, marca/modelo 10%. Semáforo: verde &lt;33 · amarillo &lt;66 · rojo ≥66. Pasa el cursor sobre cada valor para ver el desglose. Ralentí (L) = consumo real − distancia × ${nf1.format(STATE.params.consumo_ruta_l100)} l/100km.</div>
+    <div class="note"><b>Prob. accidente</b> (0–100): velocidad 25%, fatiga &gt;6 h 20%, riesgo regional INEGI 15%, nocturna 15%, eventos/100 km 15%, exposición km 10%. &nbsp; <b>Prob. robo</b> (0–100): riesgo regional SESNSP 30%, descargas de diésel 20%, exposición nocturna 15%, pérdida de señal 15%, día de la semana 10%, marca/modelo 10%. Semáforo (calibración laxa): verde &lt;45 · amarillo &lt;70 · rojo ≥70. Pasa el cursor sobre cada valor para ver el desglose. Ralentí (L) = consumo real − distancia × ${nf1.format(STATE.params.consumo_ruta_l100)} l/100km.</div>
   </section>`);
 }
 
