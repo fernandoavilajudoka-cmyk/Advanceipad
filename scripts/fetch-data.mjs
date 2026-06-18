@@ -268,16 +268,17 @@ async function main() {
     }
   }
 
-  // ---- CAN (Ruptela Pro5/HCV5): RPM + combustible reales para ralentí MEDIDO ----
-  // Identifica unidades con rastreador Ruptela y baja la serie temporal CAN.
-  const devices = await api('device/list').catch(() => ({ devices: [] }));
-  const ruptelaIds = (devices.devices || []).filter((d) => /RUPTELA/i.test(d.model || '')).map((d) => d.unit_id);
-  console.error(`  ${ruptelaIds.length} unidades Ruptela con CAN → midiendo ralentí real`);
+  // ---- CAN (FMS/J1939): RPM + combustible reales para ralentí MEDIDO ----
+  // TODAS las unidades (Ruptela y Queclink GV350CEU) leen el bus CAN y entregan
+  // rpm_average + total_fuel vía unit_data/can_period, así que el ralentí se MIDE
+  // en toda la flota (no se estima en ninguna).
   const ON_RPM = 350, GAP_CAP = 600;            // motor encendido si RPM>350; corta gaps > 10 min
   const canEngByUnit = new Map();               // unit_id → { dayKey → segundos motor encendido }
   const canFuelByUnit = new Map();              // unit_id → { dayKey → litros (delta total_fuel) }
   const parseGmt = (s) => new Date((s.includes('T') ? s : s.replace(' ', 'T')) + (s.endsWith('Z') ? '' : 'Z'));
-  for (const uid of ruptelaIds) {
+  let canUnits = 0;
+  for (const unit of units) {
+    const uid = unit.unit_id;
     const eng = {}, cf = {};
     for (const c of chunks) {
       const data = await api('unit_data/can_period', { unit_id: uid, from: c.from, till: c.till }).catch(() => null);
@@ -293,8 +294,10 @@ async function main() {
         if (delta > 0 && delta < 200) cf[dayKey(fuel[i + 1][0].toISOString())] = (cf[dayKey(fuel[i + 1][0].toISOString())] || 0) + delta;
       }
     }
-    canEngByUnit.set(uid, eng); canFuelByUnit.set(uid, cf);
+    if (Object.keys(eng).length) { canEngByUnit.set(uid, eng); canUnits += 1; }
+    if (Object.keys(cf).length) canFuelByUnit.set(uid, cf);
   }
+  console.error(`  ${canUnits}/${units.length} unidades con CAN (RPM) → ralentí MEDIDO`);
 
   // ---- Agregación por unidad y por día + base dominante ----
   const periodEnd = new Date(`${TILL_DATE}T23:59:59Z`);
@@ -482,9 +485,9 @@ async function main() {
       source: 'Telematics Advance / Smart-Connect (Mapon API) — portal.smart-connect.com.mx',
       params: PARAMS,
       naturaleza_datos: {
-        medido: ['Distancia (GPS)', 'Tiempo de manejo', 'Tiempo de detención', 'Tramos / paradas', 'Velocidad promedio por tramo', 'Odómetro', 'Base / planta (ubicación dominante)', 'Consumo real de combustible (flujo/CAN)', 'Nivel y eventos del sensor Escort de varilla', 'RALENTÍ MEDIDO por RPM (CAN) en unidades Ruptela'],
+        medido: ['Distancia (GPS)', 'Tiempo de manejo', 'Tiempo de detención', 'Tramos / paradas', 'Velocidad promedio por tramo', 'Odómetro', 'Base / planta (ubicación dominante)', 'Consumo real de combustible (contador CAN del motor)', 'Nivel y eventos del sensor Escort de varilla', 'RALENTÍ MEDIDO por RPM (CAN) en toda la flota'],
         estimado: ['Combustible por norma l/100km (comparativo)', 'Ralentí estimado en unidades sin CAN', 'Costos de monetización'],
-        nota: 'En las unidades con rastreador Ruptela (CAN) el ralentí se MIDE: tiempo de motor encendido por RPM (>350) menos tiempo en movimiento, vía unit_data/can_period (rpm_average, total_fuel). En el resto se ESTIMA (combustible no asociado a distancia ÷ tasa L/h). El consumo de combustible es real (flujo/CAN + sensor Escort de varilla). Recargas/descargas del sensor, a validar en sitio. La planta se deriva por geocodificación de la base dominante.',
+        nota: 'El ralentí se MIDE en toda la flota: las 23 unidades (Ruptela y Queclink GV350CEU) leen el bus CAN/FMS y entregan RPM, así que el tiempo de ralentí = motor encendido por RPM (>350) − tiempo en movimiento, vía unit_data/can_period. El combustible de ralentí = tiempo medido × tasa L/h (editable). El consumo total de combustible es real (contador CAN del motor). Recargas/descargas del sensor Escort de varilla, a validar en sitio. La planta se deriva por geocodificación de la base dominante.',
       },
       months: monthsOut,
     },
