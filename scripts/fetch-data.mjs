@@ -142,6 +142,28 @@ function streetShort(addr) {
   s = s.replace(/\s+\d+[A-Z]?$/i, '');                      // quita número exterior final
   return titleCase(s).slice(0, 26).trim();
 }
+// Limpieza de eventos de combustible del sensor Escort (varilla): elimina
+// lecturas imposibles y oscilaciones recuperadas (ruido del sensor BLE).
+function cleanFuelEvents(events) {
+  const MAXT = 500; // litros máximos plausibles de tanque/cambio
+  const ev = events
+    .filter((e) => (e.before == null || (e.before >= 0 && e.before <= MAXT)) && Math.abs(e.chg) <= MAXT && e.gmt)
+    .sort((a, b) => new Date(a.gmt) - new Date(b.gmt));
+  const used = new Array(ev.length).fill(false);
+  for (let i = 0; i < ev.length; i++) {
+    if (used[i]) continue;
+    for (let j = i + 1; j < ev.length; j++) {
+      if (used[j]) continue;
+      if (new Date(ev[j].gmt) - new Date(ev[i].gmt) > 3 * 3600 * 1000) break; // ventana 3 h
+      // par opuesto de magnitud similar (subió y bajó) ⇒ ruido
+      if (ev[i].chg * ev[j].chg < 0 && Math.abs(Math.abs(ev[i].chg) - Math.abs(ev[j].chg)) <= 0.15 * Math.abs(ev[i].chg)) {
+        used[i] = used[j] = true; break;
+      }
+    }
+  }
+  return ev.filter((_, i) => !used[i]);
+}
+
 // Distancia aproximada en metros entre dos coordenadas
 function distM(a, b) {
   const R = 6371000, toR = Math.PI / 180;
@@ -173,6 +195,31 @@ async function main() {
     for (const u of rd.units) {
       if (!routesByUnit.has(u.unit_id)) routesByUnit.set(u.unit_id, []);
       routesByUnit.get(u.unit_id).push(...(u.routes || []));
+    }
+  }
+
+  // ---- Combustible: consumo real (flujo/CAN) + sensor Escort de varilla ----
+  // fuel/summary → consumo medido y presencia de sensor; fuel/changes → eventos
+  // de recarga (+) y descarga (−) con litros, fecha y ubicación.
+  const fuelConsumed = new Map();   // unit_id → litros consumidos (flujo)
+  const fuelHasSensor = new Map();  // unit_id → bool (sensor de varilla presente)
+  const fuelEvents = new Map();     // unit_id → [eventos crudos]
+  for (const c of chunks) {
+    const [sum, chg] = await Promise.all([
+      api('fuel/summary', { from: c.from, till: c.till }).catch(() => []),
+      api('fuel/changes', { from: c.from, till: c.till }).catch(() => []),
+    ]);
+    for (const u of (Array.isArray(sum) ? sum : [])) {
+      const fl = u.flow || {};
+      fuelConsumed.set(u.unit_id, (fuelConsumed.get(u.unit_id) || 0) + (fl.total_consumed || 0));
+      if (u.sensor && u.sensor.start != null) fuelHasSensor.set(u.unit_id, true);
+    }
+    for (const u of (Array.isArray(chg) ? chg : [])) {
+      const arr = fuelEvents.get(u.unit_id) || [];
+      for (const src of ['sensor', 'can']) for (const e of (u[src] || [])) {
+        arr.push({ chg: e.fuel_change || 0, before: e.fuel_before, gmt: e.gmt, src, lat: e.lat, lng: e.lng, addr: e.address || '', driver: e.driver || '' });
+      }
+      fuelEvents.set(u.unit_id, arr);
     }
   }
 
@@ -225,6 +272,21 @@ async function main() {
     };
     unitsOut.push(uo);
     if (base) baseAccumGlobal.push({ uo, base });
+  }
+
+  // ---- Atribuir combustible real y eventos del sensor a cada unidad/día ----
+  for (const uo of unitsOut) {
+    const km = Object.values(uo.days).reduce((a, d) => a + d.dist_m, 0) / 1000;
+    const consumed = fuelConsumed.get(uo.unit_id) || 0;
+    uo.real_consumed_l = round(consumed, 0);
+    uo.real_l100 = (km > 1 && consumed > 0) ? round(consumed / (km / 100), 1) : null;
+    uo.has_fuel_sensor = !!fuelHasSensor.get(uo.unit_id);
+    for (const e of cleanFuelEvents(fuelEvents.get(uo.unit_id) || [])) {
+      const k = dayKey(e.gmt);
+      const day = uo.days[k] || (uo.days[k] = { dist_m: 0, drive_s: 0, stop_s: 0, segs: 0, stops: 0, viol: 0, maxspeed: 0 });
+      if (e.chg > 0) { day.rf_l = (day.rf_l || 0) + e.chg; day.rf_n = (day.rf_n || 0) + 1; }
+      else if (e.chg < 0) { day.dr_l = (day.dr_l || 0) + (-e.chg); day.dr_n = (day.dr_n || 0) + 1; }
+    }
   }
 
   // ---- Clustering de bases → plantas (greedy por distancia ≤ 1.2 km) ----
@@ -317,9 +379,9 @@ async function main() {
       source: 'Telematics Advance (Mapon API) — portal.telematicsadvance.com.mx',
       params: PARAMS,
       naturaleza_datos: {
-        medido: ['Distancia (GPS)', 'Tiempo de manejo', 'Tiempo de detención', 'Tramos / paradas', 'Velocidad promedio por tramo', 'Odómetro', 'Base / planta (ubicación dominante)'],
-        estimado: ['Combustible (norma l/100km)', 'Eficiencia km/L', 'Consumo en ralentí', 'Costos de monetización'],
-        nota: 'El combustible y la eficiencia se estiman con una norma de consumo configurable. La planta se deriva de la base operativa dominante de cada unidad (GPS). Los sensores de combustible (varilla), el consumo real, las recargas y las descargas/extracciones de diésel NO están disponibles con la API key actual (todos los métodos de combustible/sensores/CAN devuelven "Method not available"); para incluirlos hay que habilitar esos permisos en la plataforma. La velocidad instantánea también requiere telemetría ampliada.',
+        medido: ['Distancia (GPS)', 'Tiempo de manejo', 'Tiempo de detención', 'Tramos / paradas', 'Velocidad promedio por tramo', 'Odómetro', 'Base / planta (ubicación dominante)', 'Consumo real de combustible (flujo/CAN)', 'Nivel y eventos del sensor Escort de varilla (recargas y descargas)'],
+        estimado: ['Combustible por norma l/100km (comparativo)', 'Consumo en ralentí', 'Costos de monetización'],
+        nota: 'El consumo de combustible se reporta de forma REAL desde el medidor de flujo/CAN y el sensor Escort de varilla (BLE) vía fuel/summary y fuel/changes; también se muestra el estimado por norma para comparar. Las recargas y descargas provienen del sensor tras filtrar ruido (lecturas imposibles y oscilaciones recuperadas) y deben validarse en sitio antes de concluir un robo. La planta se deriva de la base operativa dominante (GPS). La velocidad instantánea requiere telemetría ampliada.',
       },
       months: monthsOut,
     },
@@ -329,12 +391,16 @@ async function main() {
       // redondear días para reducir tamaño
       const days = {};
       for (const [k, v] of Object.entries(u.days)) {
-        days[k] = { dist_km: round(v.dist_m / 1000, 2), drive_h: round(v.drive_s / 3600, 2), stop_h: round(v.stop_s / 3600, 2), segs: v.segs, stops: v.stops, viol: v.viol, maxspeed: Math.round(v.maxspeed) };
+        const d = { dist_km: round(v.dist_m / 1000, 2), drive_h: round(v.drive_s / 3600, 2), stop_h: round(v.stop_s / 3600, 2), segs: v.segs, stops: v.stops, viol: v.viol, maxspeed: Math.round(v.maxspeed) };
+        if (v.rf_l) { d.rf_l = round(v.rf_l, 0); d.rf_n = v.rf_n; }
+        if (v.dr_l) { d.dr_l = round(v.dr_l, 0); d.dr_n = v.dr_n; }
+        days[k] = d;
       }
       return {
         unit_id: u.unit_id, label: u.label, number: u.number, make: u.make, model: u.model, icon: u.icon,
         odometer_km: u.odometer_km, last_update: u.last_update, stale: u.stale,
         plant_id: u.plant_id, plant: u.plant, base_addr: u.base?.addr || null,
+        real_l100: u.real_l100, real_consumed_l: u.real_consumed_l, has_fuel_sensor: u.has_fuel_sensor,
         days,
       };
     }),

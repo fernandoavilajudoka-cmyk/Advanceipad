@@ -97,16 +97,21 @@ function aggregate() {
   const sortedDays = [...days].sort();
 
   const perUnit = [];
-  let f = { distance_km: 0, drive_h: 0, stop_h: 0, segs: 0, stops: 0, viol: 0, maxspeed: 0, fuel_l: 0, active: 0, no_signal: 0 };
+  let f = { distance_km: 0, drive_h: 0, stop_h: 0, segs: 0, stops: 0, viol: 0, maxspeed: 0, fuel_l: 0, active: 0, no_signal: 0,
+    real_fuel_l: 0, rf_l: 0, rf_n: 0, dr_l: 0, dr_n: 0, sensors: 0 };
 
   for (const u of units) {
     let dist = 0, drive = 0, stop = 0, segs = 0, stops = 0, viol = 0, mx = 0;
+    let rfL = 0, rfN = 0, drL = 0, drN = 0;
     for (const k of sortedDays) {
       const d = u.days[k]; if (!d) continue;
       dist += d.dist_km; drive += d.drive_h; stop += d.stop_h; segs += d.segs; stops += d.stops; viol += d.viol;
       if (d.maxspeed > mx) mx = d.maxspeed;
+      rfL += d.rf_l || 0; rfN += d.rf_n || 0; drL += d.dr_l || 0; drN += d.dr_n || 0;
     }
-    const fuel = dist * p.consumo_norma_l100 / 100;
+    const fuel = dist * p.consumo_norma_l100 / 100;            // estimado (norma configurable)
+    const realFuel = (u.real_l100 != null) ? dist * u.real_l100 / 100 : null; // real (flujo/sensor)
+    const realEff = (realFuel && realFuel > 0) ? dist / realFuel : null;
     const eff = fuel > 0 ? dist / fuel : 0;
     const vp100 = dist > 0 ? viol / dist * 100 : 0;
     const totalT = drive + stop;
@@ -122,6 +127,9 @@ function aggregate() {
       odometer_km: u.odometer_km, stale: u.stale,
       distance_km: round(dist, 1), drive_hours: round(drive, 1), stop_hours: round(stop, 1),
       segments: segs, stops, fuel_l: round(fuel, 1), efficiency_kml: round(eff, 2),
+      real_l100: u.real_l100, real_fuel_l: realFuel != null ? round(realFuel, 1) : null,
+      real_efficiency_kml: realEff != null ? round(realEff, 2) : null, has_fuel_sensor: !!u.has_fuel_sensor,
+      refuel_l: Math.round(rfL), refuel_n: rfN, drain_l: Math.round(drL), drain_n: drN,
       max_speed: Math.round(mx), violations: viol, violations_per_100km: round(vp100, 2),
       move_ratio: round(moveRatio * 100, 1),
       score, score_breakdown: { seguridad: Math.round(sec), eficiencia: Math.round(effScore), actividad: Math.round(idleScore) }, rating,
@@ -129,6 +137,9 @@ function aggregate() {
 
     f.distance_km += dist; f.drive_h += drive; f.stop_h += stop; f.segs += segs; f.stops += stops; f.viol += viol;
     f.fuel_l += fuel; if (mx > f.maxspeed) f.maxspeed = mx;
+    if (realFuel != null) f.real_fuel_l += realFuel;
+    if (u.has_fuel_sensor) f.sensors += 1;
+    f.rf_l += rfL; f.rf_n += rfN; f.dr_l += drL; f.dr_n += drN;
     if (dist > 0.1) f.active += 1;
     if (u.stale) f.no_signal += 1;
   }
@@ -142,11 +153,15 @@ function aggregate() {
 
   const km = f.distance_km, driveH = f.drive_h, stopH = f.stop_h;
   const eff = f.fuel_l > 0 ? km / f.fuel_l : 0;
+  const realEffFleet = f.real_fuel_l > 0 ? km / f.real_fuel_l : 0;
 
   const fleet = {
     units_total: units.length, units_active: f.active, units_no_signal: f.no_signal, drivers: DATA.drivers.length,
     distance_km: round(km, 0), drive_hours: round(driveH, 0), stop_hours: round(stopH, 0),
     fuel_l: round(f.fuel_l, 0), efficiency_kml: round(eff, 2),
+    real_fuel_l: round(f.real_fuel_l, 0), real_efficiency_kml: round(realEffFleet, 2),
+    fuel_sensors: f.sensors,
+    refuel_l: Math.round(f.rf_l), refuel_n: f.rf_n, drain_l: Math.round(f.dr_l), drain_n: f.dr_n,
     violations: f.viol, violations_per_100km: round(km > 0 ? f.viol / km * 100 : 0, 1),
     segments: f.segs, stops: f.stops, max_speed: f.maxspeed,
     idle_share_pct: round((driveH + stopH) > 0 ? stopH / (driveH + stopH) * 100 : 0, 1),
@@ -184,6 +199,7 @@ function render() {
   deck.appendChild(tocSlide());
   deck.appendChild(execSlide());
   deck.appendChild(perfSlide());
+  deck.appendChild(fuelSlide());
   deck.appendChild(plantsSlide());
   deck.appendChild(safetySlide());
   deck.appendChild(forkliftSlide());
@@ -233,12 +249,13 @@ function tocSlide() {
   const items = [
     ['02', 'Resumen ejecutivo', 'KPIs clave del periodo', 's02'],
     ['03', 'Rendimiento', 'Tendencia diaria y utilización', 's03'],
-    ['04', 'Plantas', 'Comparativo por planta de concreto', 's04p'],
-    ['05', 'Seguridad', 'Velocidad y conducción', 's04'],
-    ['06', 'Montacargas', 'Equipos de baja velocidad', 's05'],
-    ['07', 'Ranking operativo', 'Score 0–100 por unidad', 's06'],
-    ['08', 'Monetización', 'Impacto económico estimado', 's07'],
-    ['09', 'Metodología', 'Parámetros y naturaleza de datos', 's08'],
+    ['04', 'Combustible', 'Sensor Escort: consumo, recargas y descargas', 's04f'],
+    ['05', 'Plantas', 'Comparativo por planta de concreto', 's04p'],
+    ['06', 'Seguridad', 'Velocidad y conducción', 's04'],
+    ['07', 'Montacargas', 'Equipos de baja velocidad', 's05'],
+    ['08', 'Ranking operativo', 'Score 0–100 por unidad', 's06'],
+    ['09', 'Monetización', 'Impacto económico estimado', 's07'],
+    ['10', 'Metodología', 'Parámetros y naturaleza de datos', 's08'],
   ];
   return el(`
   <section class="slide" id="sIdx">
@@ -312,6 +329,57 @@ function perfSlide() {
   </section>`);
 }
 
+/* ------------------------- Combustible (sensor Escort) ------------------------- */
+function fuelSlide() {
+  const f = VIEW.fleet;
+  const kpi = (cls, val, unit, lbl) =>
+    `<div class="kpi ${cls}"><div class="k-val">${val}<span class="k-unit"> ${unit || ''}</span></div><div class="k-lbl">${lbl}</div></div>`;
+  // Tabla por unidad (las que tienen actividad), ordenada por consumo real
+  const rowsArr = [...VIEW.units].filter((u) => u.distance_km > 1 || u.refuel_n || u.drain_n).sort((a, b) => (b.real_fuel_l || 0) - (a.real_fuel_l || 0));
+  const rows = rowsArr.map((u) => `
+    <tr>
+      <td>${esc(u.number || u.label)}</td>
+      <td class="num">${nf1.format(u.distance_km)}</td>
+      <td class="num">${u.real_fuel_l != null ? nf.format(u.real_fuel_l) : '—'}</td>
+      <td class="num">${u.real_l100 != null ? nf1.format(u.real_l100) : '—'}</td>
+      <td class="num" style="color:var(--muted)">${nf1.format(u.fuel_l)}</td>
+      <td class="num">${u.refuel_n ? `${u.refuel_n} · ${nf.format(u.refuel_l)} L` : '—'}</td>
+      <td class="num">${u.drain_n ? `<b style="color:var(--red)">${u.drain_n} · ${nf.format(u.drain_l)} L</b>` : '—'}</td>
+      <td>${u.has_fuel_sensor ? '<span class="badge verde">Sí</span>' : '<span class="badge naranja">No</span>'}</td>
+    </tr>`).join('');
+  const drainAlert = f.drain_n > 0
+    ? `<div class="alert"><div><b>${f.drain_n} evento(s) de posible descarga (${nf.format(f.drain_l)} L)</b> detectados por el sensor de varilla en la selección. Requieren <b>validación en sitio</b>: el sensor BLE Escort puede generar lecturas atípicas. Revisa hora, lugar y conductor antes de concluir.</div></div>`
+    : `<div class="alert ok"><div><b>Sin descargas anómalas</b> detectadas por el sensor en la selección (tras filtrar ruido).</div></div>`;
+  return el(`
+  <section class="slide" id="s04f">
+    <div class="slide-head"><span class="snum">04</span><div><h2>Combustible y sensor de varilla</h2><div class="sub">Sensores Escort BLE · consumo real (flujo) vs. estimado · ${esc(scopeLabel())}</div></div>
+      <div class="f-spacer"></div>
+      <div class="fuel-chip">Sensores <b>${f.fuel_sensors}</b><span>/ ${f.units_total}</span></div>
+    </div>
+    <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+      ${kpi('green', nf.format(f.real_fuel_l), 'L', 'Consumo REAL (flujo/sensor)')}
+      ${kpi('amber', nf.format(f.fuel_l), 'L', 'Consumo estimado (norma)')}
+      ${kpi('teal', nf2.format(f.real_efficiency_kml), 'km/L', 'Eficiencia real')}
+      ${kpi('blue', nf.format(f.refuel_n), '', `Recargas · ${nf.format(f.refuel_l)} L`)}
+    </div>
+    <div class="cols c-7-5" style="margin-top:20px">
+      <div class="chart-box sm"><canvas id="chFuel"></canvas></div>
+      <div class="panel">
+        <h4>Real vs. estimado</h4>
+        <p style="font-size:13.5px;margin:.2em 0">El consumo <b>real</b> proviene del medidor de flujo/CAN y del sensor Escort de varilla (${f.fuel_sensors} de ${f.units_total} unidades equipadas). El <b>estimado</b> usa la norma configurable de ${nf1.format(STATE.params.consumo_norma_l100)} l/100km.</p>
+        ${drainAlert}
+      </div>
+    </div>
+    <div class="panel" style="margin-top:18px">
+      <table class="tbl">
+        <thead><tr><th>Unidad</th><th class="num">km</th><th class="num">Real (L)</th><th class="num">l/100km</th><th class="num">Estim. l/100km*</th><th class="num">Recargas</th><th class="num">Descargas</th><th>Sensor</th></tr></thead>
+        <tbody>${rows || '<tr><td colspan="8" style="color:var(--muted)">Sin datos de combustible en la selección.</td></tr>'}</tbody>
+      </table>
+    </div>
+    <div class="note">*Estimado l/100km = norma configurable. Recargas y descargas provienen del sensor Escort de varilla (BLE) tras filtrar ruido (lecturas imposibles y oscilaciones recuperadas). Las descargas son <b>indicios a validar</b>, no conclusiones de robo.</div>
+  </section>`);
+}
+
 /* ------------------------------ Plantas ------------------------------ */
 function plantsSlide() {
   // Agrega por planta dentro del scope actual (ignora el filtro de planta para comparar todas)
@@ -339,7 +407,7 @@ function plantsSlide() {
   }).join('');
   return el(`
   <section class="slide" id="s04p">
-    <div class="slide-head"><span class="snum">04</span><div><h2>Comparativo por planta</h2><div class="sub">Distribución de la flota por planta / base operativa · ${esc(scopeLabel())}</div></div></div>
+    <div class="slide-head"><span class="snum">05</span><div><h2>Comparativo por planta</h2><div class="sub">Distribución de la flota por planta / base operativa · ${esc(scopeLabel())}</div></div></div>
     <div class="cols c-7-5">
       <div class="chart-box"><canvas id="chPlant"></canvas></div>
       <div class="panel">
@@ -370,7 +438,7 @@ function safetySlide() {
   }).join('');
   return el(`
   <section class="slide" id="s04">
-    <div class="slide-head"><span class="snum">05</span><div><h2>Seguridad y conducción</h2><div class="sub">Velocidad promedio por tramo · límite ${lim} km/h</div></div></div>
+    <div class="slide-head"><span class="snum">06</span><div><h2>Seguridad y conducción</h2><div class="sub">Velocidad promedio por tramo · límite ${lim} km/h</div></div></div>
     <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
       <div class="kpi red"><div class="k-val">${nf.format(f.violations)}</div><div class="k-lbl">Tramos sobre el límite</div></div>
       <div class="kpi amber"><div class="k-val">${f.max_speed}<span class="k-unit"> km/h</span></div><div class="k-lbl">Velocidad máx. de tramo</div></div>
@@ -391,7 +459,7 @@ function safetySlide() {
 function forkliftSlide() {
   return el(`
   <section class="slide" id="s05">
-    <div class="slide-head"><span class="snum">06</span><div><h2>Montacargas y equipos de baja velocidad</h2><div class="sub">Se activa automáticamente para equipos bajo 30 km/h operativos</div></div></div>
+    <div class="slide-head"><span class="snum">07</span><div><h2>Montacargas y equipos de baja velocidad</h2><div class="sub">Se activa automáticamente para equipos bajo 30 km/h operativos</div></div></div>
     <div class="na-box"><div class="big">N/A</div><p>No se detectaron equipos tipo montacargas en la flota analizada.<br/>Esta sección se habilita automáticamente con unidades de perfil de baja velocidad.</p></div>
   </section>`);
 }
@@ -407,7 +475,7 @@ function rankingSlide() {
   const counts = { verde: 0, naranja: 0, rojo: 0 }; arr.forEach((u) => counts[u.rating]++);
   return el(`
   <section class="slide" id="s06">
-    <div class="slide-head"><span class="snum">07</span><div><h2>Ranking operativo</h2><div class="sub">Score 0–100 · Seguridad 40% + Eficiencia 30% + Actividad 30%</div></div></div>
+    <div class="slide-head"><span class="snum">08</span><div><h2>Ranking operativo</h2><div class="sub">Score 0–100 · Seguridad 40% + Eficiencia 30% + Actividad 30%</div></div></div>
     <div class="cols c-7-5">
       <div class="chart-box sm"><canvas id="chScore"></canvas></div>
       <div class="panel">
@@ -440,7 +508,7 @@ function moneySlide() {
   const diesel = STATE.params.precio_diesel_mxn;
   return el(`
   <section class="slide" id="s07">
-    <div class="slide-head"><span class="snum">08</span><div><h2>Monetización del desempeño</h2><div class="sub">Impacto económico estimado (MXN) · ${esc(plantLabel())}</div></div>
+    <div class="slide-head"><span class="snum">09</span><div><h2>Monetización del desempeño</h2><div class="sub">Impacto económico estimado (MXN) · ${esc(plantLabel())}</div></div>
       <div class="f-spacer"></div>
       <div class="fuel-chip">Diésel <b>${price(diesel)}</b><span>/L</span></div>
     </div>
@@ -465,7 +533,7 @@ function methodSlide() {
     `<div class="param"><div><label>${label}</label><div class="hint">${hint}</div></div><input id="${id}" type="number" step="${step}" value="${val}" oninput="onParam()"></div>`;
   return el(`
   <section class="slide" id="s08">
-    <div class="slide-head"><span class="snum">09</span><div><h2>Metodología y parámetros</h2><div class="sub">Ajusta los supuestos y el informe se recalcula automáticamente</div></div></div>
+    <div class="slide-head"><span class="snum">10</span><div><h2>Metodología y parámetros</h2><div class="sub">Ajusta los supuestos y el informe se recalcula automáticamente</div></div></div>
     <div class="cols">
       <div class="panel">
         <h4>Parámetros de monetización</h4>
@@ -547,6 +615,11 @@ function drawCharts() {
   mk('chPlant', { type: 'bar',
     data: { labels: pAgg.map((p) => p.name), datasets: [{ data: pAgg.map((p) => Math.round(p.dist)), backgroundColor: C.cyan, borderRadius: 4 }] },
     options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, grid: { color: GRID } }, y: { ticks: { font: { size: 9.5 } }, grid: { display: false } } } } });
+
+  // Combustible: consumo real vs. estimado (litros)
+  mk('chFuel', { type: 'bar',
+    data: { labels: ['Real (flujo/sensor)', 'Estimado (norma)'], datasets: [{ data: [f.real_fuel_l, f.fuel_l], backgroundColor: [C.green, C.gold], borderRadius: 6, maxBarThickness: 64 }] },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: GRID } }, x: { grid: { display: false } } } } });
 }
 function mk(id, cfg) { const c = document.getElementById(id); if (!c) return; if (charts[id]) charts[id].destroy(); charts[id] = new Chart(c, cfg); }
 

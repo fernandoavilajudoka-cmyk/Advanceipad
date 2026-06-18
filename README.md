@@ -14,11 +14,13 @@ presenta los indicadores clave de la flota de **Concretos Técnicos de México**
 | 01 | Portada + Índice | Logo del cliente, periodo, totales |
 | 02 | Resumen ejecutivo | 8 KPIs, distribución de tiempo de motor, alerta de cobertura GPS |
 | 03 | Rendimiento | Tendencia diaria de distancia, top 5 y unidades de baja actividad |
-| 04 | Seguridad | Velocidad por unidad, excesos sobre el límite |
-| 05 | Montacargas | Sección N/A (se activa con equipos de baja velocidad) |
-| 06 | Ranking operativo | Score 0–100 (seguridad 40% + eficiencia 30% + actividad 30%) |
-| 07 | Monetización | Impacto económico estimado (semanal/mensual/anual, MXN) |
-| 08 | Metodología | Parámetros editables en vivo + naturaleza de los datos |
+| 04 | Combustible | Sensor Escort de varilla (BLE): consumo real vs. estimado, recargas y descargas por unidad |
+| 05 | Plantas | Comparativo por planta / base operativa |
+| 06 | Seguridad | Velocidad por unidad, excesos sobre el límite |
+| 07 | Montacargas | Sección N/A (se activa con equipos de baja velocidad) |
+| 08 | Ranking operativo | Score 0–100 (seguridad 40% + eficiencia 30% + actividad 30%) |
+| 09 | Monetización | Impacto económico estimado (semanal/mensual/anual, MXN) |
+| 10 | Metodología | Parámetros editables en vivo + naturaleza de los datos |
 
 El logo de **Concretos Técnicos** aparece de forma discreta y elegante en la
 esquina superior de cada página, y en grande en la portada.
@@ -86,15 +88,19 @@ Base: `https://portal.telematicsadvance.com.mx/api/v1/` · autenticación con
 - `unit/list` — inventario de unidades, odómetro, estado
 - `route/list` — tramos de manejo/detención por unidad y periodo
 - `driver/list` — conductores
+- `fuel/summary` — consumo real (flujo/CAN) y nivel del sensor por unidad
+- `fuel/changes` — eventos de recarga (+) y descarga (−) del sensor Escort de varilla
 
 ### Datos medidos vs. estimados
 
-- **Medidos (GPS):** distancia, tiempos de manejo/detención, tramos, velocidad
-  promedio por tramo, odómetro.
-- **Estimados (modelo configurable):** combustible (norma l/100km), eficiencia
-  km/L, ralentí y costos de monetización.
+- **Medidos:** distancia, tiempos de manejo/detención, tramos, velocidad
+  promedio por tramo, odómetro (GPS); **consumo real de combustible** (flujo/CAN)
+  y **eventos del sensor Escort de varilla** (recargas y descargas).
+- **Estimados (modelo configurable):** combustible por norma l/100km (comparativo),
+  ralentí y costos de monetización.
 
-El combustible/CAN real y la velocidad instantánea requieren **ampliar los
-permisos de la API key** (actualmente esos métodos devuelven *Method not
-available*). Todos los supuestos son editables en la sección Metodología del
-informe y se recalculan al instante.
+**Sensores Escort de varilla (BLE):** se leen vía `fuel/summary` y `fuel/changes`
+(20 de 23 unidades equipadas). Los eventos de recarga/descarga se limpian de ruido
+(lecturas imposibles y oscilaciones recuperadas); las **descargas son indicios a
+validar en sitio**, no conclusiones de robo. La velocidad instantánea aún requiere
+telemetría ampliada.
