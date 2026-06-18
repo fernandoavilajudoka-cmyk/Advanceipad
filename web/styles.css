@@ -170,29 +170,34 @@ code { background: #eef2e6; padding: 1px 6px; border-radius: 6px; font-size: .9e
 .sem.naranja { background: rgba(245,184,28,.24); color: #946400; }
 .sem.rojo { background: rgba(224,65,62,.16); color: #b3322f; }
 .board-tbl {
-  width: 100%; border-collapse: collapse; min-width: 1120px;
+  width: 100%; border-collapse: collapse; table-layout: fixed;
   font-variant-numeric: tabular-nums; font-family: "SF Mono", ui-monospace, "Roboto Mono", Menlo, Consolas, monospace;
 }
 .board-tbl thead th {
-  color: var(--lime-deep); font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em;
-  padding: 11px 12px; text-align: right; vertical-align: bottom; line-height: 1.25;
-  border-bottom: 2px solid var(--line-2); white-space: nowrap; user-select: none;
+  color: var(--lime-deep); font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .02em;
+  padding: 9px 5px; text-align: right; vertical-align: bottom; line-height: 1.2;
+  border-bottom: 2px solid var(--line-2); white-space: normal; user-select: none;
 }
 .board-tbl thead th:first-child { text-align: left; }
 .board-tbl thead th:not(.b-nosort) { cursor: pointer; }
 .board-tbl thead th:not(.b-nosort):hover { color: var(--ink); background: rgba(196,230,0,.12); }
 .board-tbl thead th.b-sorted { color: var(--ink); background: rgba(196,230,0,.16); }
 .board-tbl thead th.b-nosort { color: var(--muted); }
-.board-tbl thead th .b-car { font-size: 9px; margin-left: 3px; color: var(--lime-mid); }
+.board-tbl thead th .b-car { font-size: 9px; margin-left: 2px; color: var(--lime-mid); }
+/* anchos: unidad y planta más amplias; el resto se reparte */
+.board-tbl th:nth-child(1), .board-tbl td:nth-child(1) { width: 8.5%; }
+.board-tbl th:nth-child(2), .board-tbl td:nth-child(2) { width: 8%; }
 .board-tbl td {
-  color: var(--ink); font-size: 13.5px; padding: 9px 12px; text-align: right;
-  border-bottom: 1px solid var(--line);
+  color: var(--ink); font-size: 11.5px; padding: 7px 5px; text-align: right;
+  border-bottom: 1px solid var(--line); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .board-tbl tbody tr:last-child td { border-bottom: none; }
-.board-tbl tbody tr:nth-child(even) { background: rgba(255,255,255,.35); }
-.board-tbl tbody tr:hover { background: rgba(196,230,0,.10); }
-.board-tbl td.b-unit { text-align: left; color: var(--ink); font-weight: 800; letter-spacing: .02em; }
-.board-tbl td.b-plant { text-align: left; color: var(--muted); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+.board-tbl tbody tr:nth-child(even) { background: rgba(255,255,255,.5); }
+.board-tbl tbody tr:hover { background: rgba(196,230,0,.12); }
+.board-tbl td.b-unit { text-align: left; color: var(--ink); font-weight: 800; letter-spacing: 0; }
+.board-tbl td.b-plant { text-align: left; color: var(--muted); }
+.board-tbl .sem { padding: 2px 6px; font-size: 11px; }
+.board-tbl .badge { padding: 2px 7px; font-size: 11px; }
 .board-tbl td.b-warn { color: var(--orange); font-weight: 700; }
 .board-tbl td.b-alert { color: var(--red); font-weight: 800; }
 .board-tbl td.b-pred { color: var(--muted); }

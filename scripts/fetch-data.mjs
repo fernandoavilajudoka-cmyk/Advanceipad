@@ -125,6 +125,8 @@ const ymd = (d) => d.toISOString().slice(0, 10);
 
 const dayKeyFmt = new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' });
 const dayKey = (iso) => dayKeyFmt.format(new Date(iso));
+const hourFmt = new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: '2-digit', hour12: false });
+const localHour = (iso) => parseInt(hourFmt.format(new Date(iso)), 10) % 24;
 
 // Divide [from,till] en tramos de <= MAX_DAYS_PER_CALL días
 function chunkRange(fromDate, tillDate) {
@@ -270,6 +272,8 @@ async function main() {
         day.dist_m += r.distance || 0;
         day.drive_s += dur;
         day.segs += 1;
+        const hh = localHour(r.start.time);                 // conducción nocturna (22:00–06:00)
+        if (hh >= 22 || hh < 6) day.night_s = (day.night_s || 0) + dur;
         const spd = r.avg_speed || 0;
         if (spd > day.maxspeed) day.maxspeed = spd;
         if (spd > PARAMS.limite_velocidad_kmh) day.viol += 1;
@@ -281,6 +285,19 @@ async function main() {
         acc.sec += dur; baseDur.set(a, acc);
       }
     }
+
+    // Fatiga: tramos de conducción continua > 6 h (descanso > 20 min cierra el tramo)
+    let stretch = 0, stretchDay = null;
+    for (const r of routes) {
+      if (!r || !r.start || !r.end || !r.start.time || !r.end.time) continue;
+      const d = secondsBetween(r.start.time, r.end.time);
+      if (r.type === 'route') { stretch += d; stretchDay = dayKey(r.end.time); }
+      else if (r.type === 'stop' && d > 20 * 60) {
+        if (stretch > 6 * 3600 && stretchDay) ensureDay(stretchDay).fatigue = (ensureDay(stretchDay).fatigue || 0) + 1;
+        stretch = 0;
+      }
+    }
+    if (stretch > 6 * 3600 && stretchDay) ensureDay(stretchDay).fatigue = (ensureDay(stretchDay).fatigue || 0) + 1;
 
     // Base dominante (dirección donde más se estaciona) — solo referencia
     let base = null;
@@ -411,6 +428,8 @@ async function main() {
         const d = { dist_km: round(v.dist_m / 1000, 2), drive_h: round(v.drive_s / 3600, 2), stop_h: round(v.stop_s / 3600, 2), segs: v.segs, stops: v.stops, viol: v.viol, maxspeed: Math.round(v.maxspeed) };
         if (v.rf_l) { d.rf_l = round(v.rf_l, 0); d.rf_n = v.rf_n; }
         if (v.dr_l) { d.dr_l = round(v.dr_l, 0); d.dr_n = v.dr_n; }
+        if (v.night_s) d.night_h = round(v.night_s / 3600, 2);
+        if (v.fatigue) d.fatigue = v.fatigue;
         days[k] = d;
       }
       return {

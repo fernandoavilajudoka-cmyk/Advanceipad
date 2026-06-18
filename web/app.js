@@ -23,6 +23,30 @@ const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
 
 let DATA = null;
 const charts = {};
+
+/* ===== Modelo predictivo: probabilidad de accidente =====================
+   Índice 0–100 (heurístico, ponderado) que combina comportamiento telemático
+   con el riesgo regional de INEGI. NL es la entidad #1 nacional en accidentes
+   (≈20% del país); por municipio (INEGI/ZMM): Monterrey ~38%, Guadalupe ~14%,
+   Apodaca ~8%, San Nicolás ~7%, Escobedo en aumento.                         */
+const MUNI_RISK = {
+  'Monterrey': 1.0, 'Guadalupe': 0.85, 'Apodaca': 0.72, 'General Escobedo': 0.70,
+  'San Nicolás de los Garza': 0.65, 'García': 0.65, 'Juárez': 0.50, 'Santiago': 0.30,
+  'El Salto': 0.60, 'Atotonilco el Alto': 0.40,
+};
+const ACC_W = { velocidad: 0.25, fatiga: 0.20, regional: 0.15, nocturna: 0.15, eventos: 0.15, exposicion: 0.10 };
+function accidentRisk(u) {
+  const v = clamp((u.max_speed - 40) / 45, 0, 1);            // velocidades altas (vel. prom. de tramo)
+  const s = clamp(u.vp100 / 3, 0, 1);                        // eventos de seguridad /100 km
+  const f = clamp(u.fatigue / 3, 0, 1);                      // fatiga: tramos > 6 h
+  const n = clamp(u.nightPct / 40, 0, 1);                    // conducción nocturna
+  const r = MUNI_RISK[u.plant] ?? 0.5;                       // riesgo regional INEGI
+  const e = clamp(u.distance_km / 800, 0, 1);                // exposición (km recorridos)
+  const risk = Math.round(100 * (ACC_W.velocidad * v + ACC_W.fatiga * f + ACC_W.regional * r + ACC_W.nocturna * n + ACC_W.eventos * s + ACC_W.exposicion * e));
+  const level = risk >= 66 ? 'Alta' : risk >= 33 ? 'Media' : 'Baja';
+  const rating = risk >= 66 ? 'rojo' : risk >= 33 ? 'naranja' : 'verde';
+  return { risk, level, rating, factors: { velocidad: Math.round(v * 100), fatiga: Math.round(f * 100), regional: Math.round(r * 100), nocturna: Math.round(n * 100), eventos: Math.round(s * 100), exposicion: Math.round(e * 100) } };
+}
 const STATE = { monthId: null, weekId: 'all', plantId: 'all', params: null, boardSort: { key: 'distance_km', dir: 'desc' } };
 
 async function boot() {
@@ -111,12 +135,13 @@ function aggregate() {
 
   for (const u of units) {
     let dist = 0, drive = 0, stop = 0, segs = 0, stops = 0, viol = 0, mx = 0;
-    let rfL = 0, rfN = 0, drL = 0, drN = 0;
+    let rfL = 0, rfN = 0, drL = 0, drN = 0, nightH = 0, fatigue = 0;
     for (const k of sortedDays) {
       const d = u.days[k]; if (!d) continue;
       dist += d.dist_km; drive += d.drive_h; stop += d.stop_h; segs += d.segs; stops += d.stops; viol += d.viol;
       if (d.maxspeed > mx) mx = d.maxspeed;
       rfL += d.rf_l || 0; rfN += d.rf_n || 0; drL += d.dr_l || 0; drN += d.dr_n || 0;
+      nightH += d.night_h || 0; fatigue += d.fatigue || 0;
     }
     const fuel = dist * p.consumo_norma_l100 / 100;            // estimado (norma configurable)
     const realFuel = (u.real_l100 != null) ? dist * u.real_l100 / 100 : null; // real (flujo/sensor)
@@ -134,10 +159,14 @@ function aggregate() {
     const idleScore = clamp(moveRatio * 100, 0, 100);
     const score = Math.round(sec * 0.4 + effScore * 0.3 + idleScore * 0.3);
     const rating = score >= 65 ? 'verde' : score >= 45 ? 'naranja' : 'rojo';
+    const nightPct = drive > 0 ? nightH / drive * 100 : 0;
+    const acc = accidentRisk({ max_speed: mx, vp100, fatigue, nightPct, plant: u.plant, distance_km: dist });
 
     perUnit.push({
       unit_id: u.unit_id, number: u.number, label: u.label, plant: u.plant, plant_id: u.plant_id,
       odometer_km: u.odometer_km, stale: u.stale,
+      night_hours: round(nightH, 1), night_pct: round(nightPct, 1), fatigue_events: fatigue,
+      acc_risk: acc.risk, acc_level: acc.level, acc_rating: acc.rating, acc_factors: acc.factors,
       distance_km: round(dist, 1), drive_hours: round(drive, 1), stop_hours: round(stop, 1),
       segments: segs, stops, fuel_l: round(fuel, 1), efficiency_kml: round(eff, 2),
       real_l100: u.real_l100, real_fuel_l: realFuel != null ? round(realFuel, 1) : null,
@@ -177,6 +206,10 @@ function aggregate() {
   const realEffFleet = f.real_fuel_l > 0 ? km / f.real_fuel_l : 0;
   const idleCost = f.idle_fuel_l * p.precio_diesel_mxn;
   const idleHoursFleet = p.consumo_ralenti_lh > 0 ? f.idle_fuel_l / p.consumo_ralenti_lh : 0;
+  const accAvg = perUnit.length ? Math.round(perUnit.reduce((a, u) => a + u.acc_risk, 0) / perUnit.length) : 0;
+  const accHigh = perUnit.filter((u) => u.acc_rating === 'rojo').length;
+  const accLevel = accAvg >= 66 ? 'Alta' : accAvg >= 33 ? 'Media' : 'Baja';
+  const accRating = accAvg >= 66 ? 'rojo' : accAvg >= 33 ? 'naranja' : 'verde';
 
   const fleet = {
     units_total: units.length, units_active: f.active, units_no_signal: f.no_signal, drivers: DATA.drivers.length,
@@ -190,6 +223,7 @@ function aggregate() {
     refuel_l: Math.round(f.rf_l), refuel_n: f.rf_n, drain_l: Math.round(f.dr_l), drain_n: f.dr_n,
     violations: f.viol, violations_per_100km: round(km > 0 ? f.viol / km * 100 : 0, 1),
     segments: f.segs, stops: f.stops, max_speed: f.maxspeed,
+    acc_risk: accAvg, acc_level: accLevel, acc_rating: accRating, acc_high: accHigh,
     idle_share_pct: round((driveH + stopH) > 0 ? stopH / (driveH + stopH) * 100 : 0, 1),
   };
 
@@ -334,7 +368,7 @@ function execSlide() {
       <div class="kpi amber"><div class="k-val">${nf.format(f.idle_hours)}<span class="k-unit"> h</span></div><div class="k-lbl">Tiempo en ralentí (est.)</div><div class="k-note neutral">${nf1.format(idlePctTime)}% del tiempo de motor</div></div>
       ${kpi('blue', nf2.format(f.real_efficiency_kml), 'km/L', 'Rendimiento general')}
       <div class="kpi red"><div class="k-val">${nf.format(f.violations)}</div><div class="k-lbl">Eventos de seguridad registrados</div><div class="k-note">${nf1.format(f.violations_per_100km)} por cada 100 km</div></div>
-      ${pred('Probabilidad de accidente')}
+      <div class="kpi ${f.acc_rating === 'rojo' ? 'red' : f.acc_rating === 'naranja' ? 'amber' : 'green'}"><div class="k-val">${f.acc_level}<span class="k-unit"> · ${f.acc_risk}</span></div><div class="k-lbl">Probabilidad de accidente</div><div class="k-note neutral">${f.acc_high} unidad(es) en riesgo alto</div></div>
       ${pred('Probabilidad de robo')}
     </div>
     <div class="panel" style="margin-top:20px">
@@ -360,7 +394,7 @@ const BOARD_COLS = [
   { key: 'has_fuel_sensor', lbl: 'Varilla', t: 'bool' },
   { key: 'drain_n', lbl: 'Descargas<br>eventos', t: 'warn' },
   { key: 'drain_l', lbl: 'Diésel<br>descargado L', t: 'alert' },
-  { key: 'acc_prob', lbl: 'Prob.<br>accidente', t: 'pred', sortable: false },
+  { key: 'acc_risk', lbl: 'Prob.<br>accidente', t: 'acc' },
   { key: 'theft_prob', lbl: 'Prob.<br>robo', t: 'pred', sortable: false },
 ];
 
@@ -389,6 +423,7 @@ function boardSlide() {
       case 'bool': return `<td>${u.has_fuel_sensor ? '<span class="badge verde">Sí</span>' : '<span class="badge naranja">No</span>'}</td>`;
       case 'warn': return `<td class="${v ? 'b-warn' : ''}">${v || '—'}</td>`;
       case 'alert': return `<td class="${v ? 'b-alert' : ''}">${v ? nf.format(v) : '—'}</td>`;
+      case 'acc': return `<td><span class="sem ${u.acc_rating}" title="${esc(`Vel ${u.acc_factors.velocidad} · Fatiga ${u.acc_factors.fatiga} · Región ${u.acc_factors.regional} · Noche ${u.acc_factors.nocturna} · Exp ${u.acc_factors.exposicion}`)}">${u.acc_risk}</span></td>`;
       case 'pred': return `<td class="b-pred">—</td>`;
       default: return `<td>${v ?? '—'}</td>`;
     }
@@ -410,7 +445,7 @@ function boardSlide() {
         <tbody>${rows || `<tr><td colspan="${BOARD_COLS.length}" style="color:var(--muted)">Sin datos en la selección.</td></tr>`}</tbody>
       </table>
     </div>
-    <div class="note">Combustible total y rendimiento = sensor/flujo real. Ralentí (L) = consumo real − distancia × ${nf1.format(STATE.params.consumo_ruta_l100)} l/100km (consumo en ruta). Varilla = sensor Escort instalado. Descargas y Prob. accidente/robo: ver notas de cada sección.</div>
+    <div class="note"><b>Prob. accidente</b> = índice 0–100 (verde &lt;33 · amarillo &lt;66 · rojo ≥66) que pondera velocidad (25%), fatiga &gt;6 h (20%), riesgo regional INEGI (15%), conducción nocturna (15%), eventos /100 km (15%) y exposición en km (10%). Pasa el cursor sobre el valor para ver el desglose. Ralentí (L) = consumo real − distancia × ${nf1.format(STATE.params.consumo_ruta_l100)} l/100km. Varilla = sensor Escort instalado.</div>
   </section>`);
 }
 
