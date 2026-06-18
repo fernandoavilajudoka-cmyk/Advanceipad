@@ -318,7 +318,7 @@ function numberSections() {
 const TOC_DESC = {
   s02: 'KPIs clave del periodo',
   sBoard: 'Tablero de todas las unidades',
-  s03: 'Tendencia diaria y utilización',
+  s03: 'Mejores y peores: rendimiento y aprovechamiento',
   s04f: 'Sensor Escort: consumo, recargas y descargas',
   s04p: 'Comparativo por planta de concreto',
   s04: 'Velocidad y conducción',
@@ -503,27 +503,39 @@ function sortBoard(key) {
 }
 window.sortBoard = sortBoard;
 
-/* ---------------------------- Rendimiento ---------------------------- */
+/* -------------------- Desempeño: mejores y peores -------------------- */
 function perfSlide() {
-  const top = VIEW.ranking.top_distance, low = VIEW.ranking.bottom_active;
-  const maxKm = Math.max(...top.map((u) => u.distance_km), 1);
-  const rows = (arr, metric) => arr.map((u, i) => {
-    const w = metric === 'dist' ? (u.distance_km / maxKm * 100) : u.move_ratio;
-    const txt = metric === 'dist' ? `${nf1.format(u.distance_km)} km` : `${nf1.format(u.move_ratio)}%`;
+  const list = (arr, fmt, color, max) => arr.map((u, i) => {
+    const val = fmt(u);
+    const w = max > 0 ? Math.max(5, Math.min(100, (val.n / max) * 100)) : 5;
     return `<tr><td class="rank-i">${i + 1}</td><td>${esc(u.number || u.label)}</td>
-      <td class="num">${txt}</td>
-      <td style="width:120px"><div class="bar-wrap"><i style="width:${Math.max(4, Math.min(100, w))}%;background:${metric === 'dist' ? C.cyan : C.gold}"></i></div></td></tr>`;
+      <td class="num">${val.t}</td>
+      <td style="width:90px"><div class="bar-wrap"><i style="width:${w}%;background:${color}"></i></div></td></tr>`;
   }).join('');
+  const panel = (title, sub, rows) => `<div class="panel"><h4>${title}</h4><div class="sub" style="font-size:11.5px;color:var(--muted);margin:-6px 0 8px">${sub}</div><table class="tbl"><tbody>${rows || '<tr><td style="color:var(--muted)">Sin datos</td></tr>'}</tbody></table></div>`;
+
+  const withEff = VIEW.units.filter((u) => u.real_efficiency_kml != null && u.distance_km > 1);
+  const byEff = [...withEff].sort((a, b) => b.real_efficiency_kml - a.real_efficiency_kml);
+  const byDist = [...VIEW.units].sort((a, b) => b.distance_km - a.distance_km);
+  const topEff = byEff.slice(0, 5), botEff = byEff.slice(-5).reverse();
+  const topDist = byDist.slice(0, 5), botDist = byDist.filter((u) => u.distance_km >= 0).slice(-5).reverse();
+  const maxEff = Math.max(...withEff.map((u) => u.real_efficiency_kml), 0.1);
+  const maxDist = Math.max(...byDist.map((u) => u.distance_km), 1);
+  const fEff = (u) => ({ n: u.real_efficiency_kml, t: `${nf2.format(u.real_efficiency_kml)} km/L` });
+  const fDist = (u) => ({ n: u.distance_km, t: `${nf1.format(u.distance_km)} km` });
+
   return el(`
   <section class="slide" id="s03">
-    <div class="slide-head"><span class="snum">03</span><div><h2>Rendimiento operativo</h2><div class="sub">Tendencia diaria de distancia · ${esc(scopeLabel())}</div></div></div>
-    <h4 style="margin:0 0 8px">Distancia recorrida por día (km)</h4>
-    <div class="chart-box"><canvas id="chDaily"></canvas></div>
-    <div class="cols" style="margin-top:24px">
-      <div class="panel"><h4>Top 5 — mayor distancia</h4><table class="tbl"><tbody>${rows(top, 'dist')}</tbody></table></div>
-      <div class="panel"><h4>Menor actividad (manejo / tiempo total)</h4><table class="tbl"><tbody>${rows(low, 'act')}</tbody></table></div>
+    <div class="slide-head"><span class="snum">03</span><div><h2>Desempeño de la flota</h2><div class="sub">Mejores y peores en rendimiento y aprovechamiento · ${esc(scopeLabel())} · ${esc(plantLabel())}</div></div></div>
+    <div class="cols">
+      ${panel('Top 5 — mejor rendimiento', 'Rendimiento real (km/L)', list(topEff, fEff, C.green, maxEff))}
+      ${panel('Top 5 — mayor aprovechamiento', 'Distancia recorrida (km)', list(topDist, fDist, C.lime, maxDist))}
     </div>
-    <div class="note">Distancia y tiempos provienen de GPS (medidos). La eficiencia km/L se estima con una norma de consumo configurable, por lo que el desempeño se ordena por métricas medidas.</div>
+    <div class="cols" style="margin-top:18px">
+      ${panel('Bottom 5 — menor rendimiento', 'Rendimiento real (km/L)', list(botEff, fEff, C.red, maxEff))}
+      ${panel('Bottom 5 — menor aprovechamiento', 'Distancia recorrida (km)', list(botDist, fDist, C.orange, maxDist))}
+    </div>
+    <div class="note">Rendimiento = km ÷ combustible real (sensor/flujo). Aprovechamiento = distancia recorrida en el periodo. El ranking es por <b>unidad</b>; el rendimiento por conductor requiere la asignación conductor↔unidad (iButton), no disponible en la API actual.</div>
   </section>`);
 }
 
@@ -812,11 +824,6 @@ function drawCharts() {
       },
     },
   });
-
-  const dl = VIEW.daily;
-  mk('chDaily', { type: 'bar',
-    data: { labels: dl.map((x) => x.weekday + ' ' + dateLabel(x.date)), datasets: [{ data: dl.map((x) => x.distance_km), backgroundColor: C.cyan, borderRadius: 6, maxBarThickness: 46 }] },
-    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: GRID } }, x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, font: { size: 10 } } } } } });
 
   const sc = VIEW.ranking.by_score;
   mk('chScore', { type: 'bar',

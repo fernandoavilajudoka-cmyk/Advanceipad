@@ -175,10 +175,9 @@ code { background: #eef2e6; padding: 1px 6px; border-radius: 6px; font-size: .9e
 }
 .board-tbl thead th {
   color: var(--lime-deep); font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .02em;
-  padding: 9px 5px; text-align: right; vertical-align: bottom; line-height: 1.2;
+  padding: 9px 5px; text-align: center; vertical-align: bottom; line-height: 1.2;
   border-bottom: 2px solid var(--line-2); white-space: normal; user-select: none;
 }
-.board-tbl thead th:first-child { text-align: left; }
 .board-tbl thead th:not(.b-nosort) { cursor: pointer; }
 .board-tbl thead th:not(.b-nosort):hover { color: var(--ink); background: rgba(196,230,0,.12); }
 .board-tbl thead th.b-sorted { color: var(--ink); background: rgba(196,230,0,.16); }
