@@ -159,7 +159,7 @@ function aggregate() {
 
   const perUnit = [];
   let f = { distance_km: 0, drive_h: 0, stop_h: 0, segs: 0, stops: 0, viol: 0, maxspeed: 0, fuel_l: 0, active: 0, no_signal: 0,
-    real_fuel_l: 0, idle_fuel_l: 0, rf_l: 0, rf_n: 0, dr_l: 0, dr_n: 0, sensors: 0 };
+    real_fuel_l: 0, idle_fuel_l: 0, idle_h: 0, rf_l: 0, rf_n: 0, dr_l: 0, dr_n: 0, sensors: 0 };
 
   for (const u of units) {
     let dist = 0, drive = 0, stop = 0, segs = 0, stops = 0, viol = 0, mx = 0;
@@ -178,7 +178,8 @@ function aggregate() {
     const realEff = (realFuel && realFuel > 0) ? dist / realFuel : null;
     // Ralentí = consumo real − consumo en movimiento (siempre ≤ total real)
     const idleFuel = (realFuel != null) ? Math.max(0, realFuel - dist * p.consumo_ruta_l100 / 100) : null;
-    const idleHours = (idleFuel != null && p.consumo_ralenti_lh > 0) ? idleFuel / p.consumo_ralenti_lh : null;
+    // Horas de ralentí (motor encendido detenido): no pueden exceder el tiempo detenido medido
+    const idleHours = (idleFuel != null && p.consumo_ralenti_lh > 0) ? Math.min(stop, idleFuel / p.consumo_ralenti_lh) : null;
     const idlePctFuel = (realFuel && realFuel > 0 && idleFuel != null) ? idleFuel / realFuel * 100 : 0;
     const eff = fuel > 0 ? dist / fuel : 0;
     const vp100 = dist > 0 ? viol / dist * 100 : 0;
@@ -215,6 +216,7 @@ function aggregate() {
     f.fuel_l += fuel; if (mx > f.maxspeed) f.maxspeed = mx;
     if (realFuel != null) f.real_fuel_l += realFuel;
     if (idleFuel != null) f.idle_fuel_l += idleFuel;
+    if (idleHours != null) f.idle_h += idleHours;
     if (u.has_fuel_sensor) f.sensors += 1;
     f.rf_l += rfL; f.rf_n += rfN; f.dr_l += drL; f.dr_n += drN;
     if (dist > 0.1) f.active += 1;
@@ -237,7 +239,7 @@ function aggregate() {
   const eff = f.fuel_l > 0 ? km / f.fuel_l : 0;
   const realEffFleet = f.real_fuel_l > 0 ? km / f.real_fuel_l : 0;
   const idleCost = f.idle_fuel_l * p.precio_diesel_mxn;
-  const idleHoursFleet = p.consumo_ralenti_lh > 0 ? f.idle_fuel_l / p.consumo_ralenti_lh : 0;
+  const idleHoursFleet = f.idle_h;   // suma de horas por unidad (cada una topada al tiempo detenido)
   const accAvg = perUnit.length ? Math.round(perUnit.reduce((a, u) => a + u.acc_risk, 0) / perUnit.length) : 0;
   const accHigh = perUnit.filter((u) => u.acc_rating === 'rojo').length;
   const accLevel = riskLevel(accAvg), accRating = riskRating(accAvg);
@@ -382,7 +384,7 @@ function tocSlide() {
 /* ------------------------- Resumen ejecutivo ------------------------- */
 function execSlide() {
   const f = VIEW.fleet;
-  const idlePctTime = f.motor_hours > 0 ? f.idle_hours / f.motor_hours * 100 : 0;
+  const idlePctTime = f.stop_hours > 0 ? f.idle_hours / f.stop_hours * 100 : 0;
   const kpi = (cls, val, unit, lbl) =>
     `<div class="kpi ${cls}"><div class="k-val">${val}<span class="k-unit"> ${unit || ''}</span></div><div class="k-lbl">${lbl}</div></div>`;
   const pred = (lbl) =>
@@ -400,7 +402,7 @@ function execSlide() {
       ${kpi('teal', nf.format(f.motor_hours), 'h', 'Tiempo total de motor (est.)')}
       ${kpi('green', nf.format(f.real_fuel_l), 'L', 'Consumo total de combustible')}
       ${kpi('amber', nf.format(f.idle_fuel_l), 'L', 'Consumo de combustible en ralentí')}
-      <div class="kpi amber"><div class="k-val">${nf.format(f.idle_hours)}<span class="k-unit"> h</span></div><div class="k-lbl">Tiempo en ralentí (est.)</div><div class="k-note neutral">${nf1.format(idlePctTime)}% del tiempo de motor</div></div>
+      <div class="kpi amber"><div class="k-val">${nf.format(f.idle_hours)}<span class="k-unit"> h</span></div><div class="k-lbl">Tiempo en ralentí (est.)</div><div class="k-note neutral">${nf1.format(idlePctTime)}% del tiempo detenido</div></div>
       ${kpi('blue', nf2.format(f.real_efficiency_kml), 'km/L', 'Rendimiento general')}
       <div class="kpi red"><div class="k-val">${nf.format(f.violations)}</div><div class="k-lbl">Eventos de seguridad registrados</div><div class="k-note">${nf1.format(f.violations_per_100km)} por cada 100 km</div></div>
       <div class="kpi ${f.acc_rating === 'rojo' ? 'red' : f.acc_rating === 'naranja' ? 'amber' : 'green'}"><div class="k-val">${f.acc_level}<span class="k-unit"> · ${f.acc_risk}</span></div><div class="k-lbl">Probabilidad de accidente</div><div class="k-note neutral">${f.acc_high} unidad(es) en riesgo alto</div></div>

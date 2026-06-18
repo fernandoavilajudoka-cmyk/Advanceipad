@@ -42,9 +42,9 @@ const MAX_DAYS_PER_CALL = 28; // la API limita a 31 días por llamada
 const PARAMS = {
   precio_diesel_mxn: 25.99,        // precio de referencia del diésel (MXN/L)
   consumo_norma_l100: 40.0,        // norma de referencia (comparativo)
-  consumo_ruta_l100: 35.0,         // consumo SOLO en movimiento (l/100km) → separa ralentí
+  consumo_ruta_l100: 38.0,         // consumo SOLO en movimiento (l/100km) → separa ralentí
   benchmark_kml: 2.5,
-  consumo_ralenti_lh: 3.0,
+  consumo_ralenti_lh: 8.0,         // L/h en ralentí/PTO (revolvedora con tambor); editable
   limite_velocidad_kmh: 90,
   costo_por_exceso_mxn: 150,
 };
@@ -415,7 +415,7 @@ async function main() {
       naturaleza_datos: {
         medido: ['Distancia (GPS)', 'Tiempo de manejo', 'Tiempo de detención', 'Tramos / paradas', 'Velocidad promedio por tramo', 'Odómetro', 'Base / planta (ubicación dominante)', 'Consumo real de combustible (flujo/CAN)', 'Nivel y eventos del sensor Escort de varilla (recargas y descargas)'],
         estimado: ['Combustible por norma l/100km (comparativo)', 'Consumo en ralentí', 'Costos de monetización'],
-        nota: 'El consumo de combustible se reporta de forma REAL desde el medidor de flujo/CAN y el sensor Escort de varilla (BLE) vía fuel/summary y fuel/changes; también se muestra el estimado por norma para comparar. Las recargas y descargas provienen del sensor tras filtrar ruido (lecturas imposibles y oscilaciones recuperadas) y deben validarse en sitio antes de concluir un robo. La planta se deriva de la base operativa dominante (GPS). La velocidad instantánea requiere telemetría ampliada.',
+        nota: 'El consumo de combustible se reporta de forma REAL desde el medidor de flujo/CAN y el sensor Escort de varilla (BLE) vía fuel/summary y fuel/changes. El TIEMPO en ralentí se ESTIMA (combustible no asociado a distancia ÷ tasa L/h) porque la API actual no expone RPM/estado de motor (los endpoints CAN/RPM dan "Method not available"); para medir el ralentí real (motor encendido + unidad detenida) hay que habilitar el módulo CAN — 5 unidades ya traen rastreador Ruptela HCV5 que capta RPM. Recargas y descargas: sensor de varilla tras filtrar ruido, a validar en sitio. La planta se deriva por geocodificación de la base dominante.',
       },
       months: monthsOut,
     },
