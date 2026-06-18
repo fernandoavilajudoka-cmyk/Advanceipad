@@ -811,6 +811,8 @@ function drawCharts() {
   Chart.defaults.color = '#5f6873';
   const GRID = 'rgba(20,24,29,.07)';
   const f = VIEW.fleet;
+  // Paleta translúcida (efecto cristal en los gráficos)
+  const T = { lime: 'rgba(182,212,0,.42)', limeB: 'rgba(138,163,0,.55)', gold: 'rgba(245,184,28,.5)', red: 'rgba(224,65,62,.45)', green: 'rgba(46,160,104,.45)', cyan: 'rgba(41,196,170,.42)' };
 
   // Tendencia ejecutiva: distancia (barras) + rendimiento real km/L (línea)
   const td = VIEW.daily;
@@ -819,8 +821,8 @@ function drawCharts() {
     data: {
       labels: td.map((x) => x.weekday + ' ' + dateLabel(x.date)),
       datasets: [
-        { type: 'bar', label: 'Distancia (km)', data: td.map((x) => x.distance_km), backgroundColor: 'rgba(182,212,0,.55)', borderRadius: 5, categoryPercentage: 0.92, barPercentage: 0.96, yAxisID: 'y' },
-        { type: 'line', label: 'Rendimiento (km/L)', data: td.map((x) => x.efficiency_kml), borderColor: C.green, backgroundColor: C.green, borderWidth: 2.5, tension: .35, pointRadius: 2.5, yAxisID: 'y1' },
+        { type: 'bar', label: 'Distancia (km)', data: td.map((x) => x.distance_km), backgroundColor: T.lime, borderColor: 'rgba(138,163,0,.5)', borderWidth: 1, borderRadius: 5, categoryPercentage: 0.92, barPercentage: 0.96, yAxisID: 'y' },
+        { type: 'line', label: 'Rendimiento (km/L)', data: td.map((x) => x.efficiency_kml), borderColor: 'rgba(46,160,104,.9)', backgroundColor: 'rgba(46,160,104,.15)', borderWidth: 2.5, tension: .35, pointRadius: 2.5, fill: true, yAxisID: 'y1' },
       ],
     },
     options: {
@@ -854,14 +856,14 @@ function drawCharts() {
   if (VIEW.security) {
     const sec = VIEW.security;
     mk('chSecPie', { type: 'doughnut',
-      data: { labels: ['40–50 km/h', '50–60 km/h', '> 60 km/h'], datasets: [{ data: [sec.bands.b40, sec.bands.b50, sec.bands.b60], backgroundColor: [C.lime, C.gold, C.red], borderColor: '#fff', borderWidth: 2 }] },
+      data: { labels: ['40–50 km/h', '50–60 km/h', '> 60 km/h'], datasets: [{ data: [sec.bands.b40, sec.bands.b50, sec.bands.b60], backgroundColor: [T.lime, T.gold, T.red], borderColor: 'rgba(255,255,255,.6)', borderWidth: 2 }] },
       options: { cutout: '58%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 11, font: { size: 11 } } } } } });
     const dl = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
     mk('chSecDow', { type: 'bar',
-      data: { labels: dl, datasets: [{ data: [1, 2, 3, 4, 5, 6, 0].map((d) => sec.dow[d]), backgroundColor: C.lime, borderRadius: 5 }] },
+      data: { labels: dl, datasets: [{ data: [1, 2, 3, 4, 5, 6, 0].map((d) => sec.dow[d]), backgroundColor: T.limeB, borderColor: 'rgba(138,163,0,.5)', borderWidth: 1, borderRadius: 5 }] },
       options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: GRID } }, x: { grid: { display: false } } } } });
     mk('chSecHour', { type: 'bar',
-      data: { labels: sec.hours.map((_, h) => `${h}h`), datasets: [{ label: 'Eventos', data: sec.hours, backgroundColor: C.cyan, borderRadius: 3 }] },
+      data: { labels: sec.hours.map((_, h) => `${h}h`), datasets: [{ label: 'Eventos', data: sec.hours, backgroundColor: T.cyan, borderColor: 'rgba(41,196,170,.5)', borderWidth: 1, borderRadius: 3 }] },
       options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: GRID } }, x: { grid: { display: false }, ticks: { font: { size: 9 }, autoSkip: true, maxRotation: 0 } } } } });
   }
 }
