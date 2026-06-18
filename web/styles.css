@@ -199,6 +199,7 @@ code { background: #eef2e6; padding: 1px 6px; border-radius: 6px; font-size: .9e
 .board-tbl td.b-plant { text-align: left; color: var(--muted); }
 .board-tbl .sem { padding: 2px 6px; font-size: 11px; }
 .board-tbl .badge { padding: 2px 7px; font-size: 11px; }
+.board-tbl td.b-meas { color: #1d6b41; font-weight: 700; }
 .board-tbl td.b-warn { color: var(--orange); font-weight: 700; }
 .board-tbl td.b-alert { color: var(--red); font-weight: 800; }
 .board-tbl td.b-pred { color: var(--muted); }

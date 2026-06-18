@@ -442,6 +442,7 @@ const BOARD_COLS = [
   { key: 'max_speed', lbl: 'Vel. máx<br>km/h', t: 'num' },
   { key: 'real_fuel_l', lbl: 'Combustible<br>total L', t: 'num' },
   { key: 'idle_fuel_l', lbl: 'Ralentí<br>L', t: 'num' },
+  { key: 'idle_hours', lbl: 'Ralentí<br>h', t: 'idleh' },
   { key: 'idle_pct_fuel', lbl: '% Ralentí<br>del consumo', t: 'pct' },
   { key: 'real_efficiency_kml', lbl: 'Rendimiento<br>km/L', t: 'num2' },
   { key: 'violations_per_100km', lbl: 'Seguridad<br>/100 km', t: 'num1' },
@@ -473,6 +474,12 @@ function boardSlide() {
       case 'num': return `<td>${v != null ? nf.format(v) : '—'}</td>`;
       case 'num1': return `<td>${nf1.format(v || 0)}</td>`;
       case 'num2': return `<td>${v != null ? nf2.format(v) : '—'}</td>`;
+      case 'idleh': {
+        if (v == null) return '<td>—</td>';
+        const rate = (u.idle_fuel_l != null && v > 0) ? u.idle_fuel_l / v : null;
+        const title = (rate != null ? `${nf1.format(rate)} L/h implícitos` : '') + (u.idle_measured ? ' · tiempo medido por CAN/RPM' : ' · tiempo estimado');
+        return `<td class="${u.idle_measured ? 'b-meas' : ''}" title="${esc(title.trim())}">${nf1.format(v)}</td>`;
+      }
       case 'pct': { const sc = (v || 0) <= 30 ? 'verde' : (v || 0) <= 40 ? 'naranja' : 'rojo'; return `<td><span class="sem ${sc}">${nf1.format(v || 0)}%</span></td>`; }
       case 'bool': return `<td>${u.has_fuel_sensor ? '<span class="badge verde">Sí</span>' : '<span class="badge naranja">No</span>'}</td>`;
       case 'warn': return `<td class="${v ? 'b-warn' : ''}">${v || '—'}</td>`;
@@ -500,7 +507,7 @@ function boardSlide() {
         <tbody>${rows || `<tr><td colspan="${BOARD_COLS.length}" style="color:var(--muted)">Sin datos en la selección.</td></tr>`}</tbody>
       </table>
     </div>
-    <div class="note"><b>Prob. accidente</b> (0–100): velocidad 25%, fatiga &gt;6 h 20%, riesgo regional INEGI 15%, nocturna 15%, eventos/100 km 15%, exposición km 10%. &nbsp; <b>Prob. robo</b> (0–100): riesgo regional SESNSP 30%, descargas de diésel 20%, exposición nocturna 15%, pérdida de señal 15%, día de la semana 10%, marca/modelo 10%. Semáforo (calibración laxa): verde &lt;45 · amarillo &lt;70 · rojo ≥70. Pasa el cursor sobre cada valor para ver el desglose. Ralentí (L) = consumo real − distancia × ${nf1.format(STATE.params.consumo_ruta_l100)} l/100km.</div>
+    <div class="note"><b>Prob. accidente</b> (0–100): velocidad 25%, fatiga &gt;6 h 20%, riesgo regional INEGI 15%, nocturna 15%, eventos/100 km 15%, exposición km 10%. &nbsp; <b>Prob. robo</b> (0–100): riesgo regional SESNSP 30%, descargas de diésel 20%, exposición nocturna 15%, pérdida de señal 15%, día de la semana 10%, marca/modelo 10%. Semáforo (calibración laxa): verde &lt;45 · amarillo &lt;70 · rojo ≥70. Pasa el cursor sobre cada valor para ver el desglose. Ralentí (L) = consumo real − distancia × ${nf1.format(STATE.params.consumo_ruta_l100)} l/100km. <b>Ralentí (h)</b> = tiempo en ralentí: <span style="color:#1d6b41;font-weight:700">medido por CAN/RPM</span> en las unidades con etiqueta CAN (motor encendido − movimiento), estimado en el resto; el cursor muestra la tasa <b>L/h implícita</b> (Ralentí L ÷ Ralentí h) para validar el dato.</div>
   </section>`);
 }
 
