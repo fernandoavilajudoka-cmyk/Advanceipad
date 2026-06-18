@@ -43,6 +43,15 @@ async function boot() {
 
 function el(html) { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; }
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+// Nombre de planta a una sola palabra (quita genéricos: General, El, Ciudad…)
+function shortPlant(name) {
+  if (!name) return name;
+  const drop = new Set(['general', 'gral', 'cd', 'ciudad', 'villa', 'el', 'la', 'los', 'las', 'de', 'del', 'heroica']);
+  let w = name.split(/\s+/).filter(Boolean);
+  while (w.length > 1 && drop.has(w[0].toLowerCase().replace(/\./g, ''))) w.shift();
+  if (w.length > 1 && ['san', 'santa', 'santo'].includes(w[0].toLowerCase())) return w[1];
+  return w[0];
+}
 
 /* ============================ FILTROS ============================ */
 function currentMonth() { return DATA.meta.months.find((m) => m.id === STATE.monthId) || DATA.meta.months[0]; }
@@ -61,14 +70,14 @@ function scopeLabel() {
 function plantLabel() {
   if (STATE.plantId === 'all') return 'Todas las plantas';
   const p = DATA.plants.find((p) => p.id === STATE.plantId);
-  return p ? p.name : 'Todas las plantas';
+  return p ? shortPlant(p.name) : 'Todas las plantas';
 }
 
 function buildFilters() {
   const bar = document.getElementById('filters');
   const monthOpts = DATA.meta.months.map((m) => `<option value="${m.id}">${m.label}</option>`).join('');
   const plantOpts = `<option value="all">Todas las plantas (${DATA.units.length})</option>` +
-    DATA.plants.map((p) => `<option value="${p.id}">${esc(p.name)} · ${p.unit_count}</option>`).join('');
+    DATA.plants.map((p) => `<option value="${p.id}">${esc(shortPlant(p.name))} · ${p.unit_count}</option>`).join('');
   bar.innerHTML = `
     <div class="f-group"><label>Mes</label><select id="selMonth">${monthOpts}</select></div>
     <div class="f-group"><label>Semana</label><select id="selWeek"></select></div>
@@ -372,7 +381,7 @@ function boardSlide() {
     const v = u[c.key];
     switch (c.t) {
       case 'txt': return `<td class="b-unit">${esc(u.number || u.label)}</td>`;
-      case 'plant': return `<td class="b-plant" title="${esc(u.plant || '')}">${esc(u.plant || '—')}</td>`;
+      case 'plant': return `<td class="b-plant" title="${esc(u.plant || '')}">${esc(shortPlant(u.plant) || '—')}</td>`;
       case 'num': return `<td>${v != null ? nf.format(v) : '—'}</td>`;
       case 'num1': return `<td>${nf1.format(v || 0)}</td>`;
       case 'num2': return `<td>${v != null ? nf2.format(v) : '—'}</td>`;
