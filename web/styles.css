@@ -147,31 +147,44 @@ code { background: #eef2e6; padding: 1px 6px; border-radius: 6px; font-size: .9e
 .kpi.teal::before { background: var(--lime-mid); }
 .kpi.red::before { background: var(--red); }
 .kpi .k-note { font-size: 11.5px; font-weight: 700; color: var(--red); margin-top: 5px; padding-top: 5px; border-top: 1px dashed var(--line-2); }
+/* KPI placeholder de modelo predictivo */
+.kpi.pred { border-style: dashed; opacity: .9; }
+.kpi.pred::before { background: var(--muted); }
+.kpi.pred .k-val { color: var(--muted); }
+.kpi .k-note.pred-note { color: var(--lime-deep); border-top-color: var(--line-2); font-weight: 600; }
 
-/* ---------- Tablero de unidades (tipo aeropuerto) ---------- */
+/* ---------- Tablero de unidades (claro / cristal, ordenable) ---------- */
 .board {
-  background: #0e141d; border: 1px solid #2b3850; border-radius: 14px;
-  padding: 4px 6px; overflow-x: auto; box-shadow: inset 0 0 50px rgba(0,0,0,.35);
+  background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-line); border-radius: 14px;
+  padding: 4px 8px; overflow-x: auto; box-shadow: var(--shadow-sm);
 }
 .board-tbl {
-  width: 100%; border-collapse: collapse; min-width: 760px;
+  width: 100%; border-collapse: collapse; min-width: 920px;
   font-variant-numeric: tabular-nums; font-family: "SF Mono", ui-monospace, "Roboto Mono", Menlo, Consolas, monospace;
 }
 .board-tbl thead th {
-  color: var(--lime); font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--lime-deep); font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em;
   padding: 11px 12px; text-align: right; vertical-align: bottom; line-height: 1.25;
-  border-bottom: 1px solid #313f55; white-space: nowrap;
+  border-bottom: 2px solid var(--line-2); white-space: nowrap; user-select: none;
 }
 .board-tbl thead th:first-child { text-align: left; }
+.board-tbl thead th:not(.b-nosort) { cursor: pointer; }
+.board-tbl thead th:not(.b-nosort):hover { color: var(--ink); background: rgba(196,230,0,.12); }
+.board-tbl thead th.b-sorted { color: var(--ink); background: rgba(196,230,0,.16); }
+.board-tbl thead th.b-nosort { color: var(--muted); }
+.board-tbl thead th .b-car { font-size: 9px; margin-left: 3px; color: var(--lime-mid); }
 .board-tbl td {
-  color: #e7edf5; font-size: 13.5px; padding: 9px 12px; text-align: right;
-  border-bottom: 1px solid rgba(255,255,255,.045);
+  color: var(--ink); font-size: 13.5px; padding: 9px 12px; text-align: right;
+  border-bottom: 1px solid var(--line);
 }
 .board-tbl tbody tr:last-child td { border-bottom: none; }
-.board-tbl tbody tr:hover { background: rgba(196,230,0,.07); }
-.board-tbl td.b-unit { text-align: left; color: #fff; font-weight: 700; letter-spacing: .03em; }
-.board-tbl td.b-warn { color: var(--gold); font-weight: 700; }
-.board-tbl td.b-alert { color: #ff7d7d; font-weight: 800; }
+.board-tbl tbody tr:nth-child(even) { background: rgba(255,255,255,.35); }
+.board-tbl tbody tr:hover { background: rgba(196,230,0,.10); }
+.board-tbl td.b-unit { text-align: left; color: var(--ink); font-weight: 800; letter-spacing: .02em; }
+.board-tbl td.b-warn { color: var(--orange); font-weight: 700; }
+.board-tbl td.b-alert { color: var(--red); font-weight: 800; }
+.board-tbl td.b-pred { color: var(--muted); }
 
 /* ---------- Layout helpers ---------- */
 .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }

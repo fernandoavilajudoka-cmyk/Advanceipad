@@ -23,7 +23,7 @@ const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
 
 let DATA = null;
 const charts = {};
-const STATE = { monthId: null, weekId: 'all', plantId: 'all', params: null };
+const STATE = { monthId: null, weekId: 'all', plantId: 'all', params: null, boardSort: { key: 'distance_km', dir: 'desc' } };
 
 async function boot() {
   try {
@@ -98,7 +98,7 @@ function aggregate() {
 
   const perUnit = [];
   let f = { distance_km: 0, drive_h: 0, stop_h: 0, segs: 0, stops: 0, viol: 0, maxspeed: 0, fuel_l: 0, active: 0, no_signal: 0,
-    real_fuel_l: 0, rf_l: 0, rf_n: 0, dr_l: 0, dr_n: 0, sensors: 0 };
+    real_fuel_l: 0, idle_fuel_l: 0, rf_l: 0, rf_n: 0, dr_l: 0, dr_n: 0, sensors: 0 };
 
   for (const u of units) {
     let dist = 0, drive = 0, stop = 0, segs = 0, stops = 0, viol = 0, mx = 0;
@@ -112,6 +112,10 @@ function aggregate() {
     const fuel = dist * p.consumo_norma_l100 / 100;            // estimado (norma configurable)
     const realFuel = (u.real_l100 != null) ? dist * u.real_l100 / 100 : null; // real (flujo/sensor)
     const realEff = (realFuel && realFuel > 0) ? dist / realFuel : null;
+    // Ralentí = consumo real − consumo en movimiento (siempre ≤ total real)
+    const idleFuel = (realFuel != null) ? Math.max(0, realFuel - dist * p.consumo_ruta_l100 / 100) : null;
+    const idleHours = (idleFuel != null && p.consumo_ralenti_lh > 0) ? idleFuel / p.consumo_ralenti_lh : null;
+    const idlePctFuel = (realFuel && realFuel > 0 && idleFuel != null) ? idleFuel / realFuel * 100 : 0;
     const eff = fuel > 0 ? dist / fuel : 0;
     const vp100 = dist > 0 ? viol / dist * 100 : 0;
     const totalT = drive + stop;
@@ -129,6 +133,8 @@ function aggregate() {
       segments: segs, stops, fuel_l: round(fuel, 1), efficiency_kml: round(eff, 2),
       real_l100: u.real_l100, real_fuel_l: realFuel != null ? round(realFuel, 1) : null,
       real_efficiency_kml: realEff != null ? round(realEff, 2) : null, has_fuel_sensor: !!u.has_fuel_sensor,
+      idle_fuel_l: idleFuel != null ? round(idleFuel, 1) : null, idle_hours: idleHours != null ? round(idleHours, 1) : null,
+      idle_pct_fuel: round(idlePctFuel, 1),
       refuel_l: Math.round(rfL), refuel_n: rfN, drain_l: Math.round(drL), drain_n: drN,
       max_speed: Math.round(mx), violations: viol, violations_per_100km: round(vp100, 2),
       move_ratio: round(moveRatio * 100, 1),
@@ -138,28 +144,38 @@ function aggregate() {
     f.distance_km += dist; f.drive_h += drive; f.stop_h += stop; f.segs += segs; f.stops += stops; f.viol += viol;
     f.fuel_l += fuel; if (mx > f.maxspeed) f.maxspeed = mx;
     if (realFuel != null) f.real_fuel_l += realFuel;
+    if (idleFuel != null) f.idle_fuel_l += idleFuel;
     if (u.has_fuel_sensor) f.sensors += 1;
     f.rf_l += rfL; f.rf_n += rfN; f.dr_l += drL; f.dr_n += drN;
     if (dist > 0.1) f.active += 1;
     if (u.stale) f.no_signal += 1;
   }
 
-  // Serie diaria (suma sobre unidades filtradas)
+  // Serie diaria (suma sobre unidades filtradas) con rendimiento real por día
   const daily = sortedDays.map((k) => {
-    let dist = 0, drive = 0, stop = 0, viol = 0;
-    for (const u of units) { const d = u.days[k]; if (d) { dist += d.dist_km; drive += d.drive_h; stop += d.stop_h; viol += d.viol; } }
-    return { date: k, weekday: weekdayOf(k), distance_km: round(dist, 1), drive_hours: round(drive, 1), stop_hours: round(stop, 1), violations: viol };
+    let dist = 0, drive = 0, stop = 0, viol = 0, realFuel = 0;
+    for (const u of units) {
+      const d = u.days[k]; if (!d) continue;
+      dist += d.dist_km; drive += d.drive_h; stop += d.stop_h; viol += d.viol;
+      if (u.real_l100 != null) realFuel += d.dist_km * u.real_l100 / 100;
+    }
+    return { date: k, weekday: weekdayOf(k), distance_km: round(dist, 1), drive_hours: round(drive, 1), stop_hours: round(stop, 1), violations: viol,
+      real_fuel_l: round(realFuel, 1), efficiency_kml: realFuel > 0 ? round(dist / realFuel, 2) : 0 };
   });
 
   const km = f.distance_km, driveH = f.drive_h, stopH = f.stop_h;
   const eff = f.fuel_l > 0 ? km / f.fuel_l : 0;
   const realEffFleet = f.real_fuel_l > 0 ? km / f.real_fuel_l : 0;
+  const idleCost = f.idle_fuel_l * p.precio_diesel_mxn;
+  const idleHoursFleet = p.consumo_ralenti_lh > 0 ? f.idle_fuel_l / p.consumo_ralenti_lh : 0;
 
   const fleet = {
     units_total: units.length, units_active: f.active, units_no_signal: f.no_signal, drivers: DATA.drivers.length,
     distance_km: round(km, 0), drive_hours: round(driveH, 0), stop_hours: round(stopH, 0),
     fuel_l: round(f.fuel_l, 0), efficiency_kml: round(eff, 2),
     real_fuel_l: round(f.real_fuel_l, 0), real_efficiency_kml: round(realEffFleet, 2),
+    idle_fuel_l: round(f.idle_fuel_l, 0), idle_cost: Math.round(idleCost), idle_hours: round(idleHoursFleet, 0),
+    idle_pct_fuel: round(f.real_fuel_l > 0 ? f.idle_fuel_l / f.real_fuel_l * 100 : 0, 1),
     fuel_sensors: f.sensors,
     refuel_l: Math.round(f.rf_l), refuel_n: f.rf_n, drain_l: Math.round(f.dr_l), drain_n: f.dr_n,
     violations: f.viol, violations_per_100km: round(km > 0 ? f.viol / km * 100 : 0, 1),
@@ -175,10 +191,10 @@ function aggregate() {
 }
 
 function computeMoney(fleet, p) {
-  const fuelL = fleet.distance_km * p.consumo_norma_l100 / 100;
-  const idleFuel = fleet.stop_hours * p.consumo_ralenti_lh;
+  const idleFuel = fleet.idle_fuel_l;                       // ralentí real (≤ consumo total)
+  const realFuel = fleet.real_fuel_l;
   const idealFuel = fleet.distance_km / p.benchmark_kml;
-  const extraFuel = Math.max(0, fuelL - idealFuel);
+  const extraFuel = Math.max(0, realFuel - idealFuel);      // pérdida vs benchmark sobre consumo REAL
   const seg = fleet.violations * p.costo_por_exceso_mxn;
   const ral = idleFuel * p.precio_diesel_mxn;
   const efi = extraFuel * p.precio_diesel_mxn;
@@ -292,80 +308,119 @@ function tocSlide() {
 /* ------------------------- Resumen ejecutivo ------------------------- */
 function execSlide() {
   const f = VIEW.fleet;
-  const p = STATE.params;
-  const idleL = f.stop_hours * p.consumo_ralenti_lh;      // litros en ralentí
-  const idleCost = idleL * p.precio_diesel_mxn;           // costo del ralentí
   const kpi = (cls, val, unit, lbl) =>
     `<div class="kpi ${cls}"><div class="k-val">${val}<span class="k-unit"> ${unit || ''}</span></div><div class="k-lbl">${lbl}</div></div>`;
+  const pred = (lbl) =>
+    `<div class="kpi pred"><div class="k-val">—</div><div class="k-lbl">${lbl}</div><div class="k-note pred-note">Modelo predictivo · por definir</div></div>`;
   const alertHtml = f.units_no_signal > 0
     ? `<div class="alert"><div><b>${f.units_no_signal} unidad(es) sin señal GPS reciente.</b> Posible apagado del equipo, pérdida de cobertura o manipulación.</div></div>`
     : `<div class="alert ok"><div><b>Cobertura GPS completa.</b> Todas las unidades del filtro reportaron posición.</div></div>`;
   return el(`
   <section class="slide" id="s02">
     <div class="slide-head"><span class="snum">02</span><div><h2>Resumen ejecutivo</h2><div class="sub">${esc(scopeLabel())} · ${esc(plantLabel())}</div></div></div>
-    <div class="kpis">
+    <h4 style="margin:2px 0 8px">Tendencia: rendimiento de flota (km/L) vs. distancia recorrida (km)</h4>
+    <div class="chart-box"><canvas id="chTrend"></canvas></div>
+    <div class="kpis" style="margin-top:20px">
       ${kpi('teal', nf.format(f.drive_hours), 'h', 'Tiempo de conducción')}
-      ${kpi('amber', nf.format(f.stop_hours), 'h', 'Tiempo en ralentí')}
-      ${kpi('amber', nf.format(Math.round(idleL)), 'L', 'Combustible en ralentí')}
-      ${kpi('red', money(idleCost), '', 'Gasto en ralentí (MXN)')}
+      ${kpi('amber', nf.format(f.idle_hours), 'h', 'Tiempo en ralentí (est.)')}
+      ${kpi('amber', nf.format(f.idle_fuel_l), 'L', 'Combustible en ralentí')}
+      ${kpi('red', money(f.idle_cost), '', 'Gasto en ralentí (MXN)')}
       ${kpi('blue', nf.format(f.max_speed), 'km/h', 'Velocidad máxima alcanzada')}
       ${kpi('green', nf.format(f.distance_km), 'km', 'Distancia total recorrida')}
       ${kpi('green', nf.format(f.real_fuel_l), 'L', 'Combustible total (real)')}
       <div class="kpi red"><div class="k-val">${nf.format(f.violations)}</div><div class="k-lbl">Eventos de seguridad registrados</div><div class="k-note">${nf1.format(f.violations_per_100km)} por cada 100 km</div></div>
+      ${pred('Probabilidad de accidente')}
+      ${pred('Probabilidad de robo')}
     </div>
-    <div class="cols c-7-5" style="margin-top:22px">
-      <div>
-        <h4 style="margin:4px 0 8px">Distribución del tiempo de motor</h4>
-        <div class="chart-box sm"><canvas id="chMotor"></canvas></div>
-        <div class="legend">
-          <span><span class="dot" style="background:${C.cyan}"></span>Conducción ${nf.format(f.drive_hours)} h</span>
-          <span><span class="dot" style="background:${C.gold}"></span>Ralentí ${nf.format(f.stop_hours)} h</span>
-        </div>
-      </div>
-      <div class="panel">
-        <h4>Lectura ejecutiva</h4>
-        <p style="font-size:13.5px;margin:.2em 0">La selección recorrió <b>${nf.format(f.distance_km)} km</b> en <b>${nf.format(f.drive_hours)} h</b> de conducción, con <b>${nf.format(f.stop_hours)} h</b> en ralentí (${nf1.format(f.idle_share_pct)}% del tiempo de motor) que representan <b>${money(idleCost)}</b> en diésel. La reducción del ralentí es la principal palanca de ahorro.</p>
-        ${alertHtml}
-      </div>
+    <div class="panel" style="margin-top:20px">
+      <h4>Lectura ejecutiva</h4>
+      <p style="font-size:13.5px;margin:.2em 0">La selección recorrió <b>${nf.format(f.distance_km)} km</b> en <b>${nf.format(f.drive_hours)} h</b> de conducción y consumió <b>${nf.format(f.real_fuel_l)} L</b> reales de diésel (rendimiento <b>${nf2.format(f.real_efficiency_kml)} km/L</b>). De ese consumo, ~<b>${nf.format(f.idle_fuel_l)} L</b> (${nf1.format(f.idle_pct_fuel)}%) corresponden a ralentí/operación detenida ≈ <b>${money(f.idle_cost)}</b>. La reducción del ralentí es la principal palanca de ahorro.</p>
+      ${alertHtml}
     </div>
   </section>`);
 }
 
 /* --------------------- Tablero de unidades (tipo aeropuerto) --------------------- */
+// Columnas del tablero (key, etiqueta, tipo). sortable=false en placeholders.
+const BOARD_COLS = [
+  { key: 'number', lbl: 'Unidad', t: 'txt' },
+  { key: 'distance_km', lbl: 'Distancia<br>km', t: 'num' },
+  { key: 'real_fuel_l', lbl: 'Combustible<br>total L', t: 'num' },
+  { key: 'idle_fuel_l', lbl: 'Ralentí<br>L', t: 'num' },
+  { key: 'idle_pct_fuel', lbl: '% Ralentí<br>del consumo', t: 'pct' },
+  { key: 'real_efficiency_kml', lbl: 'Rendimiento<br>km/L', t: 'num2' },
+  { key: 'violations_per_100km', lbl: 'Seguridad<br>/100 km', t: 'num1' },
+  { key: 'has_fuel_sensor', lbl: 'Varilla', t: 'bool' },
+  { key: 'drain_n', lbl: 'Descargas<br>eventos', t: 'warn' },
+  { key: 'drain_l', lbl: 'Diésel<br>descargado L', t: 'alert' },
+  { key: 'acc_prob', lbl: 'Prob.<br>accidente', t: 'pred', sortable: false },
+  { key: 'theft_prob', lbl: 'Prob.<br>robo', t: 'pred', sortable: false },
+];
+
 function boardSlide() {
-  const p = STATE.params;
-  const units = [...VIEW.units].sort((a, b) => b.distance_km - a.distance_km);
-  const rows = units.map((u) => {
-    const idleL = Math.round(u.stop_hours * p.consumo_ralenti_lh);
-    const totalT = u.drive_hours + u.stop_hours;
-    const idlePct = totalT > 0 ? u.stop_hours / totalT * 100 : 0;
-    return `<tr>
-      <td class="b-unit">${esc(u.number || u.label)}</td>
-      <td>${nf1.format(u.distance_km)}</td>
-      <td>${u.real_fuel_l != null ? nf.format(u.real_fuel_l) : '—'}</td>
-      <td>${nf.format(idleL)}</td>
-      <td>${nf1.format(idlePct)}%</td>
-      <td>${u.real_efficiency_kml != null ? nf2.format(u.real_efficiency_kml) : '—'}</td>
-      <td>${nf1.format(u.violations_per_100km)}</td>
-      <td class="${u.drain_n ? 'b-warn' : ''}">${u.drain_n || '—'}</td>
-      <td class="${u.drain_l ? 'b-alert' : ''}">${u.drain_l ? nf.format(u.drain_l) : '—'}</td>
-    </tr>`;
+  const s = STATE.boardSort;
+  const getVal = (u, key) => {
+    if (key === 'number') return (u.number || u.label || '').toString();
+    if (key === 'has_fuel_sensor') return u.has_fuel_sensor ? 1 : 0;
+    return u[key];
+  };
+  const units = [...VIEW.units].sort((a, b) => {
+    let va = getVal(a, s.key), vb = getVal(b, s.key);
+    if (typeof va === 'string') return s.dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    if (va == null) va = -Infinity; if (vb == null) vb = -Infinity;
+    return s.dir === 'asc' ? va - vb : vb - va;
+  });
+  const cell = (u, c) => {
+    const v = u[c.key];
+    switch (c.t) {
+      case 'txt': return `<td class="b-unit">${esc(u.number || u.label)}</td>`;
+      case 'num': return `<td>${v != null ? nf.format(v) : '—'}</td>`;
+      case 'num1': return `<td>${nf1.format(v || 0)}</td>`;
+      case 'num2': return `<td>${v != null ? nf2.format(v) : '—'}</td>`;
+      case 'pct': return `<td>${nf1.format(v || 0)}%</td>`;
+      case 'bool': return `<td>${u.has_fuel_sensor ? '<span class="badge verde">Sí</span>' : '<span class="badge naranja">No</span>'}</td>`;
+      case 'warn': return `<td class="${v ? 'b-warn' : ''}">${v || '—'}</td>`;
+      case 'alert': return `<td class="${v ? 'b-alert' : ''}">${v ? nf.format(v) : '—'}</td>`;
+      case 'pred': return `<td class="b-pred">—</td>`;
+      default: return `<td>${v ?? '—'}</td>`;
+    }
+  };
+  const rows = units.map((u) => `<tr>${BOARD_COLS.map((c) => cell(u, c)).join('')}</tr>`).join('');
+  const head = BOARD_COLS.map((c) => {
+    const active = c.sortable !== false && s.key === c.key;
+    const car = active ? `<span class="b-car">${s.dir === 'asc' ? '▲' : '▼'}</span>` : '';
+    const cls = c.sortable === false ? 'b-nosort' : (active ? 'b-sorted' : '');
+    const click = c.sortable === false ? '' : ` onclick="sortBoard('${c.key}')"`;
+    return `<th class="${cls}"${click}>${c.lbl}${car}</th>`;
   }).join('');
   return el(`
   <section class="slide" id="sBoard">
-    <div class="slide-head"><span class="snum">03</span><div><h2>Tablero de unidades</h2><div class="sub">Vista general de la flota — ${esc(scopeLabel())} · ${esc(plantLabel())}</div></div></div>
+    <div class="slide-head"><span class="snum">03</span><div><h2>Tablero de unidades</h2><div class="sub">Clic en un encabezado para ordenar — ${esc(scopeLabel())} · ${esc(plantLabel())}</div></div></div>
     <div class="board">
       <table class="board-tbl">
-        <thead><tr>
-          <th>Unidad</th><th>Distancia<br>km</th><th>Combustible<br>total L</th><th>Ralentí<br>L</th><th>% Ralentí<br>del total</th>
-          <th>Rendimiento<br>km/L</th><th>Seguridad<br>/100 km</th><th>Descargas<br>eventos</th><th>Diésel<br>descargado L</th>
-        </tr></thead>
-        <tbody>${rows || '<tr><td colspan="9" style="color:#7e8aa0">Sin datos en la selección.</td></tr>'}</tbody>
+        <thead><tr>${head}</tr></thead>
+        <tbody>${rows || `<tr><td colspan="${BOARD_COLS.length}" style="color:var(--muted)">Sin datos en la selección.</td></tr>`}</tbody>
       </table>
     </div>
-    <div class="note">Combustible total y rendimiento provienen del sensor/flujo real. Ralentí = tiempo detenido × ${nf1.format(p.consumo_ralenti_lh)} L/h. Descargas = eventos del sensor de varilla (a validar en sitio).</div>
+    <div class="note">Combustible total y rendimiento = sensor/flujo real. Ralentí (L) = consumo real − distancia × ${nf1.format(STATE.params.consumo_ruta_l100)} l/100km (consumo en ruta). Varilla = sensor Escort instalado. Descargas y Prob. accidente/robo: ver notas de cada sección.</div>
   </section>`);
 }
+
+// Ordenamiento interactivo del tablero (clic encabezado: mayor→menor, otra vez menor→mayor)
+function sortBoard(key) {
+  const s = STATE.boardSort;
+  if (s.key === key) s.dir = s.dir === 'desc' ? 'asc' : 'desc';
+  else { s.key = key; s.dir = 'desc'; }
+  const old = document.getElementById('sBoard');
+  if (!old) return;
+  const fresh = boardSlide();
+  old.replaceWith(fresh);
+  const img = document.createElement('img');
+  img.className = 'slide-logo'; img.src = CLIENT_LOGO; img.alt = 'Concretos Técnicos';
+  fresh.appendChild(img);
+  numberSections();
+}
+window.sortBoard = sortBoard;
 
 /* ---------------------------- Rendimiento ---------------------------- */
 function perfSlide() {
@@ -602,6 +657,7 @@ function methodSlide() {
         <div class="param-grid">
           ${inp('p-diesel', 'Precio diésel (MXN/L)', P.precio_diesel_mxn, 'Costo del litro', '0.5')}
           ${inp('p-norma', 'Consumo norma (L/100km)', P.consumo_norma_l100, 'Referencia de consumo', '1')}
+          ${inp('p-ruta', 'Consumo en ruta (L/100km)', P.consumo_ruta_l100, 'Solo en movimiento (separa ralentí)', '1')}
           ${inp('p-bench', 'Benchmark (km/L)', P.benchmark_kml, 'Objetivo del fabricante', '0.1')}
           ${inp('p-ralenti', 'Ralentí (L/h)', P.consumo_ralenti_lh, 'Consumo en detención', '0.5')}
           ${inp('p-limite', 'Límite velocidad (km/h)', P.limite_velocidad_kmh, 'Umbral de exceso', '5')}
@@ -621,9 +677,9 @@ function methodSlide() {
     <div class="panel" style="margin-top:18px">
       <h4>Fórmulas</h4>
       <ul style="font-size:13px;margin:.3em 0">
-        <li><b>Combustible</b> = distancia × consumo_norma ÷ 100 &nbsp;·&nbsp; <b>Eficiencia</b> = distancia ÷ combustible</li>
-        <li><b>Costo ralentí</b> = tiempo_detenido × ralentí (L/h) × precio_diésel</li>
-        <li><b>Pérdida eficiencia</b> = máx(0, combustible − distancia ÷ benchmark) × precio_diésel</li>
+        <li><b>Combustible real</b> = medido por sensor/flujo &nbsp;·&nbsp; <b>Rendimiento</b> = distancia ÷ combustible real</li>
+        <li><b>Ralentí (L)</b> = combustible real − (distancia × consumo_ruta ÷ 100) &nbsp;·&nbsp; <b>Costo ralentí</b> = ralentí × precio_diésel</li>
+        <li><b>Pérdida eficiencia</b> = máx(0, combustible real − distancia ÷ benchmark) × precio_diésel</li>
         <li><b>Costo seguridad</b> = nº de excesos × costo_por_exceso &nbsp;·&nbsp; <b>Proyección</b>: mensual ×4.345 · anual ×52</li>
       </ul>
     </div>
@@ -637,6 +693,7 @@ function onParam() {
   STATE.params = {
     precio_diesel_mxn: g('p-diesel', P.precio_diesel_mxn),
     consumo_norma_l100: g('p-norma', P.consumo_norma_l100),
+    consumo_ruta_l100: g('p-ruta', P.consumo_ruta_l100),
     benchmark_kml: g('p-bench', P.benchmark_kml),
     consumo_ralenti_lh: g('p-ralenti', P.consumo_ralenti_lh),
     limite_velocidad_kmh: g('p-limite', P.limite_velocidad_kmh),
@@ -653,9 +710,26 @@ function drawCharts() {
   const GRID = 'rgba(20,24,29,.07)';
   const f = VIEW.fleet;
 
-  mk('chMotor', { type: 'doughnut',
-    data: { labels: ['Manejo', 'Detenido'], datasets: [{ data: [f.drive_hours, f.stop_hours], backgroundColor: [C.lime, C.gold], borderColor: '#ffffff', borderWidth: 3 }] },
-    options: { cutout: '64%', plugins: { legend: { display: false } } } });
+  // Tendencia ejecutiva: distancia (barras) + rendimiento real km/L (línea)
+  const td = VIEW.daily;
+  mk('chTrend', {
+    type: 'bar',
+    data: {
+      labels: td.map((x) => x.weekday + ' ' + dateLabel(x.date)),
+      datasets: [
+        { type: 'bar', label: 'Distancia (km)', data: td.map((x) => x.distance_km), backgroundColor: 'rgba(182,212,0,.55)', borderRadius: 5, maxBarThickness: 46, yAxisID: 'y' },
+        { type: 'line', label: 'Rendimiento (km/L)', data: td.map((x) => x.efficiency_kml), borderColor: C.green, backgroundColor: C.green, borderWidth: 2.5, tension: .35, pointRadius: 2.5, yAxisID: 'y1' },
+      ],
+    },
+    options: {
+      plugins: { legend: { display: true, labels: { boxWidth: 12, font: { size: 11 } } } },
+      scales: {
+        y: { beginAtZero: true, position: 'left', grid: { color: GRID }, title: { display: true, text: 'km', font: { size: 10 } } },
+        y1: { beginAtZero: true, position: 'right', grid: { display: false }, title: { display: true, text: 'km/L', font: { size: 10 } } },
+        x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, font: { size: 10 } } },
+      },
+    },
+  });
 
   const dl = VIEW.daily;
   mk('chDaily', { type: 'bar',

@@ -41,7 +41,8 @@ const MAX_DAYS_PER_CALL = 28; // la API limita a 31 días por llamada
 // Parámetros de negocio (editables también en el informe → sección Metodología)
 const PARAMS = {
   precio_diesel_mxn: 25.99,        // precio de referencia del diésel (MXN/L)
-  consumo_norma_l100: 40.0,
+  consumo_norma_l100: 40.0,        // norma de referencia (comparativo)
+  consumo_ruta_l100: 35.0,         // consumo SOLO en movimiento (l/100km) → separa ralentí
   benchmark_kml: 2.5,
   consumo_ralenti_lh: 3.0,
   limite_velocidad_kmh: 90,
