@@ -754,7 +754,7 @@ function numberSections() {
 const TOC_DESC = {
   s02: 'KPIs clave del periodo',
   sBoard: 'Tablero de todas las unidades',
-  s03: 'Mejores y peores: rendimiento y aprovechamiento',
+  s03: 'Eficiencia combinada: distancia + rendimiento',
   s04f: 'Sensor Escort: consumo, recargas y descargas',
   s04p: 'Comparativo por planta de concreto',
   s04: 'Velocidad y conducción',
@@ -820,7 +820,8 @@ function tocSlide() {
 /* ------------------------- Resumen ejecutivo ------------------------- */
 function execSlide() {
   const f = VIEW.fleet;
-  const idlePctTime = f.stop_hours > 0 ? f.idle_hours / f.stop_hours * 100 : 0;
+  // % ralentí = tiempo detenido con motor encendido ÷ tiempo de motor encendido (movimiento + ralentí)
+  const idlePctTime = f.motor_hours > 0 ? f.idle_hours / f.motor_hours * 100 : 0;
   const kpi = (cls, val, unit, lbl) =>
     `<div class="kpi ${cls}"><div class="k-val">${val}<span class="k-unit"> ${unit || ''}</span></div><div class="k-lbl">${lbl}</div></div>`;
   const pred = (lbl) =>
@@ -838,7 +839,7 @@ function execSlide() {
       ${kpi('teal', nf.format(f.motor_hours), 'h', 'Tiempo total de motor (est.)')}
       ${kpi('green', nf.format(f.real_fuel_l), 'L', 'Consumo total de combustible')}
       ${kpi('amber', nf.format(f.idle_fuel_l), 'L', 'Consumo de combustible en ralentí')}
-      <div class="kpi amber"><div class="k-val">${nf.format(f.idle_hours)}<span class="k-unit"> h</span></div><div class="k-lbl">Tiempo en ralentí (est.)</div><div class="k-note neutral">${nf1.format(idlePctTime)}% del tiempo detenido</div></div>
+      <div class="kpi amber"><div class="k-val">${nf.format(f.idle_hours)}<span class="k-unit"> h</span></div><div class="k-lbl">Tiempo en ralentí (est.)</div><div class="k-note neutral">${nf1.format(idlePctTime)}% del tiempo de motor encendido</div></div>
       ${kpi('blue', nf2.format(f.real_efficiency_kml), 'km/L', 'Rendimiento general')}
       <div class="kpi red"><div class="k-val">${nf.format(f.violations)}</div><div class="k-lbl">Eventos de seguridad registrados</div><div class="k-note">${nf1.format(f.violations_per_100km)} por cada 100 km</div></div>
       <div class="kpi ${f.acc_rating === 'rojo' ? 'red' : f.acc_rating === 'naranja' ? 'amber' : 'green'}"><div class="k-val">${f.acc_level}<span class="k-unit"> · ${f.acc_risk}</span></div><div class="k-lbl">Probabilidad de accidente</div><div class="k-note neutral">${f.acc_high} unidad(es) en riesgo alto</div></div>
@@ -939,39 +940,31 @@ function sortBoard(key) {
 }
 window.sortBoard = sortBoard;
 
-/* -------------------- Desempeño: mejores y peores -------------------- */
+/* ------------- Desempeño: eficiencia combinada (distancia + rendimiento) ------------- */
 function perfSlide() {
-  const list = (arr, fmt, color, max) => arr.map((u, i) => {
-    const val = fmt(u);
-    const w = max > 0 ? Math.max(5, Math.min(100, (val.n / max) * 100)) : 5;
-    return `<tr><td class="rank-i">${i + 1}</td><td>${esc(u.number || u.label)}</td>
-      <td class="num">${val.t}</td>
-      <td style="width:90px"><div class="bar-wrap"><i style="width:${w}%;background:${color}"></i></div></td></tr>`;
-  }).join('');
-  const panel = (title, sub, rows) => `<div class="panel"><h4>${title}</h4><div class="sub" style="font-size:11.5px;color:var(--muted);margin:-6px 0 8px">${sub}</div><table class="tbl"><tbody>${rows || '<tr><td style="color:var(--muted)">Sin datos</td></tr>'}</tbody></table></div>`;
-
-  const withEff = VIEW.units.filter((u) => u.real_efficiency_kml != null && u.distance_km > 1);
-  const byEff = [...withEff].sort((a, b) => b.real_efficiency_kml - a.real_efficiency_kml);
-  const byDist = [...VIEW.units].sort((a, b) => b.distance_km - a.distance_km);
-  const topEff = byEff.slice(0, 5), botEff = byEff.slice(-5).reverse();
-  const topDist = byDist.slice(0, 5), botDist = byDist.filter((u) => u.distance_km >= 0).slice(-5).reverse();
-  const maxEff = Math.max(...withEff.map((u) => u.real_efficiency_kml), 0.1);
-  const maxDist = Math.max(...byDist.map((u) => u.distance_km), 1);
-  const fEff = (u) => ({ n: u.real_efficiency_kml, t: `${nf2.format(u.real_efficiency_kml)} km/L` });
-  const fDist = (u) => ({ n: u.distance_km, t: `${nf1.format(u.distance_km)} km` });
-
+  const elig = VIEW.units.filter((u) => u.real_efficiency_kml != null && u.distance_km > 1);
+  const maxD = Math.max(...elig.map((u) => u.distance_km), 1);
+  const maxE = Math.max(...elig.map((u) => u.real_efficiency_kml), 0.1);
+  // Score combinado 0–100: 50% aprovechamiento (distancia) + 50% rendimiento (km/L)
+  const scored = elig.map((u) => ({ ...u, combo: Math.round((0.5 * u.distance_km / maxD + 0.5 * u.real_efficiency_kml / maxE) * 100) }))
+    .sort((a, b) => b.combo - a.combo);
+  const top = scored.slice(0, 5), bot = scored.slice(-5).reverse();
+  const rows = (arr, color) => arr.map((u, i) => `
+    <tr><td class="rank-i">${i + 1}</td><td>${esc(u.number || u.label)}</td>
+      <td class="num">${nf1.format(u.distance_km)} km</td>
+      <td class="num">${nf2.format(u.real_efficiency_kml)} km/L</td>
+      <td class="num"><b>${u.combo}</b></td>
+      <td style="width:64px"><div class="bar-wrap"><i style="width:${Math.max(5, u.combo)}%;background:${color}"></i></div></td></tr>`).join('');
+  const head = '<thead><tr><th></th><th>Unidad</th><th class="num">Distancia</th><th class="num">Rend.</th><th class="num">Score</th><th></th></tr></thead>';
+  const panel = (title, sub, body, color) => `<div class="panel"><h4>${title}</h4><div class="sub" style="font-size:11.5px;color:var(--muted);margin:-6px 0 8px">${sub}</div><table class="tbl">${head}<tbody>${body || `<tr><td colspan="6" style="color:var(--muted)">Sin datos</td></tr>`}</tbody></table></div>`;
   return el(`
   <section class="slide" id="s03">
-    <div class="slide-head"><span class="snum">03</span><div><h2>Desempeño de la flota</h2><div class="sub">Mejores y peores en rendimiento y aprovechamiento · ${esc(scopeLabel())} · ${esc(plantLabel())}</div></div></div>
+    <div class="slide-head"><span class="snum">03</span><div><h2>Eficiencia de la flota</h2><div class="sub">Desempeño combinado: aprovechamiento (km) + rendimiento (km/L) · ${esc(scopeLabel())} · ${esc(plantLabel())}</div></div></div>
     <div class="cols">
-      ${panel('Top 5 — mejor rendimiento', 'Rendimiento real (km/L)', list(topEff, fEff, C.green, maxEff))}
-      ${panel('Top 5 — mayor aprovechamiento', 'Distancia recorrida (km)', list(topDist, fDist, C.lime, maxDist))}
+      ${panel('Top 5 — mejor desempeño', 'Mayor distancia recorrida y mejor rendimiento', rows(top, C.green), C.green)}
+      ${panel('Bottom 5 — menor desempeño', 'Menor distancia recorrida y menor rendimiento', rows(bot, C.red), C.red)}
     </div>
-    <div class="cols" style="margin-top:18px">
-      ${panel('Bottom 5 — menor rendimiento', 'Rendimiento real (km/L)', list(botEff, fEff, C.red, maxEff))}
-      ${panel('Bottom 5 — menor aprovechamiento', 'Distancia recorrida (km)', list(botDist, fDist, C.orange, maxDist))}
-    </div>
-    <div class="note">Rendimiento = km ÷ combustible real (sensor/flujo). Aprovechamiento = distancia recorrida en el periodo. El ranking es por <b>unidad</b>; el rendimiento por conductor requiere la asignación conductor↔unidad (iButton), no disponible en la API actual.</div>
+    <div class="note">Score 0–100 = 50% aprovechamiento (distancia recorrida, normalizada) + 50% rendimiento (km/L real). Las mejores combinan alto kilometraje y buena eficiencia; las peores, bajo kilometraje y baja eficiencia. Combustible real del sensor/flujo. El ranking es por <b>unidad</b> (el rendimiento por conductor requiere la asignación conductor↔unidad, no disponible en la API).</div>
   </section>`);
 }
 
