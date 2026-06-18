@@ -198,6 +198,7 @@ function render() {
   deck.appendChild(coverSlide());
   deck.appendChild(tocSlide());
   deck.appendChild(execSlide());
+  deck.appendChild(boardSlide());
   deck.appendChild(perfSlide());
   deck.appendChild(fuelSlide());
   deck.appendChild(plantsSlide());
@@ -207,8 +208,43 @@ function render() {
   deck.appendChild(moneySlide());
   deck.appendChild(methodSlide());
   deck.appendChild(el(`<div class="foot">Generado el ${new Date(DATA.meta.generated_at).toLocaleString('es-MX')} · Datos del rango ${dateLabel(DATA.meta.range.from)}–${dateLabel(DATA.meta.range.till)} · Fuente: ${esc(DATA.meta.source)}</div>`));
+  numberSections();
+  buildTOC();
   stampLogos();
   requestAnimationFrame(drawCharts);
+}
+
+// Numeración automática de secciones (índice = 01, luego en orden)
+function numberSections() {
+  const slides = [...document.querySelectorAll('#deck > section.slide:not(.cover)')];
+  slides.forEach((s, i) => {
+    const sn = s.querySelector('.snum');
+    if (sn) sn.textContent = String(i + 1).padStart(2, '0');
+  });
+}
+// Índice generado a partir de las secciones reales (siempre sincronizado)
+const TOC_DESC = {
+  s02: 'KPIs clave del periodo',
+  sBoard: 'Tablero de todas las unidades',
+  s03: 'Tendencia diaria y utilización',
+  s04f: 'Sensor Escort: consumo, recargas y descargas',
+  s04p: 'Comparativo por planta de concreto',
+  s04: 'Velocidad y conducción',
+  s05: 'Equipos de baja velocidad',
+  s06: 'Score 0–100 por unidad',
+  s07: 'Impacto económico estimado',
+  s08: 'Parámetros y naturaleza de datos',
+};
+function buildTOC() {
+  const nav = document.getElementById('tocNav');
+  if (!nav) return;
+  const slides = [...document.querySelectorAll('#deck > section.slide:not(.cover)')].filter((s) => s.id !== 'sIdx');
+  nav.innerHTML = slides.map((s) => {
+    const n = s.querySelector('.snum')?.textContent || '';
+    const t = s.querySelector('h2')?.textContent || '';
+    const d = TOC_DESC[s.id] || '';
+    return `<a href="#${s.id}"><span class="n">${n}</span><span><span class="t">${esc(t)}</span><div class="d">${esc(d)}</div></span></a>`;
+  }).join('');
 }
 
 function stampLogos() {
@@ -246,30 +282,20 @@ function tzShort(tz) { return (tz || '').split('/').pop().replace('_', ' '); }
 
 /* ----------------------------- Índice ----------------------------- */
 function tocSlide() {
-  const items = [
-    ['02', 'Resumen ejecutivo', 'KPIs clave del periodo', 's02'],
-    ['03', 'Rendimiento', 'Tendencia diaria y utilización', 's03'],
-    ['04', 'Combustible', 'Sensor Escort: consumo, recargas y descargas', 's04f'],
-    ['05', 'Plantas', 'Comparativo por planta de concreto', 's04p'],
-    ['06', 'Seguridad', 'Velocidad y conducción', 's04'],
-    ['07', 'Montacargas', 'Equipos de baja velocidad', 's05'],
-    ['08', 'Ranking operativo', 'Score 0–100 por unidad', 's06'],
-    ['09', 'Monetización', 'Impacto económico estimado', 's07'],
-    ['10', 'Metodología', 'Parámetros y naturaleza de datos', 's08'],
-  ];
   return el(`
   <section class="slide" id="sIdx">
     <div class="slide-head"><span class="snum">01</span><div><h2>Contenido</h2><div class="sub">Usa los filtros de Mes · Semana · Planta para recalcular todo el informe</div></div></div>
-    <nav class="toc">
-      ${items.map(([n, t, dsc, id]) => `<a href="#${id}"><span class="n">${n}</span><span><span class="t">${t}</span><div class="d">${dsc}</div></span></a>`).join('')}
-    </nav>
+    <nav class="toc" id="tocNav"></nav>
   </section>`);
 }
 
 /* ------------------------- Resumen ejecutivo ------------------------- */
 function execSlide() {
   const f = VIEW.fleet;
-  const kpi = (cls, ico, val, unit, lbl) =>
+  const p = STATE.params;
+  const idleL = f.stop_hours * p.consumo_ralenti_lh;      // litros en ralentí
+  const idleCost = idleL * p.precio_diesel_mxn;           // costo del ralentí
+  const kpi = (cls, val, unit, lbl) =>
     `<div class="kpi ${cls}"><div class="k-val">${val}<span class="k-unit"> ${unit || ''}</span></div><div class="k-lbl">${lbl}</div></div>`;
   const alertHtml = f.units_no_signal > 0
     ? `<div class="alert"><div><b>${f.units_no_signal} unidad(es) sin señal GPS reciente.</b> Posible apagado del equipo, pérdida de cobertura o manipulación.</div></div>`
@@ -278,30 +304,66 @@ function execSlide() {
   <section class="slide" id="s02">
     <div class="slide-head"><span class="snum">02</span><div><h2>Resumen ejecutivo</h2><div class="sub">${esc(scopeLabel())} · ${esc(plantLabel())}</div></div></div>
     <div class="kpis">
-      ${kpi('blue', '', nf.format(f.distance_km), 'km', 'Distancia total recorrida')}
-      ${kpi('teal', '', nf.format(f.drive_hours), 'h', 'Tiempo de manejo')}
-      ${kpi('amber', '', nf.format(f.stop_hours), 'h', 'Tiempo detenido')}
-      ${kpi('green', '', nf.format(f.fuel_l), 'L', 'Combustible estimado')}
-      ${kpi('blue', '', nf2.format(f.efficiency_kml), 'km/L', 'Eficiencia estimada')}
-      ${kpi('red', '', nf.format(f.violations), '', 'Excesos de velocidad (prom.)')}
-      ${kpi('teal', '', nf.format(f.segments), '', 'Tramos de viaje')}
-      ${kpi('amber', '', nf1.format(f.idle_share_pct), '%', 'Proporción detenido / total')}
+      ${kpi('teal', nf.format(f.drive_hours), 'h', 'Tiempo de conducción')}
+      ${kpi('amber', nf.format(f.stop_hours), 'h', 'Tiempo en ralentí')}
+      ${kpi('amber', nf.format(Math.round(idleL)), 'L', 'Combustible en ralentí')}
+      ${kpi('red', money(idleCost), '', 'Gasto en ralentí (MXN)')}
+      ${kpi('blue', nf.format(f.max_speed), 'km/h', 'Velocidad máxima alcanzada')}
+      ${kpi('green', nf.format(f.distance_km), 'km', 'Distancia total recorrida')}
+      ${kpi('green', nf.format(f.real_fuel_l), 'L', 'Combustible total (real)')}
+      <div class="kpi red"><div class="k-val">${nf.format(f.violations)}</div><div class="k-lbl">Eventos de seguridad registrados</div><div class="k-note">${nf1.format(f.violations_per_100km)} por cada 100 km</div></div>
     </div>
     <div class="cols c-7-5" style="margin-top:22px">
       <div>
         <h4 style="margin:4px 0 8px">Distribución del tiempo de motor</h4>
         <div class="chart-box sm"><canvas id="chMotor"></canvas></div>
         <div class="legend">
-          <span><span class="dot" style="background:${C.cyan}"></span>Manejo ${nf.format(f.drive_hours)} h</span>
-          <span><span class="dot" style="background:${C.gold}"></span>Detenido ${nf.format(f.stop_hours)} h</span>
+          <span><span class="dot" style="background:${C.cyan}"></span>Conducción ${nf.format(f.drive_hours)} h</span>
+          <span><span class="dot" style="background:${C.gold}"></span>Ralentí ${nf.format(f.stop_hours)} h</span>
         </div>
       </div>
       <div class="panel">
         <h4>Lectura ejecutiva</h4>
-        <p style="font-size:13.5px;margin:.2em 0">La selección recorrió <b>${nf.format(f.distance_km)} km</b> en <b>${nf.format(f.drive_hours)} h</b> de manejo, con <b>${nf.format(f.stop_hours)} h</b> detenida (${nf1.format(f.idle_share_pct)}% del tiempo de motor). El tiempo en detención es la principal oportunidad de ahorro por ralentí.</p>
+        <p style="font-size:13.5px;margin:.2em 0">La selección recorrió <b>${nf.format(f.distance_km)} km</b> en <b>${nf.format(f.drive_hours)} h</b> de conducción, con <b>${nf.format(f.stop_hours)} h</b> en ralentí (${nf1.format(f.idle_share_pct)}% del tiempo de motor) que representan <b>${money(idleCost)}</b> en diésel. La reducción del ralentí es la principal palanca de ahorro.</p>
         ${alertHtml}
       </div>
     </div>
+  </section>`);
+}
+
+/* --------------------- Tablero de unidades (tipo aeropuerto) --------------------- */
+function boardSlide() {
+  const p = STATE.params;
+  const units = [...VIEW.units].sort((a, b) => b.distance_km - a.distance_km);
+  const rows = units.map((u) => {
+    const idleL = Math.round(u.stop_hours * p.consumo_ralenti_lh);
+    const totalT = u.drive_hours + u.stop_hours;
+    const idlePct = totalT > 0 ? u.stop_hours / totalT * 100 : 0;
+    return `<tr>
+      <td class="b-unit">${esc(u.number || u.label)}</td>
+      <td>${nf1.format(u.distance_km)}</td>
+      <td>${u.real_fuel_l != null ? nf.format(u.real_fuel_l) : '—'}</td>
+      <td>${nf.format(idleL)}</td>
+      <td>${nf1.format(idlePct)}%</td>
+      <td>${u.real_efficiency_kml != null ? nf2.format(u.real_efficiency_kml) : '—'}</td>
+      <td>${nf1.format(u.violations_per_100km)}</td>
+      <td class="${u.drain_n ? 'b-warn' : ''}">${u.drain_n || '—'}</td>
+      <td class="${u.drain_l ? 'b-alert' : ''}">${u.drain_l ? nf.format(u.drain_l) : '—'}</td>
+    </tr>`;
+  }).join('');
+  return el(`
+  <section class="slide" id="sBoard">
+    <div class="slide-head"><span class="snum">03</span><div><h2>Tablero de unidades</h2><div class="sub">Vista general de la flota — ${esc(scopeLabel())} · ${esc(plantLabel())}</div></div></div>
+    <div class="board">
+      <table class="board-tbl">
+        <thead><tr>
+          <th>Unidad</th><th>Distancia<br>km</th><th>Combustible<br>total L</th><th>Ralentí<br>L</th><th>% Ralentí<br>del total</th>
+          <th>Rendimiento<br>km/L</th><th>Seguridad<br>/100 km</th><th>Descargas<br>eventos</th><th>Diésel<br>descargado L</th>
+        </tr></thead>
+        <tbody>${rows || '<tr><td colspan="9" style="color:#7e8aa0">Sin datos en la selección.</td></tr>'}</tbody>
+      </table>
+    </div>
+    <div class="note">Combustible total y rendimiento provienen del sensor/flujo real. Ralentí = tiempo detenido × ${nf1.format(p.consumo_ralenti_lh)} L/h. Descargas = eventos del sensor de varilla (a validar en sitio).</div>
   </section>`);
 }
 
