@@ -47,6 +47,34 @@ function accidentRisk(u) {
   const rating = risk >= 66 ? 'rojo' : risk >= 33 ? 'naranja' : 'verde';
   return { risk, level, rating, factors: { velocidad: Math.round(v * 100), fatiga: Math.round(f * 100), regional: Math.round(r * 100), nocturna: Math.round(n * 100), eventos: Math.round(s * 100), exposicion: Math.round(e * 100) } };
 }
+
+/* ===== Modelo predictivo: probabilidad de robo ==========================
+   Índice 0–100. Robo de vehículo NL 2024 (SESNSP): Monterrey 441, Juárez
+   277, Guadalupe 265, Apodaca 139, Escobedo 118, San Nicolás 71. Robo al
+   autotransporte (ANIQ/ANERPV): 55% ocurre 18:00–06:00 (pico 03:00–07:00);
+   83% lunes–viernes (martes 23%, miércoles 20%). Marca/modelo: la flota es
+   FOTON revolvedora (vehículo especializado, bajo valor de reventa → menor
+   blanco de robo); factor uniforme.                                        */
+const THEFT_RISK = {
+  'Monterrey': 1.0, 'Juárez': 0.63, 'Guadalupe': 0.60, 'Apodaca': 0.32, 'García': 0.29,
+  'General Escobedo': 0.27, 'San Nicolás de los Garza': 0.16, 'Santiago': 0.10,
+  'El Salto': 0.45, 'Atotonilco el Alto': 0.18,
+};
+const BRAND_RISK = 0.25; // FOTON revolvedora: especializada, bajo target de reventa
+const DOW_THEFT = [0.35, 0.57, 1.0, 0.87, 0.57, 0.61, 0.39]; // Dom..Sáb (martes pico)
+const THEFT_W = { regional: 0.30, descargas: 0.20, nocturna: 0.15, dia_semana: 0.10, marca: 0.10, sin_senal: 0.15 };
+function theftRisk(u) {
+  const r = THEFT_RISK[u.plant] ?? 0.30;                     // robo de vehículo por municipio (SESNSP)
+  const d = clamp(u.drain_n / 2, 0, 1);                      // descargas de diésel detectadas
+  const n = clamp(u.nightPct / 40, 0, 1);                    // exposición horaria nocturna (18:00–06:00)
+  const w = clamp(u.weekdayRisk, 0, 1);                      // día de la semana de mayor robo
+  const m = BRAND_RISK;                                      // marca/modelo (uniforme)
+  const g = u.stale ? 1 : 0;                                 // pérdida de señal GPS (unidad sin reportar)
+  const risk = Math.round(100 * (THEFT_W.regional * r + THEFT_W.descargas * d + THEFT_W.nocturna * n + THEFT_W.dia_semana * w + THEFT_W.marca * m + THEFT_W.sin_senal * g));
+  const level = risk >= 66 ? 'Alta' : risk >= 33 ? 'Media' : 'Baja';
+  const rating = risk >= 66 ? 'rojo' : risk >= 33 ? 'naranja' : 'verde';
+  return { risk, level, rating, factors: { regional: Math.round(r * 100), descargas: Math.round(d * 100), nocturna: Math.round(n * 100), dia: Math.round(w * 100), marca: Math.round(m * 100), senal: g * 100 } };
+}
 const STATE = { monthId: null, weekId: 'all', plantId: 'all', params: null, boardSort: { key: 'distance_km', dir: 'desc' } };
 
 async function boot() {
@@ -135,14 +163,16 @@ function aggregate() {
 
   for (const u of units) {
     let dist = 0, drive = 0, stop = 0, segs = 0, stops = 0, viol = 0, mx = 0;
-    let rfL = 0, rfN = 0, drL = 0, drN = 0, nightH = 0, fatigue = 0;
+    let rfL = 0, rfN = 0, drL = 0, drN = 0, nightH = 0, fatigue = 0, dowW = 0;
     for (const k of sortedDays) {
       const d = u.days[k]; if (!d) continue;
       dist += d.dist_km; drive += d.drive_h; stop += d.stop_h; segs += d.segs; stops += d.stops; viol += d.viol;
       if (d.maxspeed > mx) mx = d.maxspeed;
       rfL += d.rf_l || 0; rfN += d.rf_n || 0; drL += d.dr_l || 0; drN += d.dr_n || 0;
       nightH += d.night_h || 0; fatigue += d.fatigue || 0;
+      dowW += (d.dist_km || 0) * DOW_THEFT[new Date(k + 'T12:00:00Z').getUTCDay()];   // exposición por día de semana
     }
+    const weekdayRisk = dist > 0 ? dowW / dist : 0;
     const fuel = dist * p.consumo_norma_l100 / 100;            // estimado (norma configurable)
     const realFuel = (u.real_l100 != null) ? dist * u.real_l100 / 100 : null; // real (flujo/sensor)
     const realEff = (realFuel && realFuel > 0) ? dist / realFuel : null;
@@ -161,12 +191,14 @@ function aggregate() {
     const rating = score >= 65 ? 'verde' : score >= 45 ? 'naranja' : 'rojo';
     const nightPct = drive > 0 ? nightH / drive * 100 : 0;
     const acc = accidentRisk({ max_speed: mx, vp100, fatigue, nightPct, plant: u.plant, distance_km: dist });
+    const theft = theftRisk({ plant: u.plant, drain_n: drN, nightPct, weekdayRisk, stale: u.stale });
 
     perUnit.push({
       unit_id: u.unit_id, number: u.number, label: u.label, plant: u.plant, plant_id: u.plant_id,
       odometer_km: u.odometer_km, stale: u.stale,
       night_hours: round(nightH, 1), night_pct: round(nightPct, 1), fatigue_events: fatigue,
       acc_risk: acc.risk, acc_level: acc.level, acc_rating: acc.rating, acc_factors: acc.factors,
+      theft_risk: theft.risk, theft_level: theft.level, theft_rating: theft.rating, theft_factors: theft.factors,
       distance_km: round(dist, 1), drive_hours: round(drive, 1), stop_hours: round(stop, 1),
       segments: segs, stops, fuel_l: round(fuel, 1), efficiency_kml: round(eff, 2),
       real_l100: u.real_l100, real_fuel_l: realFuel != null ? round(realFuel, 1) : null,
@@ -210,6 +242,10 @@ function aggregate() {
   const accHigh = perUnit.filter((u) => u.acc_rating === 'rojo').length;
   const accLevel = accAvg >= 66 ? 'Alta' : accAvg >= 33 ? 'Media' : 'Baja';
   const accRating = accAvg >= 66 ? 'rojo' : accAvg >= 33 ? 'naranja' : 'verde';
+  const theftAvg = perUnit.length ? Math.round(perUnit.reduce((a, u) => a + u.theft_risk, 0) / perUnit.length) : 0;
+  const theftHigh = perUnit.filter((u) => u.theft_rating === 'rojo').length;
+  const theftLevel = theftAvg >= 66 ? 'Alta' : theftAvg >= 33 ? 'Media' : 'Baja';
+  const theftRating = theftAvg >= 66 ? 'rojo' : theftAvg >= 33 ? 'naranja' : 'verde';
 
   const fleet = {
     units_total: units.length, units_active: f.active, units_no_signal: f.no_signal, drivers: DATA.drivers.length,
@@ -224,6 +260,7 @@ function aggregate() {
     violations: f.viol, violations_per_100km: round(km > 0 ? f.viol / km * 100 : 0, 1),
     segments: f.segs, stops: f.stops, max_speed: f.maxspeed,
     acc_risk: accAvg, acc_level: accLevel, acc_rating: accRating, acc_high: accHigh,
+    theft_risk: theftAvg, theft_level: theftLevel, theft_rating: theftRating, theft_high: theftHigh,
     idle_share_pct: round((driveH + stopH) > 0 ? stopH / (driveH + stopH) * 100 : 0, 1),
   };
 
@@ -369,7 +406,7 @@ function execSlide() {
       ${kpi('blue', nf2.format(f.real_efficiency_kml), 'km/L', 'Rendimiento general')}
       <div class="kpi red"><div class="k-val">${nf.format(f.violations)}</div><div class="k-lbl">Eventos de seguridad registrados</div><div class="k-note">${nf1.format(f.violations_per_100km)} por cada 100 km</div></div>
       <div class="kpi ${f.acc_rating === 'rojo' ? 'red' : f.acc_rating === 'naranja' ? 'amber' : 'green'}"><div class="k-val">${f.acc_level}<span class="k-unit"> · ${f.acc_risk}</span></div><div class="k-lbl">Probabilidad de accidente</div><div class="k-note neutral">${f.acc_high} unidad(es) en riesgo alto</div></div>
-      ${pred('Probabilidad de robo')}
+      <div class="kpi ${f.theft_rating === 'rojo' ? 'red' : f.theft_rating === 'naranja' ? 'amber' : 'green'}"><div class="k-val">${f.theft_level}<span class="k-unit"> · ${f.theft_risk}</span></div><div class="k-lbl">Probabilidad de robo</div><div class="k-note neutral">${f.theft_high} unidad(es) en riesgo alto</div></div>
     </div>
     <div class="panel" style="margin-top:20px">
       <h4>Lectura ejecutiva</h4>
@@ -395,7 +432,7 @@ const BOARD_COLS = [
   { key: 'drain_n', lbl: 'Descargas<br>eventos', t: 'warn' },
   { key: 'drain_l', lbl: 'Diésel<br>descargado L', t: 'alert' },
   { key: 'acc_risk', lbl: 'Prob.<br>accidente', t: 'acc' },
-  { key: 'theft_prob', lbl: 'Prob.<br>robo', t: 'pred', sortable: false },
+  { key: 'theft_risk', lbl: 'Prob.<br>robo', t: 'theft' },
 ];
 
 function boardSlide() {
@@ -424,6 +461,7 @@ function boardSlide() {
       case 'warn': return `<td class="${v ? 'b-warn' : ''}">${v || '—'}</td>`;
       case 'alert': return `<td class="${v ? 'b-alert' : ''}">${v ? nf.format(v) : '—'}</td>`;
       case 'acc': return `<td><span class="sem ${u.acc_rating}" title="${esc(`Vel ${u.acc_factors.velocidad} · Fatiga ${u.acc_factors.fatiga} · Región ${u.acc_factors.regional} · Noche ${u.acc_factors.nocturna} · Exp ${u.acc_factors.exposicion}`)}">${u.acc_risk}</span></td>`;
+      case 'theft': return `<td><span class="sem ${u.theft_rating}" title="${esc(`Región ${u.theft_factors.regional} · Descargas ${u.theft_factors.descargas} · Noche ${u.theft_factors.nocturna} · Día ${u.theft_factors.dia} · Señal ${u.theft_factors.senal}`)}">${u.theft_risk}</span></td>`;
       case 'pred': return `<td class="b-pred">—</td>`;
       default: return `<td>${v ?? '—'}</td>`;
     }
@@ -445,7 +483,7 @@ function boardSlide() {
         <tbody>${rows || `<tr><td colspan="${BOARD_COLS.length}" style="color:var(--muted)">Sin datos en la selección.</td></tr>`}</tbody>
       </table>
     </div>
-    <div class="note"><b>Prob. accidente</b> = índice 0–100 (verde &lt;33 · amarillo &lt;66 · rojo ≥66) que pondera velocidad (25%), fatiga &gt;6 h (20%), riesgo regional INEGI (15%), conducción nocturna (15%), eventos /100 km (15%) y exposición en km (10%). Pasa el cursor sobre el valor para ver el desglose. Ralentí (L) = consumo real − distancia × ${nf1.format(STATE.params.consumo_ruta_l100)} l/100km. Varilla = sensor Escort instalado.</div>
+    <div class="note"><b>Prob. accidente</b> (0–100): velocidad 25%, fatiga &gt;6 h 20%, riesgo regional INEGI 15%, nocturna 15%, eventos/100 km 15%, exposición km 10%. &nbsp; <b>Prob. robo</b> (0–100): riesgo regional SESNSP 30%, descargas de diésel 20%, exposición nocturna 15%, pérdida de señal 15%, día de la semana 10%, marca/modelo 10%. Semáforo: verde &lt;33 · amarillo &lt;66 · rojo ≥66. Pasa el cursor sobre cada valor para ver el desglose. Ralentí (L) = consumo real − distancia × ${nf1.format(STATE.params.consumo_ruta_l100)} l/100km.</div>
   </section>`);
 }
 
