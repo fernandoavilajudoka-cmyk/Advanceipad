@@ -193,11 +193,11 @@ code { background: #eef2e6; padding: 1px 6px; border-radius: 6px; font-size: .9e
 .board-tbl thead th.b-sorted { color: var(--ink); background: rgba(196,230,0,.16); }
 .board-tbl thead th.b-nosort { color: var(--muted); }
 .board-tbl thead th .b-car { font-size: 9px; margin-left: 2px; color: var(--lime-mid); }
-/* anchos: unidad y planta más amplias; el resto se reparte */
-.board-tbl th:nth-child(1), .board-tbl td:nth-child(1) { width: 8.5%; }
-.board-tbl th:nth-child(2), .board-tbl td:nth-child(2) { width: 8%; }
+/* anchos: unidad y planta más amplias; el resto se reparte. Encabezados de texto a la izquierda (coinciden con sus datos) */
+.board-tbl th:nth-child(1), .board-tbl td:nth-child(1) { width: 8.5%; text-align: left; }
+.board-tbl th:nth-child(2), .board-tbl td:nth-child(2) { width: 8%; text-align: left; }
 .board-tbl td {
-  color: var(--ink); font-size: 11.5px; padding: 7px 5px; text-align: right;
+  color: var(--ink); font-size: 11.5px; padding: 7px 5px; text-align: center;
   border-bottom: 1px solid var(--line); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .board-tbl tbody tr:last-child td { border-bottom: none; }
