@@ -214,6 +214,8 @@ code { background: #eef2e6; padding: 1px 6px; border-radius: 6px; font-size: .9e
 /* ---------- Layout helpers ---------- */
 .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
 .cols.c-7-5 { grid-template-columns: 1.4fr 1fr; }
+.cols.c-5-7 { grid-template-columns: 1fr 1.4fr; }
+.chart-box.sec { height: 244px; }
 .chart-box { position: relative; height: 280px; }
 .chart-box.sm { height: 232px; }
 /* gráfica a todo el ancho de la página (rompe el padding del slide) */
@@ -361,7 +363,7 @@ table.tbl td.num, table.tbl th.num { text-align: right; font-variant-numeric: ta
 /* ---------- Responsive ---------- */
 @media (max-width: 860px) {
   .kpis, .kpis.cols3 { grid-template-columns: repeat(2, 1fr); }
-  .cols, .cols.c-7-5 { grid-template-columns: 1fr; }
+  .cols, .cols.c-7-5, .cols.c-5-7 { grid-template-columns: 1fr; }
   .money-grid { grid-template-columns: 1fr; }
   .toc { grid-template-columns: 1fr; }
   .param-grid { grid-template-columns: 1fr; }
@@ -1092,17 +1094,19 @@ function safetySlide() {
       <div class="kpi teal"><div class="k-val">${f.max_speed}<span class="k-unit"> km/h</span></div><div class="k-lbl">Velocidad máxima de tramo</div></div>
       <div class="kpi blue"><div class="k-val">${nf2.format(f.violations_per_100km)}</div><div class="k-lbl">Excesos /100 km</div></div>
     </div>
-    <div class="cols" style="margin-top:20px">
-      <div class="panel"><h4>Tipos de evento (por rango de velocidad)</h4><div class="chart-box sm"><canvas id="chSecPie"></canvas></div></div>
-      <div class="panel"><h4>Eventos por día de la semana</h4><div class="chart-box sm"><canvas id="chSecDow"></canvas></div></div>
+    <div class="cols c-5-7" style="margin-top:20px">
+      <div class="panel"><h4>Tipos de evento (por rango de velocidad)</h4><div class="chart-box sec"><canvas id="chSecPie"></canvas></div></div>
+      <div class="panel"><h4>Eventos por hora del día (0–23 h)</h4><div class="chart-box sec"><canvas id="chSecHour"></canvas></div></div>
     </div>
-    <div class="panel" style="margin-top:18px"><h4>Eventos por hora del día (0–23 h)</h4><div class="chart-box sm"><canvas id="chSecHour"></canvas></div></div>
-    <div class="panel" style="margin-top:18px">
+    <div class="cols c-5-7" style="margin-top:18px">
+      <div class="panel"><h4>Eventos por día de la semana</h4><div class="chart-box sec"><canvas id="chSecDow"></canvas></div></div>
+      <div class="panel">
       <h4>Top 5 — unidades más inseguras</h4>
       <table class="tbl">
         <thead><tr><th></th><th>Unidad</th><th class="num">Eventos</th><th class="num">&gt; 60 km/h</th><th class="num">Vel. máx</th><th class="num">Eventos /100 km</th></tr></thead>
         <tbody>${rows || '<tr><td colspan="6" style="color:var(--muted)">Sin eventos en la selección.</td></tr>'}</tbody>
       </table>
+      </div>
     </div>
     <div class="note">La flota maneja a baja velocidad: un "evento" es un tramo con velocidad promedio &gt; 40 km/h. La API expone solo <b>velocidad promedio por tramo</b> (no instantánea) y <b>no hay eventos de frenado/aceleración brusca</b> (requieren acelerómetro/CAN) ni asignación conductor↔viaje, por lo que el ranking es por <b>unidad</b>. La evaluación de conductores requiere habilitar <code>driver_behaviour</code> en la API.</div>
   </section>`);
