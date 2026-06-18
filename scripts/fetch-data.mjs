@@ -273,29 +273,67 @@ async function main() {
   // rpm_average + total_fuel vía unit_data/can_period, así que el ralentí se MIDE
   // en toda la flota (no se estima en ninguna).
   const ON_RPM = 350, GAP_CAP = 600;            // motor encendido si RPM>350; corta gaps > 10 min
+  const MOVE_WIN = 120, MOVE_EPS = 0.05;        // muestra de distancia ≤120 s y avance >50 m ⇒ en movimiento
+  const LONG_IDLE_S = 3 * 3600;                 // umbral de evento de ralentí prolongado (3 h)
   const canEngByUnit = new Map();               // unit_id → { dayKey → segundos motor encendido }
   const canFuelByUnit = new Map();              // unit_id → { dayKey → litros (delta total_fuel) }
+  const canIdleEvByUnit = new Map();            // unit_id → { dayKey → { n, sec } } eventos ralentí >3 h
   const parseGmt = (s) => new Date((s.includes('T') ? s : s.replace(' ', 'T')) + (s.endsWith('Z') ? '' : 'Z'));
   let canUnits = 0;
   for (const unit of units) {
     const uid = unit.unit_id;
     const eng = {}, cf = {};
+    const rpmAll = [], moveIv = [];   // serie RPM completa y tramos en movimiento (del periodo)
     for (const c of chunks) {
       const data = await api('unit_data/can_period', { unit_id: uid, from: c.from, till: c.till }).catch(() => null);
       const u = data?.units?.[0]; if (!u) continue;
-      const rpm = (u.rpm_average || []).map((p) => [parseGmt(p.gmt), p.value]).sort((a, b) => a[0] - b[0]);
+      const rpm = (u.rpm_average || []).map((p) => [parseGmt(p.gmt).getTime(), p.value]).sort((a, b) => a[0] - b[0]);
       for (let i = 0; i < rpm.length - 1; i++) {
         const gap = (rpm[i + 1][0] - rpm[i][0]) / 1000;
-        if (gap > 0 && gap <= GAP_CAP && rpm[i][1] > ON_RPM) eng[dayKey(rpm[i][0].toISOString())] = (eng[dayKey(rpm[i][0].toISOString())] || 0) + gap;
+        if (gap > 0 && gap <= GAP_CAP && rpm[i][1] > ON_RPM) eng[dayKey(new Date(rpm[i][0]).toISOString())] = (eng[dayKey(new Date(rpm[i][0]).toISOString())] || 0) + gap;
       }
-      const fuel = (u.total_fuel || []).map((p) => [parseGmt(p.gmt), p.value]).sort((a, b) => a[0] - b[0]);
+      rpmAll.push(...rpm);
+      // Tramos en movimiento: muestras de distancia consecutivas que avanzan (la
+      // distancia solo se reporta cuando la unidad se mueve; quieto = sin muestras).
+      const dist = (u.total_distance || []).map((p) => [parseGmt(p.gmt).getTime(), p.value]).sort((a, b) => a[0] - b[0]);
+      for (let i = 0; i < dist.length - 1; i++) {
+        const dt = (dist[i + 1][0] - dist[i][0]) / 1000, dk = dist[i + 1][1] - dist[i][1];
+        if (dt > 0 && dt <= MOVE_WIN && dk > MOVE_EPS) moveIv.push([dist[i][0], dist[i + 1][0]]);
+      }
+      const fuel = (u.total_fuel || []).map((p) => [parseGmt(p.gmt).getTime(), p.value]).sort((a, b) => a[0] - b[0]);
       for (let i = 0; i < fuel.length - 1; i++) {
         const delta = fuel[i + 1][1] - fuel[i][1];
-        if (delta > 0 && delta < 200) cf[dayKey(fuel[i + 1][0].toISOString())] = (cf[dayKey(fuel[i + 1][0].toISOString())] || 0) + delta;
+        if (delta > 0 && delta < 200) cf[dayKey(new Date(fuel[i + 1][0]).toISOString())] = (cf[dayKey(new Date(fuel[i + 1][0]).toISOString())] || 0) + delta;
       }
     }
+    // Detección de eventos de ralentí continuo (motor encendido + sin movimiento) >3 h
+    rpmAll.sort((a, b) => a[0] - b[0]);
+    moveIv.sort((a, b) => a[0] - b[0]);
+    const mStart = moveIv.map((x) => x[0]);
+    const movingAt = (t) => {                    // ¿t cae en algún tramo en movimiento?
+      let lo = 0, hi = mStart.length - 1, k = -1;
+      while (lo <= hi) { const m = (lo + hi) >> 1; if (mStart[m] <= t) { k = m; lo = m + 1; } else hi = m - 1; }
+      return k >= 0 && moveIv[k][1] >= t;
+    };
+    const idleEv = {};
+    let runStart = null, runLast = null;
+    const closeRun = () => {
+      if (runStart != null) {
+        const sec = (runLast - runStart) / 1000;
+        if (sec > LONG_IDLE_S) { const k = dayKey(new Date(runStart).toISOString()); idleEv[k] = idleEv[k] || { n: 0, sec: 0 }; idleEv[k].n += 1; idleEv[k].sec += sec; }
+        runStart = null;
+      }
+    };
+    for (let i = 0; i < rpmAll.length - 1; i++) {
+      const gap = (rpmAll[i + 1][0] - rpmAll[i][0]) / 1000;
+      const idleNow = gap > 0 && gap <= GAP_CAP && rpmAll[i][1] > ON_RPM && !movingAt(rpmAll[i][0]);
+      if (idleNow) { if (runStart == null) runStart = rpmAll[i][0]; runLast = rpmAll[i + 1][0]; }
+      else closeRun();
+    }
+    closeRun();
     if (Object.keys(eng).length) { canEngByUnit.set(uid, eng); canUnits += 1; }
     if (Object.keys(cf).length) canFuelByUnit.set(uid, cf);
+    if (Object.keys(idleEv).length) canIdleEvByUnit.set(uid, idleEv);
   }
   console.error(`  ${canUnits}/${units.length} unidades con CAN (RPM) → ralentí MEDIDO`);
 
@@ -397,6 +435,10 @@ async function main() {
       for (const [k, l] of Object.entries(cf || {})) {
         const day = uo.days[k] || (uo.days[k] = { dist_m: 0, drive_s: 0, stop_s: 0, segs: 0, stops: 0, viol: 0, maxspeed: 0 });
         day.can_fuel_l = (day.can_fuel_l || 0) + l;
+      }
+      for (const [k, ev] of Object.entries(canIdleEvByUnit.get(uo.unit_id) || {})) {
+        const day = uo.days[k] || (uo.days[k] = { dist_m: 0, drive_s: 0, stop_s: 0, segs: 0, stops: 0, viol: 0, maxspeed: 0 });
+        day.idle3h_n = (day.idle3h_n || 0) + ev.n; day.idle3h_s = (day.idle3h_s || 0) + ev.sec;
       }
     }
     for (const e of cleanFuelEvents(fuelEvents.get(uo.unit_id) || [])) {
@@ -508,6 +550,7 @@ async function main() {
         if (v.ev_b60) d.ev_b60 = v.ev_b60;
         if (v.eng_s) d.eng_h = round(v.eng_s / 3600, 2);
         if (v.can_fuel_l) d.can_fuel_l = round(v.can_fuel_l, 1);
+        if (v.idle3h_n) { d.idle3h_n = v.idle3h_n; d.idle3h_h = round(v.idle3h_s / 3600, 1); }
         days[k] = d;
       }
       return {

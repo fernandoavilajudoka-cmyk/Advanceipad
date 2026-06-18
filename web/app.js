@@ -159,18 +159,19 @@ function aggregate() {
 
   const perUnit = [];
   let f = { distance_km: 0, drive_h: 0, stop_h: 0, segs: 0, stops: 0, viol: 0, maxspeed: 0, fuel_l: 0, active: 0, no_signal: 0,
-    real_fuel_l: 0, idle_fuel_l: 0, idle_h: 0, idle_meas: 0, eng_h: 0, rf_l: 0, rf_n: 0, dr_l: 0, dr_n: 0, sensors: 0 };
+    real_fuel_l: 0, idle_fuel_l: 0, idle_h: 0, idle_meas: 0, eng_h: 0, idle3h_n: 0, idle3h_h: 0, rf_l: 0, rf_n: 0, dr_l: 0, dr_n: 0, sensors: 0 };
   const secHours = new Array(24).fill(0), secDow = new Array(7).fill(0), secBands = { b40: 0, b50: 0, b60: 0 };
 
   for (const u of units) {
     let dist = 0, drive = 0, stop = 0, segs = 0, stops = 0, viol = 0, mx = 0;
-    let rfL = 0, rfN = 0, drL = 0, drN = 0, nightH = 0, fatigue = 0, dowW = 0, ev40 = 0, ev50 = 0, ev60 = 0, engH = 0, canFuel = 0;
+    let rfL = 0, rfN = 0, drL = 0, drN = 0, nightH = 0, fatigue = 0, dowW = 0, ev40 = 0, ev50 = 0, ev60 = 0, engH = 0, canFuel = 0, idle3hN = 0, idle3hH = 0;
     for (const k of sortedDays) {
       const d = u.days[k]; if (!d) continue;
       dist += d.dist_km; drive += d.drive_h; stop += d.stop_h; segs += d.segs; stops += d.stops; viol += d.viol;
       if (d.maxspeed > mx) mx = d.maxspeed;
       rfL += d.rf_l || 0; rfN += d.rf_n || 0; drL += d.dr_l || 0; drN += d.dr_n || 0;
       nightH += d.night_h || 0; fatigue += d.fatigue || 0; engH += d.eng_h || 0; canFuel += d.can_fuel_l || 0;
+      idle3hN += d.idle3h_n || 0; idle3hH += d.idle3h_h || 0;
       dowW += (d.dist_km || 0) * DOW_THEFT[new Date(k + 'T12:00:00Z').getUTCDay()];   // exposición por día de semana
       ev40 += d.ev_b40 || 0; ev50 += d.ev_b50 || 0; ev60 += d.ev_b60 || 0;
       if (d.ev_h) { const dw = new Date(k + 'T12:00:00Z').getUTCDay(); for (const h in d.ev_h) { secHours[+h] += d.ev_h[h]; secDow[dw] += d.ev_h[h]; } }
@@ -225,6 +226,7 @@ function aggregate() {
       idle_pct_fuel: round(idlePctFuel, 1), idle_measured: idleMeasured, has_can: !!u.has_can,
       eng_hours: round(engH, 1), motor_hours: round(motorHours, 1),
       idle_pct_time: round(motorHours > 0 ? (idleHours || 0) / motorHours * 100 : 0, 1),
+      idle3h_n: idle3hN, idle3h_h: round(idle3hH, 1),
       refuel_l: Math.round(rfL), refuel_n: rfN, drain_l: Math.round(drL), drain_n: drN,
       max_speed: Math.round(mx), violations: viol, violations_per_100km: round(vp100, 2),
       move_ratio: round(moveRatio * 100, 1),
@@ -237,7 +239,7 @@ function aggregate() {
     if (idleFuel != null) f.idle_fuel_l += idleFuel;
     if (idleHours != null) f.idle_h += idleHours;
     if (idleMeasured) f.idle_meas += 1;
-    f.eng_h += engH;
+    f.eng_h += engH; f.idle3h_n += idle3hN; f.idle3h_h += idle3hH;
     if (u.has_fuel_sensor) f.sensors += 1;
     f.rf_l += rfL; f.rf_n += rfN; f.dr_l += drL; f.dr_n += drN;
     if (dist > 0.1) f.active += 1;
@@ -276,6 +278,7 @@ function aggregate() {
     idle_fuel_l: round(f.idle_fuel_l, 0), idle_cost: Math.round(idleCost), idle_hours: round(idleHoursFleet, 0),
     motor_hours: round(driveH + idleHoursFleet, 0),
     idle_measured: f.idle_meas, eng_hours: round(f.eng_h, 0),
+    idle3h_n: f.idle3h_n, idle3h_h: round(f.idle3h_h, 0),
     idle_pct_fuel: round(f.real_fuel_l > 0 ? f.idle_fuel_l / f.real_fuel_l * 100 : 0, 1),
     fuel_sensors: f.sensors,
     refuel_l: Math.round(f.rf_l), refuel_n: f.rf_n, drain_l: Math.round(f.dr_l), drain_n: f.dr_n,
@@ -450,6 +453,7 @@ const BOARD_COLS = [
   { key: 'idle_fuel_l', lbl: 'Ralentí<br>L', t: 'num' },
   { key: 'idle_hours', lbl: 'Ralentí<br>h', t: 'idleh' },
   { key: 'idle_pct_fuel', lbl: '% Ralentí<br>del consumo', t: 'pct' },
+  { key: 'idle3h_n', lbl: 'Ralentí >3h<br>eventos', t: 'idle3h' },
   { key: 'real_efficiency_kml', lbl: 'Rendimiento<br>km/L', t: 'num2' },
   { key: 'violations_per_100km', lbl: 'Seguridad<br>/100 km', t: 'num1' },
   { key: 'has_fuel_sensor', lbl: 'Varilla', t: 'bool' },
@@ -486,6 +490,11 @@ function boardSlide() {
         const title = (rate != null ? `${nf1.format(rate)} L/h implícitos` : '') + (u.idle_measured ? ' · tiempo medido por CAN/RPM' : ' · tiempo estimado');
         return `<td class="${u.idle_measured ? 'b-meas' : ''}" title="${esc(title.trim())}">${nf1.format(v)}</td>`;
       }
+      case 'idle3h': {
+        if (!v) return '<td>—</td>';
+        const cls = v >= 4 ? 'rojo' : 'naranja';
+        return `<td title="${esc(`${v} evento(s) de ralentí continuo >3 h · ${nf1.format(u.idle3h_h || 0)} h acumuladas`)}"><span class="sem ${cls}">${v}</span></td>`;
+      }
       case 'pct': { const sc = (v || 0) <= 30 ? 'verde' : (v || 0) <= 40 ? 'naranja' : 'rojo'; return `<td><span class="sem ${sc}">${nf1.format(v || 0)}%</span></td>`; }
       case 'bool': return `<td>${u.has_fuel_sensor ? '<span class="badge verde">Sí</span>' : '<span class="badge naranja">No</span>'}</td>`;
       case 'warn': return `<td class="${v ? 'b-warn' : ''}">${v || '—'}</td>`;
@@ -513,7 +522,7 @@ function boardSlide() {
         <tbody>${rows || `<tr><td colspan="${BOARD_COLS.length}" style="color:var(--muted)">Sin datos en la selección.</td></tr>`}</tbody>
       </table>
     </div>
-    <div class="note"><b>Prob. accidente</b> (0–100): velocidad 25%, fatiga &gt;6 h 20%, riesgo regional INEGI 15%, nocturna 15%, eventos/100 km 15%, exposición km 10%. &nbsp; <b>Prob. robo</b> (0–100): riesgo regional SESNSP 30%, descargas de diésel 20%, exposición nocturna 15%, pérdida de señal 15%, día de la semana 10%, marca/modelo 10%. Semáforo (calibración laxa): verde &lt;45 · amarillo &lt;70 · rojo ≥70. Pasa el cursor sobre cada valor para ver el desglose. Ralentí (L) = consumo real − distancia × ${nf1.format(STATE.params.consumo_ruta_l100)} l/100km. <b>Ralentí (h)</b> = tiempo en ralentí <span style="color:#1d6b41;font-weight:700">medido por CAN/RPM</span> en las 23 unidades (motor encendido por RPM − movimiento); el cursor muestra la tasa <b>L/h implícita</b> (Ralentí L ÷ Ralentí h) para validar el dato.</div>
+    <div class="note"><b>Prob. accidente</b> (0–100): velocidad 25%, fatiga &gt;6 h 20%, riesgo regional INEGI 15%, nocturna 15%, eventos/100 km 15%, exposición km 10%. &nbsp; <b>Prob. robo</b> (0–100): riesgo regional SESNSP 30%, descargas de diésel 20%, exposición nocturna 15%, pérdida de señal 15%, día de la semana 10%, marca/modelo 10%. Semáforo (calibración laxa): verde &lt;45 · amarillo &lt;70 · rojo ≥70. Pasa el cursor sobre cada valor para ver el desglose. Ralentí (L) = consumo real − distancia × ${nf1.format(STATE.params.consumo_ruta_l100)} l/100km. <b>Ralentí (h)</b> = tiempo en ralentí <span style="color:#1d6b41;font-weight:700">medido por CAN/RPM</span> en las 23 unidades (motor encendido por RPM − movimiento); el cursor muestra la tasa <b>L/h implícita</b> (Ralentí L ÷ Ralentí h) para validar el dato. <b>Ralentí &gt;3h</b> = número de eventos de ralentí <b>continuo</b> de más de 3 horas (motor encendido por RPM sin avance de distancia); el cursor muestra las horas acumuladas en esos eventos.</div>
   </section>`);
 }
 
