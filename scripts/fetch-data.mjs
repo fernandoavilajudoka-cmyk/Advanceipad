@@ -277,6 +277,13 @@ async function main() {
         const spd = r.avg_speed || 0;
         if (spd > day.maxspeed) day.maxspeed = spd;
         if (spd > PARAMS.limite_velocidad_kmh) day.viol += 1;
+        // Eventos de velocidad (la flota maneja lento; umbral 40 km/h prom. de tramo)
+        if (spd > 40) {
+          day.ev_h = day.ev_h || {}; day.ev_h[hh] = (day.ev_h[hh] || 0) + 1;
+          if (spd > 60) day.ev_b60 = (day.ev_b60 || 0) + 1;
+          else if (spd > 50) day.ev_b50 = (day.ev_b50 || 0) + 1;
+          else day.ev_b40 = (day.ev_b40 || 0) + 1;
+        }
       } else if (r.type === 'stop') {
         day.stop_s += dur;
         day.stops += 1;
@@ -430,6 +437,10 @@ async function main() {
         if (v.dr_l) { d.dr_l = round(v.dr_l, 0); d.dr_n = v.dr_n; }
         if (v.night_s) d.night_h = round(v.night_s / 3600, 2);
         if (v.fatigue) d.fatigue = v.fatigue;
+        if (v.ev_h) d.ev_h = v.ev_h;
+        if (v.ev_b40) d.ev_b40 = v.ev_b40;
+        if (v.ev_b50) d.ev_b50 = v.ev_b50;
+        if (v.ev_b60) d.ev_b60 = v.ev_b60;
         days[k] = d;
       }
       return {

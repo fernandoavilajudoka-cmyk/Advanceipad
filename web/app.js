@@ -160,10 +160,11 @@ function aggregate() {
   const perUnit = [];
   let f = { distance_km: 0, drive_h: 0, stop_h: 0, segs: 0, stops: 0, viol: 0, maxspeed: 0, fuel_l: 0, active: 0, no_signal: 0,
     real_fuel_l: 0, idle_fuel_l: 0, idle_h: 0, rf_l: 0, rf_n: 0, dr_l: 0, dr_n: 0, sensors: 0 };
+  const secHours = new Array(24).fill(0), secDow = new Array(7).fill(0), secBands = { b40: 0, b50: 0, b60: 0 };
 
   for (const u of units) {
     let dist = 0, drive = 0, stop = 0, segs = 0, stops = 0, viol = 0, mx = 0;
-    let rfL = 0, rfN = 0, drL = 0, drN = 0, nightH = 0, fatigue = 0, dowW = 0;
+    let rfL = 0, rfN = 0, drL = 0, drN = 0, nightH = 0, fatigue = 0, dowW = 0, ev40 = 0, ev50 = 0, ev60 = 0;
     for (const k of sortedDays) {
       const d = u.days[k]; if (!d) continue;
       dist += d.dist_km; drive += d.drive_h; stop += d.stop_h; segs += d.segs; stops += d.stops; viol += d.viol;
@@ -171,7 +172,11 @@ function aggregate() {
       rfL += d.rf_l || 0; rfN += d.rf_n || 0; drL += d.dr_l || 0; drN += d.dr_n || 0;
       nightH += d.night_h || 0; fatigue += d.fatigue || 0;
       dowW += (d.dist_km || 0) * DOW_THEFT[new Date(k + 'T12:00:00Z').getUTCDay()];   // exposición por día de semana
+      ev40 += d.ev_b40 || 0; ev50 += d.ev_b50 || 0; ev60 += d.ev_b60 || 0;
+      if (d.ev_h) { const dw = new Date(k + 'T12:00:00Z').getUTCDay(); for (const h in d.ev_h) { secHours[+h] += d.ev_h[h]; secDow[dw] += d.ev_h[h]; } }
     }
+    secBands.b40 += ev40; secBands.b50 += ev50; secBands.b60 += ev60;
+    const secEvents = ev40 + ev50 + ev60;
     const weekdayRisk = dist > 0 ? dowW / dist : 0;
     const fuel = dist * p.consumo_norma_l100 / 100;            // estimado (norma configurable)
     const realFuel = (u.real_l100 != null) ? dist * u.real_l100 / 100 : null; // real (flujo/sensor)
@@ -200,6 +205,7 @@ function aggregate() {
       night_hours: round(nightH, 1), night_pct: round(nightPct, 1), fatigue_events: fatigue,
       acc_risk: acc.risk, acc_level: acc.level, acc_rating: acc.rating, acc_factors: acc.factors,
       theft_risk: theft.risk, theft_level: theft.level, theft_rating: theft.rating, theft_factors: theft.factors,
+      sec_events: secEvents, sec_ev60: ev60, sec_per100: round(dist > 0 ? secEvents / dist * 100 : 0, 2),
       distance_km: round(dist, 1), drive_hours: round(drive, 1), stop_hours: round(stop, 1),
       segments: segs, stops, fuel_l: round(fuel, 1), efficiency_kml: round(eff, 2),
       real_l100: u.real_l100, real_fuel_l: realFuel != null ? round(realFuel, 1) : null,
@@ -268,7 +274,7 @@ function aggregate() {
   const byActivity = [...perUnit].filter((u) => u.drive_hours + u.stop_hours > 0).sort((a, b) => b.move_ratio - a.move_ratio);
   const byScore = [...perUnit].sort((a, b) => b.score - a.score);
 
-  return { fleet, daily, units: perUnit, ranking: { top_distance: byDistance.slice(0, 5), bottom_active: byActivity.slice(-5).reverse(), by_score: byScore }, money: computeMoney(fleet, p) };
+  return { fleet, daily, units: perUnit, ranking: { top_distance: byDistance.slice(0, 5), bottom_active: byActivity.slice(-5).reverse(), by_score: byScore }, money: computeMoney(fleet, p), security: { hours: secHours, dow: secDow, bands: secBands } };
 }
 
 function computeMoney(fleet, p) {
@@ -321,7 +327,7 @@ const TOC_DESC = {
   s03: 'Eficiencia combinada: distancia + rendimiento',
   s04f: 'Sensor Escort: consumo, recargas y descargas',
   s04p: 'Comparativo por planta de concreto',
-  s04: 'Velocidad y conducción',
+  s04: 'Eventos de velocidad: tipos, hora, día y unidades',
   s05: 'Equipos de baja velocidad',
   s06: 'Score 0–100 por unidad',
   s07: 'Impacto económico estimado',
@@ -631,30 +637,38 @@ function plantsSlide() {
 /* ----------------------------- Seguridad ----------------------------- */
 function safetySlide() {
   const f = VIEW.fleet;
-  const units = [...VIEW.units].sort((a, b) => b.max_speed - a.max_speed).slice(0, 10);
-  const lim = STATE.params.limite_velocidad_kmh;
-  const rows = units.map((u) => {
-    const sev = u.max_speed >= lim ? 'rojo' : u.max_speed >= lim * 0.85 ? 'naranja' : 'verde';
-    return `<tr><td>${esc(u.number || u.label)}</td><td class="num">${u.max_speed}</td><td class="num">${u.violations}</td>
-      <td class="num">${nf2.format(u.violations_per_100km)}</td>
-      <td><span class="badge ${sev}">${sev === 'rojo' ? 'Crítico' : sev === 'naranja' ? 'Atención' : 'Normal'}</span></td></tr>`;
-  }).join('');
+  const s = VIEW.security;
+  const totalEv = s.bands.b40 + s.bands.b50 + s.bands.b60;
+  // Top 5 unidades más inseguras (por eventos de velocidad)
+  const unsafe = [...VIEW.units].sort((a, b) => (b.sec_events - a.sec_events) || (b.max_speed - a.max_speed)).slice(0, 5);
+  const rows = unsafe.map((u, i) => `
+    <tr><td class="rank-i">${i + 1}</td><td>${esc(u.number || u.label)}</td>
+      <td class="num">${nf.format(u.sec_events)}</td>
+      <td class="num">${nf.format(u.sec_ev60)}</td>
+      <td class="num">${u.max_speed} km/h</td>
+      <td class="num">${nf2.format(u.sec_per100)}</td></tr>`).join('');
   return el(`
   <section class="slide" id="s04">
-    <div class="slide-head"><span class="snum">06</span><div><h2>Seguridad y conducción</h2><div class="sub">Velocidad promedio por tramo · límite ${lim} km/h</div></div></div>
-    <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
-      <div class="kpi red"><div class="k-val">${nf.format(f.violations)}</div><div class="k-lbl">Tramos sobre el límite</div></div>
-      <div class="kpi amber"><div class="k-val">${f.max_speed}<span class="k-unit"> km/h</span></div><div class="k-lbl">Velocidad máx. de tramo</div></div>
-      <div class="kpi teal"><div class="k-val">${nf1.format(f.violations_per_100km)}</div><div class="k-lbl">Excesos por 100 km</div></div>
+    <div class="slide-head"><span class="snum">06</span><div><h2>Seguridad y conducción</h2><div class="sub">Eventos de velocidad (tramos &gt;40 km/h prom.) · ${esc(scopeLabel())} · ${esc(plantLabel())}</div></div></div>
+    <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+      <div class="kpi red"><div class="k-val">${nf.format(totalEv)}</div><div class="k-lbl">Eventos de velocidad</div></div>
+      <div class="kpi amber"><div class="k-val">${nf.format(s.bands.b60)}</div><div class="k-lbl">Velocidades &gt; 60 km/h</div></div>
+      <div class="kpi teal"><div class="k-val">${f.max_speed}<span class="k-unit"> km/h</span></div><div class="k-lbl">Velocidad máxima de tramo</div></div>
+      <div class="kpi blue"><div class="k-val">${nf2.format(f.violations_per_100km)}</div><div class="k-lbl">Excesos /100 km</div></div>
     </div>
-    <div class="panel" style="margin-top:22px">
-      <h4>Velocidad promedio máxima por unidad (Top 10)</h4>
+    <div class="cols" style="margin-top:20px">
+      <div class="panel"><h4>Tipos de evento (por rango de velocidad)</h4><div class="chart-box sm"><canvas id="chSecPie"></canvas></div></div>
+      <div class="panel"><h4>Eventos por día de la semana</h4><div class="chart-box sm"><canvas id="chSecDow"></canvas></div></div>
+    </div>
+    <div class="panel" style="margin-top:18px"><h4>Eventos por hora del día (0–23 h)</h4><div class="chart-box sm"><canvas id="chSecHour"></canvas></div></div>
+    <div class="panel" style="margin-top:18px">
+      <h4>Top 5 — unidades más inseguras</h4>
       <table class="tbl">
-        <thead><tr><th>Unidad</th><th class="num">Vel. máx (km/h)</th><th class="num">Excesos</th><th class="num">/100 km</th><th>Severidad</th></tr></thead>
-        <tbody>${rows || '<tr><td colspan="5" style="color:var(--muted)">Sin actividad en la selección.</td></tr>'}</tbody>
+        <thead><tr><th></th><th>Unidad</th><th class="num">Eventos</th><th class="num">&gt; 60 km/h</th><th class="num">Vel. máx</th><th class="num">Eventos /100 km</th></tr></thead>
+        <tbody>${rows || '<tr><td colspan="6" style="color:var(--muted)">Sin eventos en la selección.</td></tr>'}</tbody>
       </table>
     </div>
-    <div class="note">La API key actual expone la <b>velocidad promedio por tramo</b>, no la instantánea. Los excesos reflejan tramos cuya velocidad media supera el límite; los picos instantáneos requieren telemetría ampliada.</div>
+    <div class="note">La flota maneja a baja velocidad: un "evento" es un tramo con velocidad promedio &gt; 40 km/h. La API expone solo <b>velocidad promedio por tramo</b> (no instantánea) y <b>no hay eventos de frenado/aceleración brusca</b> (requieren acelerómetro/CAN) ni asignación conductor↔viaje, por lo que el ranking es por <b>unidad</b>. La evaluación de conductores requiere habilitar <code>driver_behaviour</code> en la API.</div>
   </section>`);
 }
 
@@ -834,10 +848,20 @@ function drawCharts() {
     data: { labels: pAgg.map((p) => p.name), datasets: [{ data: pAgg.map((p) => Math.round(p.dist)), backgroundColor: C.cyan, borderRadius: 4 }] },
     options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, grid: { color: GRID } }, y: { ticks: { font: { size: 9.5 } }, grid: { display: false } } } } });
 
-  // Combustible: consumo real vs. estimado (litros)
-  mk('chFuel', { type: 'bar',
-    data: { labels: ['Real (flujo/sensor)', 'Estimado (norma)'], datasets: [{ data: [f.real_fuel_l, f.fuel_l], backgroundColor: [C.green, C.gold], borderRadius: 6, maxBarThickness: 64 }] },
-    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: GRID } }, x: { grid: { display: false } } } } });
+  // ---- Seguridad ----
+  if (VIEW.security) {
+    const sec = VIEW.security;
+    mk('chSecPie', { type: 'doughnut',
+      data: { labels: ['40–50 km/h', '50–60 km/h', '> 60 km/h'], datasets: [{ data: [sec.bands.b40, sec.bands.b50, sec.bands.b60], backgroundColor: [C.lime, C.gold, C.red], borderColor: '#fff', borderWidth: 2 }] },
+      options: { cutout: '58%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 11, font: { size: 11 } } } } } });
+    const dl = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+    mk('chSecDow', { type: 'bar',
+      data: { labels: dl, datasets: [{ data: [1, 2, 3, 4, 5, 6, 0].map((d) => sec.dow[d]), backgroundColor: C.lime, borderRadius: 5 }] },
+      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: GRID } }, x: { grid: { display: false } } } } });
+    mk('chSecHour', { type: 'bar',
+      data: { labels: sec.hours.map((_, h) => `${h}h`), datasets: [{ label: 'Eventos', data: sec.hours, backgroundColor: C.cyan, borderRadius: 3 }] },
+      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: GRID } }, x: { grid: { display: false }, ticks: { font: { size: 9 }, autoSkip: true, maxRotation: 0 } } } } });
+  }
 }
 function mk(id, cfg) { const c = document.getElementById(id); if (!c) return; if (charts[id]) charts[id].destroy(); charts[id] = new Chart(c, cfg); }
 
