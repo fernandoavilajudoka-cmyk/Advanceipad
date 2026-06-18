@@ -145,7 +145,7 @@ function streetShort(addr) {
 // Limpieza de eventos de combustible del sensor Escort (varilla): elimina
 // lecturas imposibles y oscilaciones recuperadas (ruido del sensor BLE).
 function cleanFuelEvents(events) {
-  const MAXT = 500; // litros máximos plausibles de tanque/cambio
+  const MAXT = 1000; // litros máximos plausibles (tractocamiones FOTON EST: tanque ~800 L)
   const ev = events
     .filter((e) => (e.before == null || (e.before >= 0 && e.before <= MAXT)) && Math.abs(e.chg) <= MAXT && e.gmt)
     .sort((a, b) => new Date(a.gmt) - new Date(b.gmt));
