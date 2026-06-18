@@ -45,7 +45,7 @@ const PARAMS = {
   consumo_norma_l100: 40.0,        // norma de referencia (comparativo)
   consumo_ruta_l100: 38.0,         // consumo SOLO en movimiento (l/100km) → separa ralentí
   benchmark_kml: 2.5,
-  consumo_ralenti_lh: 8.0,         // L/h en ralentí/PTO (revolvedora con tambor); editable
+  consumo_ralenti_lh: 5.0,         // L/h en ralentí (calibrado vs. tiempo CAN medido); editable
   limite_velocidad_kmh: 90,
   costo_por_exceso_mxn: 150,
 };

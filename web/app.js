@@ -181,14 +181,20 @@ function aggregate() {
     const fuel = dist * p.consumo_norma_l100 / 100;            // estimado (norma configurable)
     const realFuel = (u.real_l100 != null) ? dist * u.real_l100 / 100 : null; // real (flujo/sensor)
     const realEff = (realFuel && realFuel > 0) ? dist / realFuel : null;
-    // Ralentí en combustible (consumo real − consumo en movimiento)
-    const idleFuel = (realFuel != null) ? Math.max(0, realFuel - dist * p.consumo_ruta_l100 / 100) : null;
+    const rate = p.consumo_ralenti_lh;
+    // Ralentí por RESIDUAL (consumo real − consumo en movimiento); usado en unidades sin CAN.
+    const idleFuelResidual = (realFuel != null) ? Math.max(0, realFuel - dist * p.consumo_ruta_l100 / 100) : null;
     // Ralentí en TIEMPO: medido por CAN (motor encendido − movimiento) si la unidad tiene RPM;
-    // si no, estimado (combustible de ralentí ÷ tasa L/h, topado al tiempo detenido).
+    // si no, estimado (combustible residual ÷ tasa L/h, topado al tiempo detenido).
     const idleMeasured = !!(u.has_can && engH > 0);
     const idleHours = idleMeasured
       ? Math.max(0, engH - drive)
-      : ((idleFuel != null && p.consumo_ralenti_lh > 0) ? Math.min(stop, idleFuel / p.consumo_ralenti_lh) : null);
+      : ((idleFuelResidual != null && rate > 0) ? Math.min(stop, idleFuelResidual / rate) : null);
+    // Ralentí en COMBUSTIBLE: en unidades con tiempo MEDIDO por CAN, litros = horas × tasa
+    // (consistente con el tiempo real, sin el sesgo de la norma de ruta); en el resto, residual.
+    const idleFuel = idleMeasured
+      ? (realFuel != null ? Math.min(realFuel, (idleHours || 0) * rate) : (idleHours || 0) * rate)
+      : idleFuelResidual;
     const motorHours = drive + (idleHours || 0);
     const idlePctFuel = (realFuel && realFuel > 0 && idleFuel != null) ? idleFuel / realFuel * 100 : 0;
     const eff = fuel > 0 ? dist / fuel : 0;
