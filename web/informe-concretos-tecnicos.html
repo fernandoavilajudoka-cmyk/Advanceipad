@@ -170,7 +170,7 @@ code { background: #eef2e6; padding: 1px 6px; border-radius: 6px; font-size: .9e
   padding: 4px 8px; overflow-x: auto; box-shadow: var(--shadow-sm);
 }
 .board-tbl {
-  width: 100%; border-collapse: collapse; min-width: 920px;
+  width: 100%; border-collapse: collapse; min-width: 1120px;
   font-variant-numeric: tabular-nums; font-family: "SF Mono", ui-monospace, "Roboto Mono", Menlo, Consolas, monospace;
 }
 .board-tbl thead th {
@@ -192,6 +192,7 @@ code { background: #eef2e6; padding: 1px 6px; border-radius: 6px; font-size: .9e
 .board-tbl tbody tr:nth-child(even) { background: rgba(255,255,255,.35); }
 .board-tbl tbody tr:hover { background: rgba(196,230,0,.10); }
 .board-tbl td.b-unit { text-align: left; color: var(--ink); font-weight: 800; letter-spacing: .02em; }
+.board-tbl td.b-plant { text-align: left; color: var(--muted); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
 .board-tbl td.b-warn { color: var(--orange); font-weight: 700; }
 .board-tbl td.b-alert { color: var(--red); font-weight: 800; }
 .board-tbl td.b-pred { color: var(--muted); }
@@ -201,6 +202,9 @@ code { background: #eef2e6; padding: 1px 6px; border-radius: 6px; font-size: .9e
 .cols.c-7-5 { grid-template-columns: 1.4fr 1fr; }
 .chart-box { position: relative; height: 280px; }
 .chart-box.sm { height: 232px; }
+/* gráfica a todo el ancho de la página (rompe el padding del slide) */
+.chart-box.bleed { height: 340px; margin: 6px -42px 0; padding: 0 18px; }
+@media (max-width: 860px) { .chart-box.bleed { margin: 6px -20px 0; padding: 0 8px; } }
 .panel {
   background: var(--glass-2);
   -webkit-backdrop-filter: saturate(140%) blur(10px); backdrop-filter: saturate(140%) blur(10px);
@@ -591,6 +595,7 @@ function aggregate() {
     fuel_l: round(f.fuel_l, 0), efficiency_kml: round(eff, 2),
     real_fuel_l: round(f.real_fuel_l, 0), real_efficiency_kml: round(realEffFleet, 2),
     idle_fuel_l: round(f.idle_fuel_l, 0), idle_cost: Math.round(idleCost), idle_hours: round(idleHoursFleet, 0),
+    motor_hours: round(driveH + idleHoursFleet, 0),
     idle_pct_fuel: round(f.real_fuel_l > 0 ? f.idle_fuel_l / f.real_fuel_l * 100 : 0, 1),
     fuel_sensors: f.sensors,
     refuel_l: Math.round(f.rf_l), refuel_n: f.rf_n, drain_l: Math.round(f.dr_l), drain_n: f.dr_n,
@@ -735,10 +740,11 @@ function execSlide() {
   <section class="slide" id="s02">
     <div class="slide-head"><span class="snum">02</span><div><h2>Resumen ejecutivo</h2><div class="sub">${esc(scopeLabel())} · ${esc(plantLabel())}</div></div></div>
     <h4 style="margin:2px 0 8px">Tendencia: rendimiento de flota (km/L) vs. distancia recorrida (km)</h4>
-    <div class="chart-box"><canvas id="chTrend"></canvas></div>
+    <div class="chart-box bleed"><canvas id="chTrend"></canvas></div>
     <div class="kpis" style="margin-top:20px">
       ${kpi('teal', nf.format(f.drive_hours), 'h', 'Tiempo de conducción')}
       ${kpi('amber', nf.format(f.idle_hours), 'h', 'Tiempo en ralentí (est.)')}
+      ${kpi('teal', nf.format(f.motor_hours), 'h', 'Tiempo total de motor (est.)')}
       ${kpi('amber', nf.format(f.idle_fuel_l), 'L', 'Combustible en ralentí')}
       ${kpi('red', money(f.idle_cost), '', 'Gasto en ralentí (MXN)')}
       ${kpi('blue', nf.format(f.max_speed), 'km/h', 'Velocidad máxima alcanzada')}
@@ -760,7 +766,9 @@ function execSlide() {
 // Columnas del tablero (key, etiqueta, tipo). sortable=false en placeholders.
 const BOARD_COLS = [
   { key: 'number', lbl: 'Unidad', t: 'txt' },
+  { key: 'plant', lbl: 'Planta', t: 'plant' },
   { key: 'distance_km', lbl: 'Distancia<br>km', t: 'num' },
+  { key: 'max_speed', lbl: 'Vel. máx<br>km/h', t: 'num' },
   { key: 'real_fuel_l', lbl: 'Combustible<br>total L', t: 'num' },
   { key: 'idle_fuel_l', lbl: 'Ralentí<br>L', t: 'num' },
   { key: 'idle_pct_fuel', lbl: '% Ralentí<br>del consumo', t: 'pct' },
@@ -790,6 +798,7 @@ function boardSlide() {
     const v = u[c.key];
     switch (c.t) {
       case 'txt': return `<td class="b-unit">${esc(u.number || u.label)}</td>`;
+      case 'plant': return `<td class="b-plant" title="${esc(u.plant || '')}">${esc(u.plant || '—')}</td>`;
       case 'num': return `<td>${v != null ? nf.format(v) : '—'}</td>`;
       case 'num1': return `<td>${nf1.format(v || 0)}</td>`;
       case 'num2': return `<td>${v != null ? nf2.format(v) : '—'}</td>`;

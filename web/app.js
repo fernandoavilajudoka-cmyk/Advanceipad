@@ -175,6 +175,7 @@ function aggregate() {
     fuel_l: round(f.fuel_l, 0), efficiency_kml: round(eff, 2),
     real_fuel_l: round(f.real_fuel_l, 0), real_efficiency_kml: round(realEffFleet, 2),
     idle_fuel_l: round(f.idle_fuel_l, 0), idle_cost: Math.round(idleCost), idle_hours: round(idleHoursFleet, 0),
+    motor_hours: round(driveH + idleHoursFleet, 0),
     idle_pct_fuel: round(f.real_fuel_l > 0 ? f.idle_fuel_l / f.real_fuel_l * 100 : 0, 1),
     fuel_sensors: f.sensors,
     refuel_l: Math.round(f.rf_l), refuel_n: f.rf_n, drain_l: Math.round(f.dr_l), drain_n: f.dr_n,
@@ -319,10 +320,11 @@ function execSlide() {
   <section class="slide" id="s02">
     <div class="slide-head"><span class="snum">02</span><div><h2>Resumen ejecutivo</h2><div class="sub">${esc(scopeLabel())} · ${esc(plantLabel())}</div></div></div>
     <h4 style="margin:2px 0 8px">Tendencia: rendimiento de flota (km/L) vs. distancia recorrida (km)</h4>
-    <div class="chart-box"><canvas id="chTrend"></canvas></div>
+    <div class="chart-box bleed"><canvas id="chTrend"></canvas></div>
     <div class="kpis" style="margin-top:20px">
       ${kpi('teal', nf.format(f.drive_hours), 'h', 'Tiempo de conducción')}
       ${kpi('amber', nf.format(f.idle_hours), 'h', 'Tiempo en ralentí (est.)')}
+      ${kpi('teal', nf.format(f.motor_hours), 'h', 'Tiempo total de motor (est.)')}
       ${kpi('amber', nf.format(f.idle_fuel_l), 'L', 'Combustible en ralentí')}
       ${kpi('red', money(f.idle_cost), '', 'Gasto en ralentí (MXN)')}
       ${kpi('blue', nf.format(f.max_speed), 'km/h', 'Velocidad máxima alcanzada')}
@@ -344,7 +346,9 @@ function execSlide() {
 // Columnas del tablero (key, etiqueta, tipo). sortable=false en placeholders.
 const BOARD_COLS = [
   { key: 'number', lbl: 'Unidad', t: 'txt' },
+  { key: 'plant', lbl: 'Planta', t: 'plant' },
   { key: 'distance_km', lbl: 'Distancia<br>km', t: 'num' },
+  { key: 'max_speed', lbl: 'Vel. máx<br>km/h', t: 'num' },
   { key: 'real_fuel_l', lbl: 'Combustible<br>total L', t: 'num' },
   { key: 'idle_fuel_l', lbl: 'Ralentí<br>L', t: 'num' },
   { key: 'idle_pct_fuel', lbl: '% Ralentí<br>del consumo', t: 'pct' },
@@ -374,6 +378,7 @@ function boardSlide() {
     const v = u[c.key];
     switch (c.t) {
       case 'txt': return `<td class="b-unit">${esc(u.number || u.label)}</td>`;
+      case 'plant': return `<td class="b-plant" title="${esc(u.plant || '')}">${esc(u.plant || '—')}</td>`;
       case 'num': return `<td>${v != null ? nf.format(v) : '—'}</td>`;
       case 'num1': return `<td>${nf1.format(v || 0)}</td>`;
       case 'num2': return `<td>${v != null ? nf2.format(v) : '—'}</td>`;

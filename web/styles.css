@@ -160,7 +160,7 @@ code { background: #eef2e6; padding: 1px 6px; border-radius: 6px; font-size: .9e
   padding: 4px 8px; overflow-x: auto; box-shadow: var(--shadow-sm);
 }
 .board-tbl {
-  width: 100%; border-collapse: collapse; min-width: 920px;
+  width: 100%; border-collapse: collapse; min-width: 1120px;
   font-variant-numeric: tabular-nums; font-family: "SF Mono", ui-monospace, "Roboto Mono", Menlo, Consolas, monospace;
 }
 .board-tbl thead th {
@@ -182,6 +182,7 @@ code { background: #eef2e6; padding: 1px 6px; border-radius: 6px; font-size: .9e
 .board-tbl tbody tr:nth-child(even) { background: rgba(255,255,255,.35); }
 .board-tbl tbody tr:hover { background: rgba(196,230,0,.10); }
 .board-tbl td.b-unit { text-align: left; color: var(--ink); font-weight: 800; letter-spacing: .02em; }
+.board-tbl td.b-plant { text-align: left; color: var(--muted); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
 .board-tbl td.b-warn { color: var(--orange); font-weight: 700; }
 .board-tbl td.b-alert { color: var(--red); font-weight: 800; }
 .board-tbl td.b-pred { color: var(--muted); }
@@ -191,6 +192,9 @@ code { background: #eef2e6; padding: 1px 6px; border-radius: 6px; font-size: .9e
 .cols.c-7-5 { grid-template-columns: 1.4fr 1fr; }
 .chart-box { position: relative; height: 280px; }
 .chart-box.sm { height: 232px; }
+/* gráfica a todo el ancho de la página (rompe el padding del slide) */
+.chart-box.bleed { height: 340px; margin: 6px -42px 0; padding: 0 18px; }
+@media (max-width: 860px) { .chart-box.bleed { margin: 6px -20px 0; padding: 0 8px; } }
 .panel {
   background: var(--glass-2);
   -webkit-backdrop-filter: saturate(140%) blur(10px); backdrop-filter: saturate(140%) blur(10px);
