@@ -147,6 +147,7 @@ code { background: #eef2e6; padding: 1px 6px; border-radius: 6px; font-size: .9e
 .kpi.teal::before { background: var(--lime-mid); }
 .kpi.red::before { background: var(--red); }
 .kpi .k-note { font-size: 11.5px; font-weight: 700; color: var(--red); margin-top: 5px; padding-top: 5px; border-top: 1px dashed var(--line-2); }
+.kpi .k-note.neutral { color: var(--lime-deep); }
 /* KPI placeholder de modelo predictivo */
 .kpi.pred { border-style: dashed; opacity: .9; }
 .kpi.pred::before { background: var(--muted); }

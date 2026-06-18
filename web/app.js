@@ -217,8 +217,6 @@ function render() {
   deck.appendChild(execSlide());
   deck.appendChild(boardSlide());
   deck.appendChild(perfSlide());
-  deck.appendChild(fuelSlide());
-  deck.appendChild(plantsSlide());
   deck.appendChild(safetySlide());
   deck.appendChild(forkliftSlide());
   deck.appendChild(rankingSlide());
@@ -309,6 +307,7 @@ function tocSlide() {
 /* ------------------------- Resumen ejecutivo ------------------------- */
 function execSlide() {
   const f = VIEW.fleet;
+  const idlePctTime = f.motor_hours > 0 ? f.idle_hours / f.motor_hours * 100 : 0;
   const kpi = (cls, val, unit, lbl) =>
     `<div class="kpi ${cls}"><div class="k-val">${val}<span class="k-unit"> ${unit || ''}</span></div><div class="k-lbl">${lbl}</div></div>`;
   const pred = (lbl) =>
@@ -322,14 +321,12 @@ function execSlide() {
     <h4 style="margin:2px 0 8px">Tendencia: rendimiento de flota (km/L) vs. distancia recorrida (km)</h4>
     <div class="chart-box bleed"><canvas id="chTrend"></canvas></div>
     <div class="kpis" style="margin-top:20px">
-      ${kpi('teal', nf.format(f.drive_hours), 'h', 'Tiempo de conducción')}
-      ${kpi('amber', nf.format(f.idle_hours), 'h', 'Tiempo en ralentí (est.)')}
-      ${kpi('teal', nf.format(f.motor_hours), 'h', 'Tiempo total de motor (est.)')}
-      ${kpi('amber', nf.format(f.idle_fuel_l), 'L', 'Combustible en ralentí')}
-      ${kpi('red', money(f.idle_cost), '', 'Gasto en ralentí (MXN)')}
-      ${kpi('blue', nf.format(f.max_speed), 'km/h', 'Velocidad máxima alcanzada')}
       ${kpi('green', nf.format(f.distance_km), 'km', 'Distancia total recorrida')}
-      ${kpi('green', nf.format(f.real_fuel_l), 'L', 'Combustible total (real)')}
+      ${kpi('teal', nf.format(f.motor_hours), 'h', 'Tiempo total de motor (est.)')}
+      ${kpi('green', nf.format(f.real_fuel_l), 'L', 'Consumo total de combustible')}
+      ${kpi('amber', nf.format(f.idle_fuel_l), 'L', 'Consumo de combustible en ralentí')}
+      <div class="kpi amber"><div class="k-val">${nf.format(f.idle_hours)}<span class="k-unit"> h</span></div><div class="k-lbl">Tiempo en ralentí (est.)</div><div class="k-note neutral">${nf1.format(idlePctTime)}% del tiempo de motor</div></div>
+      ${kpi('blue', nf2.format(f.real_efficiency_kml), 'km/L', 'Rendimiento general')}
       <div class="kpi red"><div class="k-val">${nf.format(f.violations)}</div><div class="k-lbl">Eventos de seguridad registrados</div><div class="k-note">${nf1.format(f.violations_per_100km)} por cada 100 km</div></div>
       ${pred('Probabilidad de accidente')}
       ${pred('Probabilidad de robo')}
