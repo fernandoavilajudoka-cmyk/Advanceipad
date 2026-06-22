@@ -17,10 +17,10 @@
   --line:rgba(40,70,30,.09);
   --s3:rgba(244,250,236,.85);
   --t:#1d3326;--t2:#5c6b5e;--t3:#9aa99a;
-  --gr:#2f8f4e;--gr2:#256f3c;--gr-bg:rgba(47,143,78,.12);
-  --g2:#43a047;--gl:#c5e1a5;
-  --lime:#7cb342;--lime-bg:rgba(124,179,66,.16);
-  --teal:#1f9e8f;--teal-bg:rgba(31,158,143,.13);
+  --gr:#16a34a;--gr2:#15803d;--gr-bg:rgba(22,163,74,.15);
+  --g2:#22c55e;--gl:#bbe9a0;
+  --lime:#65a30d;--lime-bg:rgba(101,163,13,.16);
+  --teal:#0d9488;--teal-bg:rgba(13,148,136,.14);
   --or:#e1881f;--or-bg:rgba(225,136,31,.13);
   --rd:#d64b34;--rd-bg:rgba(214,75,52,.12);
   --pu:#6d8f3a;--pu-bg:rgba(109,143,58,.14);
@@ -33,9 +33,9 @@ html{scroll-behavior:smooth;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;color:var(--t);font-size:13px;line-height:1.55;min-height:100vh;
   background:var(--bg);
   background-image:
-    radial-gradient(680px 520px at 5% -8%, rgba(124,179,66,.18), transparent 60%),
-    radial-gradient(620px 520px at 104% 2%, rgba(47,143,78,.14), transparent 58%),
-    radial-gradient(640px 560px at 50% 120%, rgba(31,158,143,.10), transparent 60%);
+    radial-gradient(680px 520px at 5% -8%, rgba(101,163,13,.17), transparent 60%),
+    radial-gradient(620px 520px at 104% 2%, rgba(22,163,74,.17), transparent 58%),
+    radial-gradient(640px 560px at 50% 120%, rgba(13,148,136,.12), transparent 60%);
   background-attachment:fixed;}
 nav{position:fixed;top:0;left:0;bottom:0;width:212px;background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-right:1px solid var(--brd);box-shadow:var(--shadow-sm);z-index:100;overflow-y:auto;padding:20px 0;}
 .nav-logo{padding:0 16px 16px;border-bottom:1px solid var(--line);margin-bottom:8px;}
@@ -129,7 +129,7 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
   <a href="#s05"><span class="num">05</span> Productividad de sedes</a>
   <a href="#s06"><span class="num">06</span> Seguridad vial</a>
   <a href="#s07"><span class="num">07</span> Tablero de unidades</a>
-  <a href="#s08"><span class="num">08</span> Combustible y varilla</a>
+  <a href="#s08"><span class="num">08</span> Combustible y costo</a>
   <a href="#s09"><span class="num">09</span> Ranking operativo</a>
   <a href="#s10"><span class="num">10</span> Monetización</a>
   <a href="#s11"><span class="num">11</span> Metodología</a>
@@ -147,7 +147,7 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
       <div class="portada-nodata" id="portNoData" style="margin-top:14px"></div>
     </div>
     <div class="portada-right">
-      <div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Cobertura de telemetría</div>
+      <div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Estado de la flota</div>
       <div id="portCob" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
       <div style="margin-top:20px;font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Periodo seleccionado</div>
       <div id="portResumen" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
@@ -177,7 +177,7 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
 <!-- S03 RENDIMIENTO POR MODELO -->
 <section id="s03">
   <div class="sec-head"><span class="sec-num">03</span>
-    <div><div class="sec-title">Rendimiento real por modelo vs fabricante</div><div class="sec-sub">Real medido contra la ficha técnica del fabricante, por modelo conectado</div></div>
+    <div><div class="sec-title">Rendimiento real por modelo vs fabricante</div><div class="sec-sub">Rendimiento real contra la ficha técnica del fabricante, por modelo</div></div>
     <span class="sec-badge badge-gr">Gráfica</span>
   </div>
   <div class="row2">
@@ -260,7 +260,7 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
       <th>Unidad</th><th>Placa</th><th>Modelo</th><th>Zona</th>
       <th class="r">Distancia<br>km</th><th class="r">Vel. máx<br>km/h</th><th class="r">Comb.<br>total L</th>
       <th class="r">Ralentí<br>L</th><th class="r">Ralentí<br>h</th><th class="r">% Ral.<br>consumo</th>
-      <th class="r">Rend.<br>km/L</th><th class="r">Seg.<br>/100km</th><th>Varilla</th>
+      <th class="r">Rend.<br>km/L</th><th class="r">Seg.<br>/100km</th>
       <th class="r">Descargas<br>eventos</th><th class="r">Diésel<br>desc. L</th><th>Prob.<br>accid.</th><th>Prob.<br>robo</th>
     </tr></thead>
     <tbody id="tbBoard"></tbody>
@@ -282,7 +282,7 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
     </div>
     <div class="card">
       <div class="card-title">Descargas de diésel</div>
-      <div class="card-sub">Eventos del sensor de varilla · prioridad las &gt; 10 L (posible robo)</div>
+      <div class="card-sub">Descargas de diésel detectadas · prioridad las &gt; 10 L (posible robo)</div>
       <div id="kpiDescargas" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px"></div>
     </div>
   </div>
@@ -352,38 +352,31 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
       <button class="btn-recalc" onclick="render()">↻ Recalcular todo el informe</button>
     </div>
     <div class="card">
-      <div class="card-title">Naturaleza de los datos</div><div class="card-sub">Qué se mide directamente y qué se estima — por tipo de dispositivo</div>
+      <div class="card-title">Naturaleza de los datos</div><div class="card-sub">Qué se mide directamente y qué se estima</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px">
         <div class="nat-box"><h4 style="color:var(--gr)">✓ Medido</h4><ul>
-          <li><span class="dot" style="background:var(--gr);margin-top:5px"></span>Distancia, odómetro (GPS)</li>
-          <li><span class="dot" style="background:var(--gr);margin-top:5px"></span>Tiempo manejo / detención</li>
-          <li><span class="dot" style="background:var(--gr);margin-top:5px"></span>Consumo real (flujo/CAN)</li>
-          <li><span class="dot" style="background:var(--gr);margin-top:5px"></span>Sensor Escort de varilla</li>
-          <li><span class="dot" style="background:var(--gr);margin-top:5px"></span>Ralentí + bruscas por RPM (Ruptela)</li>
+          <li><span class="dot" style="background:var(--gr);margin-top:5px"></span>Distancia y odómetro (GPS)</li>
+          <li><span class="dot" style="background:var(--gr);margin-top:5px"></span>Tiempo de manejo / detención</li>
+          <li><span class="dot" style="background:var(--gr);margin-top:5px"></span>Velocidad y excesos</li>
+          <li><span class="dot" style="background:var(--gr);margin-top:5px"></span>Consumo real de combustible</li>
+          <li><span class="dot" style="background:var(--gr);margin-top:5px"></span>Ralentí (motor encendido sin movimiento)</li>
         </ul></div>
-        <div class="nat-box"><h4 style="color:var(--t2)">≈ Estimado</h4><ul>
-          <li><span class="dot" style="background:var(--t3);margin-top:5px"></span>Combustible por norma L/100km</li>
-          <li><span class="dot" style="background:var(--t3);margin-top:5px"></span>Ralentí en unidades sin CAN (Queclink)</li>
+        <div class="nat-box"><h4 style="color:var(--t2)">≈ Estimado / referencia</h4><ul>
+          <li><span class="dot" style="background:var(--t3);margin-top:5px"></span>Norma de consumo L/100 km</li>
           <li><span class="dot" style="background:var(--t3);margin-top:5px"></span>Riesgo vial / robo por zona (INEGI · SESNSP)</li>
-          <li><span class="dot" style="background:var(--t3);margin-top:5px"></span>Costos de monetización</li>
+          <li><span class="dot" style="background:var(--t3);margin-top:5px"></span>Bono al operador y costos de monetización</li>
+          <li><span class="dot" style="background:var(--t3);margin-top:5px"></span>Drenajes: a validar en sitio</li>
         </ul></div>
       </div>
+      <div style="font-size:11px;color:var(--t3);margin-top:14px;line-height:1.6">Fuente: Telematics Advance / Smart-Connect. La zona corresponde a la clasificación asignada por el cliente; si una unidad no tiene zona asignada, el campo se muestra vacío.</div>
     </div>
-  </div>
-  <div class="card">
-    <div class="card-title">Dispositivos</div><div class="card-sub">Cómo cambia el análisis según el rastreador</div>
-    <div class="row2" style="margin-top:4px">
-      <div class="nat-box"><h4><span class="tag tag-rup"><span class="dot" style="background:var(--teal)"></span>Ruptela (CAN)</span></h4><div style="font-size:11px;color:var(--t2);line-height:1.7;margin-top:8px">Ralentí <strong>MEDIDO</strong> por RPM (&gt;350) y combustible real por CAN. Reporta <strong>frenadas/aceleraciones bruscas</strong>. Dato más preciso.</div></div>
-      <div class="nat-box"><h4><span class="tag tag-que"><span class="dot" style="background:var(--lime)"></span>Queclink (GPS)</span></h4><div style="font-size:11px;color:var(--t2);line-height:1.7;margin-top:8px">Sin CAN: ralentí <strong>ESTIMADO</strong> (combustible no asociado a distancia ÷ tasa L/h). Combustible por sensor de varilla o norma. No reporta conducción agresiva.</div></div>
-    </div>
-    <div style="font-size:11px;color:var(--t3);margin-top:14px">Fuente: Telematics Advance / Smart-Connect (Mapon API). La zona se deriva por geocodificación de la base dominante.</div>
   </div>
 </section>
 </main>
 
 <script>
 // ════════ PALETA VERDE ════════
-const C={gr:'#2f8f4e',g2:'#43a047',g3:'#66bb6a',gl:'#c5e1a5',lime:'#7cb342',teal:'#1f9e8f',or:'#e1881f',rd:'#d64b34',txt:'#5c6b5e',grid:'rgba(40,70,30,.09)',bench:'#9aa99a',card:'#ffffff'};
+const C={gr:'#16a34a',g2:'#22c55e',g3:'#4ade80',gl:'#bbe9a0',lime:'#65a30d',teal:'#0d9488',or:'#e1881f',rd:'#d64b34',txt:'#4b5a4e',grid:'rgba(20,80,40,.10)',bench:'#94a39a',card:'#ffffff'};
 
 /* ══════════════════════════════════════════════════════════════════════════════
    PLANTILLA REUTILIZABLE · CONFIGURACIÓN DEL CLIENTE  (editar SOLO este bloque)
@@ -476,7 +469,7 @@ function dayMetric(u,ds){
 
 // ════════ AGREGACIÓN SOBRE EL ÁMBITO (mes/semana/zona) ════════
 function scopeDays(){const m=MONTHS.find(x=>x.id===STATE.month)||MONTHS[MONTHS.length-1];if(STATE.week==='all')return m.days;return (weeksOf(STATE.month).find(w=>w.id===STATE.week)||{days:m.days}).days;}
-function scopeUnits(){return D.filter(u=>STATE.zona==='all'||u.zona===STATE.zona);}
+function scopeUnits(){return D.filter(u=>STATE.zona==='all'||(u.zona||'Sin zona')===STATE.zona);}
 let A={};
 function aggregate(){
   const p=P(),days=scopeDays(),units=scopeUnits();
@@ -502,7 +495,7 @@ function aggregate(){
   // por modelo
   A.byModel=MODELS.map(([mo,bench])=>{const us=UA.filter(u=>u.model===mo);const k=us.reduce((s,u)=>s+u.km,0),rl=us.reduce((s,u)=>s+u.real_l,0);return {model:mo,bench,n:us.length,km:k,kml:rl?k/rl:0};}).filter(m=>m.n>0);
   // por zona/sede
-  A.byZona=ZONAS.filter(z=>STATE.zona==='all'||z===STATE.zona).map(z=>{const us=UA.filter(u=>u.zona===z);const k=us.reduce((s,u)=>s+u.km,0),rl=us.reduce((s,u)=>s+u.real_l,0),st=us.reduce((s,u)=>s+u.stop,0),mo=us.reduce((s,u)=>s+u.drive+u.stop,0),vl=us.reduce((s,u)=>s+u.viol,0);return {zona:z,n:us.length,km:k,kml:rl?k/rl:0,realL:rl,stopH:st,idlePct:mo?st/mo*100:0,viol:vl,maxs:Math.max(0,...us.map(u=>u.maxs)),ev100:k>0?vl/k*100:0,drain:us.reduce((s,u)=>s+u.drain,0),drainL:us.reduce((s,u)=>s+u.drainL,0)};}).filter(z=>z.n>0);
+  A.byZona=[...new Set(UA.map(u=>u.zona||'Sin zona'))].filter(z=>STATE.zona==='all'||z===STATE.zona).map(z=>{const us=UA.filter(u=>(u.zona||'Sin zona')===z);const k=us.reduce((s,u)=>s+u.km,0),rl=us.reduce((s,u)=>s+u.real_l,0),st=us.reduce((s,u)=>s+u.stop,0),mo=us.reduce((s,u)=>s+u.drive+u.stop,0),vl=us.reduce((s,u)=>s+u.viol,0);return {zona:z,n:us.length,km:k,kml:rl?k/rl:0,realL:rl,stopH:st,idlePct:mo?st/mo*100:0,viol:vl,maxs:Math.max(0,...us.map(u=>u.maxs)),ev100:k>0?vl/k*100:0,drain:us.reduce((s,u)=>s+u.drain,0),drainL:us.reduce((s,u)=>s+u.drainL,0)};}).filter(z=>z.n>0);
   // índice de productividad por zona (50% km + 50% km/L normalizados)
   const ks=A.byZona.map(z=>z.km),ls=A.byZona.map(z=>z.kml);const kmin=Math.min(...ks),kmax=Math.max(...ks),lmin=Math.min(...ls),lmax=Math.max(...ls);
   A.byZona.forEach(z=>{const nk=kmax>kmin?(z.km-kmin)/(kmax-kmin):.5,nl=lmax>lmin?(z.kml-lmin)/(lmax-lmin):.5;z.idx=Math.round((nk*0.5+nl*0.5)*100);});
@@ -518,16 +511,20 @@ const lvl=(v,a,b)=>v>=b?'<span class="tag tag-alta">Alta</span>':v>=a?'<span cla
 
 // ════════ CHART ════════
 const CH={};
-function chart(id,cfg){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),cfg);}
+// ── Cristal translúcido: convierte rellenos sólidos en vidrio con borde sólido ──
+function _rgba(c,a){if(typeof c!=='string')return c;if(c.startsWith('rgba'))return c;if(c.startsWith('rgb('))return c.replace('rgb(','rgba(').replace(')',`,${a})`);let h=c.replace('#','');if(h.length===3)h=h.split('').map(x=>x+x).join('');const n=parseInt(h,16);return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
+function glassify(cfg){(cfg.data&&cfg.data.datasets||[]).forEach(ds=>{const t=ds.type||cfg.type;if(t==='line')return;const a=t==='doughnut'?0.74:0.6;
+  if(Array.isArray(ds.backgroundColor)){const s=ds.backgroundColor.slice();ds.backgroundColor=s.map(c=>_rgba(c,a));if(ds.borderColor===undefined){ds.borderColor=s;ds.borderWidth=ds.borderWidth??1.4;}}
+  else if(typeof ds.backgroundColor==='string'){const s=ds.backgroundColor;ds.backgroundColor=_rgba(s,a);if(ds.borderColor===undefined){ds.borderColor=s;ds.borderWidth=ds.borderWidth??1.4;}}});return cfg;}
+function chart(id,cfg){glassify(cfg);if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),cfg);}
 const axX=(x={})=>({grid:{display:false},ticks:{color:C.txt,font:{size:10}},...x});
 const axY=(x={})=>({grid:{color:C.grid},ticks:{color:C.txt,font:{size:10}},...x});
-const devTag=u=>u.has_can?'<span class="tag tag-rup"><span class="dot" style="background:var(--teal)"></span>Ruptela</span>':'<span class="tag tag-que"><span class="dot" style="background:var(--lime)"></span>Queclink</span>';
 
 // ════════ FILTROS ════════
 function buildFilters(){
   document.getElementById('selMonth').innerHTML=MONTHS.map(m=>`<option value="${m.id}"${m.id===STATE.month?' selected':''}>${m.label}</option>`).join('');
   populateWeeks();
-  document.getElementById('selZona').innerHTML=`<option value="all">Todas las zonas (${D.length})</option>`+ZONAS.map(z=>`<option value="${z}"${z===STATE.zona?' selected':''}>${z}</option>`).join('');
+  document.getElementById('selZona').innerHTML=`<option value="all">Todas las zonas (${D.length})</option>`+[...new Set(D.map(u=>u.zona||'Sin zona'))].map(z=>`<option value="${z}"${z===STATE.zona?' selected':''}>${z}</option>`).join('');
   document.getElementById('selMonth').onchange=e=>{STATE.month=e.target.value;STATE.week='all';populateWeeks();render();};
   document.getElementById('selWeek').onchange=e=>{STATE.week=e.target.value;render();};
   document.getElementById('selZona').onchange=e=>{STATE.zona=e.target.value;render();};
@@ -543,10 +540,10 @@ function scopeLbl(){const m=MONTHS.find(x=>x.id===STATE.month).label;const w=STA
 
 function fillPortada(){
   document.getElementById('portMeta').innerHTML=`${A.fleetTotal} ${META.tipoUnidad} · ${META.zona}<br>Periodo base: Feb–Jun 2026 &nbsp;·&nbsp; ${META.cliente} · Tier ${META.tier}<br>Fuente: ${META.fuente}`;
-  document.getElementById('portStats').innerHTML=[{v:intES(A.total),l:'Unidades en zona'},{v:ZONAS.length,l:'Zonas / sedes'},{v:A.ruptela,l:'Ruptela (CAN)'},{v:A.queclink,l:'Queclink (GPS)'},{v:MODELS.length,l:'Modelos'},{v:A.sensorN,l:'con sensor varilla'}].map(s=>`<div class="pstat"><div class="v">${s.v}</div><div class="l">${s.l}</div></div>`).join('');
+  document.getElementById('portStats').innerHTML=[{v:intES(A.total),l:'Unidades'},{v:A.active,l:'Activas'},{v:A.total-A.active,l:'Sin actividad'},{v:MODELS.length,l:'Modelos'},{v:[...new Set(D.map(u=>u.zona).filter(Boolean))].length,l:'Zonas / sedes'},{v:A.days.length,l:'Días'}].map(s=>`<div class="pstat"><div class="v">${s.v}</div><div class="l">${s.l}</div></div>`).join('');
   const nd=document.getElementById('portNoData');
   if(META.sinSenal.length){nd.style.display='';nd.innerHTML=`<strong>⚠ ${META.sinSenal.length} unidades sin señal GPS:</strong> `+META.sinSenal.map(s=>`${s.n} (desde ${s.desde})`).join(' · ')+`. Posible robo o desconexión.`;}else nd.style.display='none';
-  document.getElementById('portCob').innerHTML=[{v:A.ruptela,l:'ralentí medido (CAN)',c:'var(--teal)'},{v:A.queclink,l:'ralentí estimado',c:'var(--lime)'},{v:A.sensorN,l:'sensor de varilla',c:'var(--pu)'},{v:decES(A.pctMedido)+'%',l:'distancia medida por CAN',c:'var(--gr)'}].map(r=>`<div style="background:var(--s3);border-radius:8px;padding:12px"><div style="font-size:18px;font-weight:800;color:${r.c}">${r.v}</div><div style="font-size:11px;color:var(--t2)">${r.l}</div></div>`).join('');
+  document.getElementById('portCob').innerHTML=[{v:A.active,l:'unidades activas',c:'var(--gr)'},{v:A.total-A.active,l:'sin actividad',c:'var(--t2)'},{v:MODELS.length,l:'modelos en flota',c:'var(--teal)'},{v:decES(A.pctIdle)+'%',l:'tiempo en ralentí',c:'var(--or)'}].map(r=>`<div style="background:var(--s3);border-radius:8px;padding:12px"><div style="font-size:18px;font-weight:800;color:${r.c}">${r.v}</div><div style="font-size:11px;color:var(--t2)">${r.l}</div></div>`).join('');
   document.getElementById('portResumen').innerHTML=[{v:intES(A.km),l:'km recorridos',c:'var(--gr)'},{v:decES(A.pctIdle)+'%',l:'tiempo en ralentí',c:'var(--or)'},{v:intES(A.real_l),l:'litros reales',c:'var(--t)'},{v:intES(A.viol),l:'excesos de velocidad',c:'var(--rd)'}].map(r=>`<div style="background:var(--s3);border-radius:8px;padding:12px"><div style="font-size:18px;font-weight:800;color:${r.c}">${r.v}</div><div style="font-size:11px;color:var(--t2)">${r.l}</div></div>`).join('');
 }
 function fillKpis(){
@@ -555,7 +552,7 @@ function fillKpis(){
   document.getElementById('kpiGrid').innerHTML=[
     {l:'Rendimiento general',v:decES(A.kml,2),u:'km/L',k:'',f:`${decES(A.l100)} L/100 km`},
     {l:'Distancia total',v:intES(A.km),u:'km',k:'k-lime',f:`${A.days.length} días en el periodo`},
-    {l:'Ralentí de la flota',v:decES(A.pctIdle)+'%',u:'',k:'k-or',f:`${A.ruptela} medido · ${A.queclink} estimado`},
+    {l:'Ralentí de la flota',v:decES(A.pctIdle)+'%',u:'',k:'k-or',f:`${intES(A.stop)} h de motor detenido`},
     {l:'Excesos de velocidad',v:intES(A.viol),u:'',k:'k-rd',f:`${decES(A.exc100,2)} por 100 km`},
   ].map(k=>`<div class="kpi ${k.k}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}${k.u?`<small>${k.u}</small>`:''}</div><div class="kpi-foot">${k.f}</div></div>`).join('');
 }
@@ -640,12 +637,11 @@ function buildBoard(){
     const idleL=u.stop*p.idleL, pctF=u.real_l>0?idleL/u.real_l*100:0, drainL=u.drain*15, acc=accidentRisk(u), th=theftRisk(u);
     const pc=pctF<=30?'var(--gr)':pctF<=40?'var(--or)':'var(--rd)';
     return `<tr>
-      <td><strong>${u.n}</strong>${u.has_can?' <span class="tag tag-can">CAN</span>':''}</td>
-      <td>${u.number}</td><td>${u.model.replace('FOTON ','')}</td><td><span class="chip">${u.zona}</span></td>
+      <td><strong>${u.n}</strong></td>
+      <td>${u.number}</td><td>${u.model.replace(/FOTON |Foton /,'')}</td><td>${u.zona?`<span class="chip">${u.zona}</span>`:'<span style="color:var(--t3)">—</span>'}</td>
       <td class="r">${intES(u.km)}</td><td class="r">${u.maxs}</td><td class="r">${intES(u.real_l)}</td>
       <td class="r">${intES(idleL)}</td><td class="r">${decES(u.stop)}</td><td class="r" style="color:${pc};font-weight:700">${decES(pctF)}%</td>
       <td class="r" style="font-weight:700">${decES(u.kml,2)}</td><td class="r">${decES(u.exc100,2)}</td>
-      <td>${u.sensor?'<span class="tag tag-can">Sí</span>':'<span class="tag tag-est">No</span>'}</td>
       <td class="r" style="${u.drain?'color:var(--rd);font-weight:700':''}">${u.drain||'—'}</td>
       <td class="r" style="${drainL?'color:var(--rd)':''}">${drainL?intES(drainL):'—'}</td>
       <td><span class="tag ${sem(acc)}">${acc}</span></td><td><span class="tag ${sem(th)}">${th}</span></td></tr>`;
@@ -660,7 +656,7 @@ function buildFuel(){
     {l:'Costo de combustible',v:mxn(costo),u:'',k:'k-rd',f:`diésel ${mxn(p.diesel)}/L · consumo real`},
     {l:'Costo por km',v:'$'+decES(costoKm,2),u:'/km',k:'k-or',f:`sobre ${intES(A.km)} km recorridos`},
     {l:'Tiempo de ralentí',v:intES(A.stop),u:'h',k:'k-or',f:`${decES(A.pctIdle)}% del tiempo de motor`},
-    {l:'% de ralentí',v:decES(A.pctIdle)+'%',u:'',k:'k-or',f:`${A.ruptela} medido (CAN) · ${A.queclink} estimado`},
+    {l:'% de ralentí',v:decES(A.pctIdle)+'%',u:'',k:'k-or',f:`del tiempo de motor encendido`},
     {l:'Costo de ralentí',v:mxn(costoRal),u:'',k:'k-rd',f:`${intES(idleFuel)} L quemados detenido`},
   ].map(k=>`<div class="kpi ${k.k}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}${k.u?`<small>${k.u}</small>`:''}</div><div class="kpi-foot">${k.f}</div></div>`).join('');
   // gasto por zona apilado (conducción · ralentí · robo)
