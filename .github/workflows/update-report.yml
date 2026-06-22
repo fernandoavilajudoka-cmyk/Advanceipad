@@ -24,7 +24,9 @@ jobs:
 
       - name: Generar informe con datos reales
         env:
-          MAPON_API_KEY: ${{ secrets.MAPON_API_KEY }}
+          # Secret por cliente → variable genérica que lee el script.
+          # Para otro cliente, duplica este workflow y cambia el secret.
+          MAPON_API_KEY: ${{ secrets.FERTILIZANTESTEPEYAC }}
         run: node scripts/build-report.mjs
 
       - name: Publicar cambios (si los hay)
