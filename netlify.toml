@@ -1,0 +1,21 @@
+# Configuración de Netlify para el repo Advanceipad
+# Sitio estático: se publica la raíz del repo (sin build).
+# - La raíz "/" sirve el informe del cliente (tepeyac.html).
+# - La plantilla reutilizable queda en /plantilla y /index.html
+# Para cambiar qué informe se muestra en la raíz, edita el "to" del redirect.
+
+[build]
+  publish = "."
+  command = ""
+
+# La raíz muestra el informe de Fertilizantes Tepeyac
+[[redirects]]
+  from = "/"
+  to = "/tepeyac.html"
+  status = 200
+
+# Acceso directo a la plantilla base
+[[redirects]]
+  from = "/plantilla"
+  to = "/index.html"
+  status = 200
