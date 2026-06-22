@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Informe Gerencial de Flota — Advance</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  /* ── PALETA CRISTAL · FONDO BLANCO ── */
+  --bg:#f4f7fc;
+  --glass:rgba(255,255,255,.55);
+  --glass-strong:rgba(255,255,255,.74);
+  --blur:blur(18px) saturate(165%);
+  --brd:rgba(255,255,255,.70);
+  --brd2:rgba(22,40,75,.12);
+  --line:rgba(22,40,75,.08);
+
+  /* superficies heredadas (usadas en estilos en línea) → tonos claros */
+  --s1:rgba(255,255,255,.55);
+  --s2:rgba(255,255,255,.55);
+  --s3:rgba(247,250,254,.82);
+
+  /* texto */
+  --t:#16223c;--t2:#5b6678;--t3:#9aa6b8;
+
+  /* acentos (con contraste suficiente sobre blanco) + matices translúcidos */
+  --gr:#059669;--gr2:#047857;--gr-bg:rgba(5,150,105,.12);
+  --or:#ea580c;--or-bg:rgba(234,88,12,.12);
+  --rd:#dc2626;--rd-bg:rgba(220,38,38,.10);
+  --bl:#2563eb;--bl-bg:rgba(37,99,235,.10);
+  --yw:#b45309;--yw-bg:rgba(180,83,9,.12);
+
+  --shadow:0 10px 34px rgba(20,40,90,.12);
+  --shadow-sm:0 6px 20px rgba(20,40,90,.08);
+  --r:14px;--r2:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  color:var(--t);font-size:13px;line-height:1.55;min-height:100vh;
+  background:var(--bg);
+  background-image:
+    radial-gradient(680px 520px at 6% -8%, rgba(37,99,235,.14), transparent 60%),
+    radial-gradient(620px 520px at 104% 2%, rgba(5,150,105,.13), transparent 58%),
+    radial-gradient(640px 560px at 50% 118%, rgba(124,58,237,.10), transparent 60%);
+  background-attachment:fixed;
+}
+
+/* ── NAV (cristal) ── */
+nav{position:fixed;top:0;left:0;bottom:0;width:208px;
+  background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border-right:1px solid var(--brd);box-shadow:var(--shadow-sm);
+  z-index:100;overflow-y:auto;padding:20px 0;}
+.nav-logo{padding:0 16px 16px;border-bottom:1px solid var(--line);margin-bottom:8px;}
+.nav-logo span{font-size:13px;font-weight:800;color:var(--gr);letter-spacing:.5px;}
+.nav-logo p{font-size:10px;color:var(--t3);margin-top:2px;}
+nav a{display:flex;align-items:center;gap:8px;padding:7px 16px;font-size:12px;color:var(--t2);text-decoration:none;border-radius:8px;margin:1px 8px;transition:background .15s,color .15s;}
+nav a:hover,nav a.active{background:rgba(37,99,235,.10);color:var(--t);}
+nav a .num{font-size:10px;font-weight:700;color:var(--t3);min-width:18px;}
+nav a:hover .num,nav a.active .num{color:var(--gr);}
+
+/* ── MAIN ── */
+main{margin-left:208px;padding:0;}
+
+/* ── SECTION ── */
+section{padding:36px 40px;border-bottom:1px solid var(--line);min-height:0;}
+.sec-head{display:flex;align-items:center;gap:12px;margin-bottom:24px;}
+.sec-num{font-size:11px;font-weight:700;color:var(--t3);min-width:24px;}
+.sec-title{font-size:20px;font-weight:800;color:var(--t);}
+.sec-sub{font-size:13px;color:var(--t2);margin-top:3px;}
+.sec-badge{padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;}
+.badge-gr{background:var(--gr-bg);color:var(--gr);}
+.badge-or{background:var(--or-bg);color:var(--or);}
+.badge-rd{background:var(--rd-bg);color:var(--rd);}
+.badge-bl{background:var(--bl-bg);color:var(--bl);}
+.badge-yw{background:var(--yw-bg);color:var(--yw);}
+
+/* ── PORTADA ── */
+#s01{background:linear-gradient(160deg,rgba(37,99,235,.10) 0%,rgba(255,255,255,0) 55%);}
+.portada-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center;}
+.portada-logo{width:52px;height:52px;background:linear-gradient(135deg,var(--gr),#34d399);border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;box-shadow:var(--shadow-sm);}
+.portada-logo svg{fill:none;stroke:#fff;stroke-width:2;}
+.portada-title{font-size:32px;font-weight:800;line-height:1.15;margin-bottom:8px;}
+.portada-title span{color:var(--gr);}
+.portada-meta{font-size:13px;color:var(--t2);margin-bottom:20px;}
+.portada-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.pstat{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--brd);border-radius:var(--r2);padding:14px 16px;box-shadow:var(--shadow-sm);}
+.pstat .v{font-size:22px;font-weight:800;color:var(--gr);line-height:1;}
+.pstat .l{font-size:11px;color:var(--t2);margin-top:4px;}
+.portada-nodata{background:rgba(220,38,38,.07);border:1px solid rgba(220,38,38,.22);border-radius:var(--r2);padding:12px 16px;font-size:12px;color:var(--rd);margin-top:16px;}
+.portada-nodata strong{font-weight:700;}
+.portada-right{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--brd);border-radius:var(--r);padding:24px;box-shadow:var(--shadow);}
+
+/* ── KPI GRID ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+.kpi{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--brd);border-radius:var(--r2);padding:16px 18px;box-shadow:var(--shadow-sm);}
+.kpi-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--t3);margin-bottom:6px;}
+.kpi-val{font-size:26px;font-weight:800;line-height:1;}
+.kpi-val small{font-size:13px;font-weight:400;color:var(--t2);margin-left:4px;}
+.kpi-foot{font-size:11px;color:var(--t3);margin-top:5px;}
+.kpi-trend{font-size:11px;font-weight:700;padding:2px 8px;border-radius:100px;display:inline-block;margin-top:4px;}
+
+/* ── CARDS (cristal) ── */
+.card{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--brd);border-radius:var(--r);padding:20px;box-shadow:var(--shadow-sm);}
+.card-title{font-size:14px;font-weight:700;margin-bottom:4px;}
+.card-sub{font-size:11px;color:var(--t2);margin-bottom:16px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+
+/* ── TABLES ── */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{padding:8px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--t3);background:var(--s3);border-bottom:1px solid var(--line);white-space:nowrap;}
+th.r{text-align:right;}
+td{padding:7px 12px;border-bottom:1px solid var(--line);color:var(--t);vertical-align:middle;}
+td.r{text-align:right;font-variant-numeric:tabular-nums;}
+tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:rgba(37,99,235,.06);}
+
+/* ── SCORE BAR ── */
+.sbar{height:6px;border-radius:3px;background:var(--s3);overflow:hidden;width:100%;display:block;}
+.sbar-fill{height:100%;border-radius:3px;}
+
+/* ── PARAM TABLE ── */
+.param-row{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px 0;border-bottom:1px solid var(--line);}
+.param-row:last-child{border-bottom:none;}
+.param-label{font-size:13px;line-height:1.4;flex:1;}
+.param-label small{display:block;font-size:11px;color:var(--t2);margin-top:3px;}
+input[type=number]{background:var(--glass-strong);border:1px solid var(--brd2);border-radius:6px;color:var(--t);padding:8px 12px;font-size:15px;font-weight:700;width:120px;text-align:right;flex-shrink:0;}
+input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3px rgba(5,150,105,.15);}
+
+/* ── ALERT STRIP ── */
+.alert-strip{background:rgba(220,38,38,.07);border:1px solid rgba(220,38,38,.2);border-radius:var(--r2);padding:10px 14px;font-size:12px;color:var(--rd);display:flex;gap:10px;align-items:flex-start;margin-bottom:20px;}
+
+/* ── EMPTY STATE ── */
+.empty{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px dashed var(--brd2);border-radius:var(--r);padding:40px;text-align:center;color:var(--t2);box-shadow:var(--shadow-sm);}
+.empty svg{margin:0 auto 12px;display:block;opacity:.45;}
+.empty h3{font-size:14px;font-weight:600;color:var(--t);margin-bottom:6px;}
+
+/* ── BTN ── */
+.btn-recalc{margin-top:16px;background:linear-gradient(135deg,var(--gr),#10b981);color:#fff;border:none;border-radius:8px;padding:11px 20px;font-size:13px;font-weight:700;cursor:pointer;width:100%;box-shadow:0 6px 18px rgba(5,150,105,.30);transition:filter .15s;}
+.btn-recalc:hover{filter:brightness(1.06);}
+
+/* ── PRINT ── */
+@media print{
+  nav{display:none;}
+  main{margin-left:0;}
+  body{background:#fff;}
+  section{page-break-before:always;padding:24px 28px;}
+  #s01{page-break-before:avoid;}
+  .card,.kpi,.pstat,.portada-right,.empty{background:#fff;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;border:1px solid #e3e8f0;}
+  .no-print{display:none;}
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(22,40,75,.18);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(22,40,75,.30);}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav id="nav">
+  <div class="nav-logo">
+    <span>ADVANCE</span>
+    <p>Informe Gerencial de Flota</p>
+  </div>
+  <a href="#s01"><span class="num">01</span> Portada</a>
+  <a href="#s02"><span class="num">02</span> Resumen gerencial</a>
+  <a href="#s03"><span class="num">03</span> Rendimiento</a>
+  <a href="#s04"><span class="num">04</span> Seguridad</a>
+  <a href="#s05"><span class="num">05</span> Montacargas</a>
+  <a href="#s06"><span class="num">06</span> Evaluación operativa</a>
+  <a href="#s07"><span class="num">07</span> Monetización: seguridad</a>
+  <a href="#s08"><span class="num">08</span> Monetización: ralentí</a>
+  <a href="#s09"><span class="num">09</span> Monetización: rendimiento</a>
+  <a href="#s10"><span class="num">10</span> Metodología</a>
+</nav>
+
+<main>
+
+<!-- ══════════════════════════════ S01 PORTADA ══════════════════════════════ -->
+<section id="s01">
+  <div class="portada-grid">
+    <div>
+      <div class="portada-logo">
+        <svg width="28" height="28" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 4v4h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      </div>
+      <div class="portada-title">Informe<br>Gerencial de <span>Flota</span></div>
+      <div class="portada-meta">
+        32 tractocamiones FOTON EST-A 6×4 · Zona Norte (Sonora / Sinaloa)<br>
+        Periodo: 05 – 11 junio 2026 &nbsp;·&nbsp; Cliente ID: 1<br>
+        Fuente: Telematicsadvance · CAN bus + GPS
+      </div>
+      <div class="portada-stats">
+        <div class="pstat"><div class="v">30</div><div class="l">Unidades activas</div></div>
+        <div class="pstat"><div class="v">2</div><div class="l">Flota tractocamiones</div></div>
+        <div class="pstat"><div class="v">0</div><div class="l">Montacargas</div></div>
+        <div class="pstat"><div class="v">7</div><div class="l">Días analizados</div></div>
+        <div class="pstat"><div class="v">2,198</div><div class="l">Tramos de ruta</div></div>
+        <div class="pstat"><div class="v">11 jun</div><div class="l">Generado</div></div>
+      </div>
+      <div class="portada-nodata" style="margin-top:14px">
+        <strong>⚠ 2 unidades sin señal GPS:</strong>
+        GT-2410 (sin datos desde 29 abr 2026) · GT-2519 (sin datos desde 29 may 2026).
+        Posible robo o dispositivo desconectado.
+      </div>
+    </div>
+    <div class="portada-right">
+      <div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px">Flota en detalle</div>
+      <table>
+        <thead><tr><th>Modelo</th><th class="r">Unidades</th><th class="r">km prom/u</th></tr></thead>
+        <tbody>
+          <tr><td>FOTON EST-A 6×4</td><td class="r">21</td><td class="r">1,890</td></tr>
+          <tr><td>FOTON EST-A X13</td><td class="r">9</td><td class="r">3,100</td></tr>
+          <tr><td style="color:var(--rd)">Sin datos (robo)</td><td class="r" style="color:var(--rd)">2</td><td class="r">—</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:20px;font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Resumen del periodo</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div style="background:var(--s3);border-radius:8px;padding:12px"><div style="font-size:18px;font-weight:800;color:var(--gr)">66,987</div><div style="font-size:11px;color:var(--t2)">km recorridos</div></div>
+        <div style="background:var(--s3);border-radius:8px;padding:12px"><div style="font-size:18px;font-weight:800;color:var(--or)">80.1%</div><div style="font-size:11px;color:var(--t2)">tiempo en ralentí</div></div>
+        <div style="background:var(--s3);border-radius:8px;padding:12px"><div style="font-size:18px;font-weight:800;color:var(--t)">31,542</div><div style="font-size:11px;color:var(--t2)">litros consumidos</div></div>
+        <div style="background:var(--s3);border-radius:8px;padding:12px"><div style="font-size:18px;font-weight:800;color:var(--rd)">462</div><div style="font-size:11px;color:var(--t2)">excesos &gt;90 km/h</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ S02 RESUMEN GERENCIAL ══════════════════════════════ -->
+<section id="s02">
+  <div class="sec-head">
+    <span class="sec-num">02</span>
+    <div><div class="sec-title">Resumen gerencial</div><div class="sec-sub">8 KPIs clave · periodo 05–11 jun 2026 · 30 unidades activas</div></div>
+    <span class="sec-badge badge-gr">KPIs</span>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-lbl">Distancia total</div>
+      <div class="kpi-val" style="color:var(--gr)">66,987<small>km</small></div>
+      <div class="kpi-foot">9,569 km promedio diario</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Horas de conducción</div>
+      <div class="kpi-val">959<small>h</small></div>
+      <div class="kpi-foot">32 h por unidad activa</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Horas de ralentí</div>
+      <div class="kpi-val" style="color:var(--or)">3,866<small>h</small></div>
+      <div class="kpi-foot">129 h por unidad · 80.1% del motor</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Combustible total</div>
+      <div class="kpi-val">31,542<small>L</small></div>
+      <div class="kpi-foot">1,051 L promedio por unidad</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Eficiencia promedio</div>
+      <div class="kpi-val" style="color:var(--gr)">2.22<small>km/L</small></div>
+      <div class="kpi-foot">52.0 L/100km promedio flota</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Excesos &gt;90 km/h</div>
+      <div class="kpi-val" style="color:var(--rd)">462</div>
+      <div class="kpi-foot">6.9 excesos por 100 km</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Velocidad máx registrada</div>
+      <div class="kpi-val" style="color:var(--rd)">173<small>km/h</small></div>
+      <div class="kpi-foot">GT-2536 · Sinaloa</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Tramos de ruta</div>
+      <div class="kpi-val">2,198</div>
+      <div class="kpi-foot">73 tramos por unidad activa</div>
+    </div>
+  </div>
+
+  <div class="row2">
+    <div class="card">
+      <div class="card-title">Distribución del tiempo motor</div>
+      <div class="card-sub">Flota completa · 4,825 horas totales de motor</div>
+      <div style="position:relative;height:200px">
+        <canvas id="cTiempo" role="img" aria-label="Distribución tiempo motor: 959h conducción (20%) vs 3866h ralentí (80%)">Conducción 959h, Ralentí 3866h</canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Km recorridos por día</div>
+      <div class="card-sub">Jue 5 jun – Mié 11 jun 2026</div>
+      <div style="position:relative;height:200px">
+        <canvas id="cKmDia" role="img" aria-label="Kilómetros diarios de la flota del 5 al 11 de junio">9,524 · 9,897 · 11,614 · 6,422 · 9,853 · 9,287 · 10,390</canvas>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ S03 RENDIMIENTO ══════════════════════════════ -->
+<section id="s03">
+  <div class="sec-head">
+    <span class="sec-num">03</span>
+    <div><div class="sec-title">Rendimiento</div><div class="sec-sub">Tendencia semanal · eficiencia combustible · benchmark FOTON EST-A</div></div>
+    <span class="sec-badge badge-gr">Gráfica</span>
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title">Eficiencia por unidad vs benchmark (2.5 km/L)</div>
+    <div class="card-sub">Verde = supera benchmark · Naranja = dentro del rango · Rojo = por debajo del benchmark</div>
+    <div style="position:relative;" id="wrapKml">
+      <canvas id="cKml" role="img" aria-label="km/L por unidad comparado contra benchmark de 2.5 km/L"></canvas>
+    </div>
+  </div>
+
+  <div class="row3">
+    <div class="card">
+      <div class="card-title" style="color:var(--gr)">Top 5 — más eficientes</div>
+      <div class="card-sub">km/L semana</div>
+      <table><thead><tr><th>Unidad</th><th class="r">km/L</th><th class="r">L/100km</th></tr></thead>
+      <tbody id="tbTop5"></tbody></table>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--rd)">Bottom 5 — menos eficientes</div>
+      <div class="card-sub">km/L semana</div>
+      <table><thead><tr><th>Unidad</th><th class="r">km/L</th><th class="r">L/100km</th></tr></thead>
+      <tbody id="tbBot5"></tbody></table>
+    </div>
+    <div class="card">
+      <div class="card-title">Benchmark modelo</div>
+      <div class="card-sub">FOTON EST-A 6×4 con carga completa</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+        <div style="background:var(--s3);border-radius:8px;padding:12px">
+          <div style="font-size:18px;font-weight:800;color:var(--gr)">2.50 km/L</div>
+          <div style="font-size:11px;color:var(--t2)">Benchmark fabricante (plena carga)</div>
+        </div>
+        <div style="background:var(--s3);border-radius:8px;padding:12px">
+          <div style="font-size:18px;font-weight:800;color:var(--or)">2.22 km/L</div>
+          <div style="font-size:11px;color:var(--t2)">Promedio real esta semana</div>
+        </div>
+        <div style="background:var(--rd-bg);border:1px solid rgba(220,38,38,.2);border-radius:8px;padding:12px">
+          <div style="font-size:18px;font-weight:800;color:var(--rd)">−11.2%</div>
+          <div style="font-size:11px;color:var(--t2)">Delta vs benchmark</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ S04 SEGURIDAD ══════════════════════════════ -->
+<section id="s04">
+  <div class="sec-head">
+    <span class="sec-num">04</span>
+    <div><div class="sec-title">Seguridad</div><div class="sec-sub">Excesos &gt;90 km/h · velocidades máximas · horarios pico</div></div>
+    <span class="sec-badge badge-rd">Riesgo</span>
+  </div>
+
+  <div class="row2" style="margin-bottom:20px">
+    <div class="card">
+      <div class="card-title">Excesos &gt;90 km/h por unidad</div>
+      <div class="card-sub">Total de tramos con velocidad máxima superior a 90 km/h</div>
+      <div style="position:relative;height:260px">
+        <canvas id="cExc90" role="img" aria-label="Excesos de velocidad por unidad"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Excesos por 100 km recorridos</div>
+      <div class="card-sub">Tasa de riesgo normalizada · umbral crítico &gt;1.0</div>
+      <div style="position:relative;height:260px">
+        <canvas id="cExc100" role="img" aria-label="Excesos de velocidad por 100 km recorridos"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Velocidades máximas registradas por unidad</div>
+    <div class="card-sub">Valor pico en el periodo · rojo = &gt;130 km/h (crítico) · naranja = 110–130 km/h</div>
+    <div class="tbl-wrap"><table id="tablaVelMax">
+      <thead><tr><th>Unidad</th><th class="r">Vel. máx</th><th>Nivel</th><th class="r">km semana</th><th class="r">Excesos totales</th><th class="r">Excesos /100km</th></tr></thead>
+      <tbody id="tbVelMax"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ S05 MONTACARGAS ══════════════════════════════ -->
+<section id="s05">
+  <div class="sec-head">
+    <span class="sec-num">05</span>
+    <div><div class="sec-title">Montacargas</div><div class="sec-sub">Eventos /10 km por zona · excesos &gt;10 km/h</div></div>
+    <span class="sec-badge badge-yw">N/A</span>
+  </div>
+  <div class="empty">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="8" height="10" rx="1"/><path d="M10 12h4l3 3v2h-7V12z"/><circle cx="5" cy="19" r="1.5"/><circle cx="14" cy="19" r="1.5"/><path d="M17 7V4h3v3"/></svg>
+    <h3>Sin montacargas en esta cuenta</h3>
+    <p style="font-size:12px;max-width:360px;margin:0 auto;line-height:1.6">Esta sección se activa automáticamente cuando el sistema detecta unidades tipo montacargas (velocidad operativa máxima &lt;30 km/h). Incluye eventos por zona, excesos &gt;10 km/h y ranking por turno.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ S06 EVALUACIÓN OPERATIVA ══════════════════════════════ -->
+<section id="s06">
+  <div class="sec-head">
+    <span class="sec-num">06</span>
+    <div><div class="sec-title">Evaluación operativa</div><div class="sec-sub">Ranking integral: seguridad + eficiencia + comportamiento</div></div>
+    <span class="sec-badge badge-bl">Ranking</span>
+  </div>
+
+  <div class="row2" style="margin-bottom:20px">
+    <div class="card">
+      <div class="card-title">Score compuesto por unidad (0–100)</div>
+      <div class="card-sub">Seguridad 40 pts · Eficiencia combustible 30 pts · Ralentí 30 pts</div>
+      <div style="position:relative;" id="wrapScore">
+        <canvas id="cScore" role="img" aria-label="Score operativo compuesto por unidad"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Clasificación por categoría</div>
+      <div class="card-sub">Verde ≥ 65 pts · Naranja 45–64 pts · Rojo &lt; 45 pts</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>#</th><th>Unidad</th><th class="r">Score</th><th>Seg.</th><th>Efic.</th><th>Ralentí</th><th>Categoría</th></tr></thead>
+        <tbody id="tbScore"></tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ S07 MONETIZACIÓN SEGURIDAD ══════════════════════════════ -->
+<section id="s07">
+  <div class="sec-head">
+    <span class="sec-num">07</span>
+    <div><div class="sec-title">Monetización: seguridad</div><div class="sec-sub">Costo potencial por evento · exposición al riesgo en pesos MXN</div></div>
+    <span class="sec-badge badge-or">$$$</span>
+  </div>
+
+  <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+    <div class="kpi"><div class="kpi-lbl">Costo semanal estimado</div><div class="kpi-val" style="color:var(--rd)" id="kpiCostSeg">—</div><div class="kpi-foot">462 eventos × costo por evento</div></div>
+    <div class="kpi"><div class="kpi-lbl">Proyección mensual</div><div class="kpi-val" style="color:var(--or)" id="kpiCostSegMes">—</div><div class="kpi-foot">Semana × 4.33</div></div>
+    <div class="kpi"><div class="kpi-lbl">Proyección anual</div><div class="kpi-val" id="kpiCostSegAno">—</div><div class="kpi-foot">Semana × 52</div></div>
+  </div>
+
+  <div class="row2">
+    <div class="card">
+      <div class="card-title">Costo potencial por unidad (semanal)</div>
+      <div class="card-sub">Basado en excesos >90 km/h × costo estándar de evento</div>
+      <div style="position:relative;height:340px">
+        <canvas id="cCostSeg" role="img" aria-label="Costo potencial por seguridad por unidad"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Top unidades por exposición</div>
+      <div class="card-sub">Mayor gasto potencial esta semana</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>#</th><th>Unidad</th><th class="r">Eventos</th><th class="r">Costo MXN</th><th class="r">% del total</th></tr></thead>
+        <tbody id="tbCostSeg"></tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ S08 MONETIZACIÓN RALENTÍ ══════════════════════════════ -->
+<section id="s08">
+  <div class="sec-head">
+    <span class="sec-num">08</span>
+    <div><div class="sec-title">Monetización: ralentí</div><div class="sec-sub">Ralentí por encima del umbral aceptable · desperdicio convertido a pesos</div></div>
+    <span class="sec-badge badge-or">$$$</span>
+  </div>
+
+  <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+    <div class="kpi"><div class="kpi-lbl">Desperdicio semanal</div><div class="kpi-val" style="color:var(--or)" id="kpiIdleSem">—</div><div class="kpi-foot" id="kpiIdleLitros">— litros excedentes en idle</div></div>
+    <div class="kpi"><div class="kpi-lbl">Proyección mensual</div><div class="kpi-val" id="kpiIdleMes">—</div><div class="kpi-foot">Semana × 4.33</div></div>
+    <div class="kpi"><div class="kpi-lbl">Horas de ralentí excedente</div><div class="kpi-val" style="color:var(--rd)" id="kpiIdleH">—</div><div class="kpi-foot" id="kpiIdleThresh">Por encima del umbral de 30%</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Desperdicio por ralentí excedente · por unidad (MXN / semana)</div>
+    <div class="card-sub">Solo se contabiliza el tiempo de ralentí por encima del umbral aceptable</div>
+    <div style="position:relative;" id="wrapIdle">
+      <canvas id="cIdle" role="img" aria-label="Costo de ralentí excedente por unidad"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ S09 MONETIZACIÓN RENDIMIENTO ══════════════════════════════ -->
+<section id="s09">
+  <div class="sec-head">
+    <span class="sec-num">09</span>
+    <div><div class="sec-title">Monetización: rendimiento</div><div class="sec-sub">Gasto real vs benchmark del modelo · sobrecosto por ineficiencia</div></div>
+    <span class="sec-badge badge-or">$$$</span>
+  </div>
+
+  <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+    <div class="kpi"><div class="kpi-lbl">Sobrecosto semanal</div><div class="kpi-val" style="color:var(--rd)" id="kpiRendSem">—</div><div class="kpi-foot" id="kpiRendLitros">— L por encima del benchmark</div></div>
+    <div class="kpi"><div class="kpi-lbl">Ahorro potencial mensual</div><div class="kpi-val" style="color:var(--gr)" id="kpiRendMes">—</div><div class="kpi-foot">Si toda la flota alcanzara el benchmark</div></div>
+    <div class="kpi"><div class="kpi-lbl">Unidades por encima del bench</div><div class="kpi-val" id="kpiRendN">—</div><div class="kpi-foot">de 27 unidades con datos de combustible</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Comparativa km/L real vs benchmark (2.5 km/L) por unidad</div>
+    <div class="card-sub">Barras rojas = por debajo del benchmark (generan sobrecosto) · verdes = por encima</div>
+    <div style="position:relative;" id="wrapRend">
+      <canvas id="cRend" role="img" aria-label="Comparativa de eficiencia real vs benchmark por unidad"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ S10 METODOLOGÍA ══════════════════════════════ -->
+<section id="s10">
+  <div class="sec-head">
+    <span class="sec-num">10</span>
+    <div><div class="sec-title">Metodología y parámetros</div><div class="sec-sub">Ajusta los parámetros — las secciones 07, 08 y 09 se recalculan automáticamente</div></div>
+    <span class="sec-badge badge-or">Filtros</span>
+  </div>
+
+  <div class="row2" style="align-items:start">
+    <div class="card">
+      <div class="card-title">Parámetros ajustables</div>
+      <div class="card-sub">Modifica cualquier valor y presiona "Recalcular" para actualizar el informe</div>
+      <div style="margin-top:8px">
+        <div class="param-row">
+          <div class="param-label">Precio del diésel<small>MXN por litro · PEMEX / gasolinera local</small></div>
+          <input type="number" id="pDiesel" value="21.50" step="0.10" min="15" max="30">
+        </div>
+        <div class="param-row">
+          <div class="param-label">Consumo en ralentí<small>L/h en tick-over · FOTON 6×4: 3.0–4.0 L/h</small></div>
+          <input type="number" id="pIdleL" value="3.5" step="0.1" min="2" max="6">
+        </div>
+        <div class="param-row">
+          <div class="param-label">Costo por exceso &gt;90 km/h<small>MXN/evento · impacto en primas · $300–$1,500</small></div>
+          <input type="number" id="pEventCost" value="500" step="50" min="100" max="5000">
+        </div>
+        <div class="param-row">
+          <div class="param-label">Benchmark km/L (FOTON EST-A)<small>Referencia del fabricante a plena carga</small></div>
+          <input type="number" id="pBench" value="2.50" step="0.05" min="1.5" max="4">
+        </div>
+        <div class="param-row">
+          <div class="param-label">Umbral de ralentí aceptable<small>% del tiempo motor · encima = desperdicio</small></div>
+          <input type="number" id="pIdleThresh" value="30" step="5" min="10" max="60">
+        </div>
+      </div>
+      <button class="btn-recalc" onclick="recalcAll()">↻ Recalcular todo el informe</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Fórmulas y fuentes de datos</div>
+      <div class="card-sub">Cómo se calcula cada métrica</div>
+      <div style="display:flex;flex-direction:column;gap:14px;margin-top:4px">
+        <div style="background:var(--s3);border-radius:8px;padding:12px">
+          <div style="font-size:12px;font-weight:700;color:var(--gr);margin-bottom:4px">Distancia y tiempos</div>
+          <div style="font-size:11px;color:var(--t2);line-height:1.6">Fuente: <code>/route.json</code> (Telematicsadvance). Se suman los tramos de tipo <em>route</em> para distancia y conducción; <em>stop</em> para ralentí. Todos los segmentos se recortan al ventana del día para evitar doble conteo.</div>
+        </div>
+        <div style="background:var(--s3);border-radius:8px;padding:12px">
+          <div style="font-size:12px;font-weight:700;color:var(--bl);margin-bottom:4px">Combustible</div>
+          <div style="font-size:11px;color:var(--t2);line-height:1.6">Fuente: <code>/fuel/summary.json</code> (CAN bus). Se usa el canal <em>can.total_consumed</em> por su mayor precisión vs sensor de flujo. km/L = distancia_total / litros_can.</div>
+        </div>
+        <div style="background:var(--s3);border-radius:8px;padding:12px">
+          <div style="font-size:12px;font-weight:700;color:var(--or);margin-bottom:4px">Costo de ralentí excedente</div>
+          <div style="font-size:11px;color:var(--t2);line-height:1.6">
+            <code>h_excess = max(0, (pct_idle/100 − umbral) × h_motor)</code><br>
+            <code>costo = h_excess × consumo_idle × precio_diesel</code>
+          </div>
+        </div>
+        <div style="background:var(--s3);border-radius:8px;padding:12px">
+          <div style="font-size:12px;font-weight:700;color:var(--rd);margin-bottom:4px">Sobrecosto vs benchmark</div>
+          <div style="font-size:11px;color:var(--t2);line-height:1.6">
+            <code>L_extra = km × (1/kml_real − 1/kml_bench)</code><br>
+            <code>costo = max(0, L_extra) × precio_diesel</code>
+          </div>
+        </div>
+        <div style="background:var(--s3);border-radius:8px;padding:12px">
+          <div style="font-size:12px;font-weight:700;color:var(--rd);margin-bottom:4px">Score operativo (0–100)</div>
+          <div style="font-size:11px;color:var(--t2);line-height:1.6">
+            40 pts seguridad: <code>max(0, 40 − exc100km × 20)</code><br>
+            30 pts eficiencia: <code>max(0, kml/bench × 30)</code> cap 30<br>
+            30 pts ralentí: <code>max(0, 30 − (pct_idle−30)/70×30)</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ══════════════════════════════ SCRIPTS ══════════════════════════════ -->
+<script>
+// ── PALETA DE GRÁFICAS (tema claro / cristal) ──────────────────────────────────
+const C = {
+  bl:'#3b82f6', gr:'#10b981', or:'#f97316', rd:'#ef4444', yw:'#eab308',
+  grD:'#059669', orD:'#ea580c', rdD:'#dc2626', ywD:'#b45309', blD:'#2563eb',
+  txt:'#5b6678', grid:'rgba(22,40,75,.08)', bench:'#94a0b3', cardBorder:'#ffffff',
+};
+
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const U = [
+  {n:"GT-2402",e:"standing",km:4321.6,hm:168.0,hc:56.3,hi:111.7,pi:66.5,e90:13,vm:109},
+  {n:"GT-2408",e:"driving", km:4137.8,hm:168.0,hc:53.6,hi:114.4,pi:68.1,e90:12,vm:111},
+  {n:"GT-2409",e:"driving", km:3922.0,hm:168.0,hc:59.2,hi:108.8,pi:64.8,e90:10,vm:106},
+  {n:"GT-2403",e:"driving", km:3895.4,hm:168.0,hc:53.5,hi:114.5,pi:68.1,e90:13,vm:106},
+  {n:"GT-2404",e:"driving", km:3846.5,hm:168.0,hc:65.8,hi:102.2,pi:60.8,e90:17,vm:117},
+  {n:"GT-2401",e:"driving", km:3385.1,hm:168.0,hc:56.0,hi:112.0,pi:66.7,e90:20,vm:113},
+  {n:"GT-2527",e:"standing",km:3151.3,hm:167.4,hc:41.0,hi:126.4,pi:75.5,e90:35,vm:127},
+  {n:"GT-2405",e:"driving", km:3140.5,hm:168.0,hc:45.8,hi:122.2,pi:72.7,e90:10,vm:105},
+  {n:"GT-2539",e:"standing",km:3118.3,hm:158.8,hc:43.2,hi:115.6,pi:72.8,e90:24,vm:146},
+  {n:"GT-2524",e:"standing",km:2886.7,hm:167.6,hc:36.4,hi:131.3,pi:78.3,e90:21,vm:117},
+  {n:"GT-2536",e:"standing",km:2885.5,hm:168.0,hc:32.2,hi:135.8,pi:80.8,e90:26,vm:173},
+  {n:"GT-2534",e:"standing",km:2774.5,hm:168.0,hc:34.4,hi:133.6,pi:79.5,e90:23,vm:122},
+  {n:"GT-2523",e:"standing",km:2406.3,hm:168.0,hc:32.5,hi:135.5,pi:80.6,e90:20,vm:115},
+  {n:"GT-2522",e:"standing",km:2352.1,hm:161.7,hc:31.1,hi:130.7,pi:80.8,e90:22,vm:135},
+  {n:"GT-2533",e:"standing",km:2350.1,hm:168.0,hc:35.6,hi:132.4,pi:78.8,e90:24,vm:128},
+  {n:"GT-2529",e:"standing",km:2321.8,hm:168.0,hc:30.1,hi:137.9,pi:82.1,e90:23,vm:124},
+  {n:"GT-2538",e:"standing",km:2132.5,hm:168.0,hc:30.0,hi:138.0,pi:82.2,e90:19,vm:156},
+  {n:"GT-2526",e:"standing",km:1925.6,hm:160.4,hc:26.4,hi:134.0,pi:83.6,e90:19,vm:112},
+  {n:"GT-2540",e:"standing",km:1886.0,hm:165.0,hc:31.2,hi:133.8,pi:81.1,e90:14,vm:129},
+  {n:"GT-2525",e:"standing",km:1836.8,hm:167.2,hc:30.9,hi:136.2,pi:81.5,e90:22,vm:113},
+  {n:"GT-2520",e:"standing",km:1831.7,hm:166.3,hc:38.7,hi:127.7,pi:76.7,e90:25,vm:113},
+  {n:"GT-2518",e:"standing",km:1728.0,hm:168.0,hc:18.3,hi:149.7,pi:89.1,e90:9, vm:108},
+  {n:"GT-2407",e:"standing",km:1681.6,hm:142.5,hc:29.1,hi:113.4,pi:79.5,e90:12,vm:112},
+  {n:"GT-2406",e:"standing",km:1666.3,hm:76.6, hc:27.0,hi:49.6, pi:64.7,e90:9, vm:112},
+  {n:"GT-2537",e:"standing",km:1161.4,hm:168.0,hc:16.8,hi:151.2,pi:90.0,e90:15,vm:122},
+  {n:"GT-2531",e:"standing",km:230.4, hm:167.0,hc:3.1, hi:163.9,pi:98.2,e90:5, vm:97},
+  {n:"GT-2530",e:"standing",km:11.4,  hm:151.0,hc:0.5, hi:150.5,pi:99.6,e90:0, vm:56},
+  {n:"GT-2521",e:"standing",km:0,     hm:151.0,hc:0,   hi:151.0,pi:100, e90:0, vm:null},
+  {n:"GT-2516",e:"standing",km:0,     hm:151.0,hc:0,   hi:151.0,pi:100, e90:0, vm:null},
+  {n:"GT-2517",e:"standing",km:0,     hm:151.0,hc:0,   hi:151.0,pi:100, e90:0, vm:null},
+];
+
+const COMB = [
+  {n:"GT-2518",l:608, kml:3.227},{n:"GT-2522",l:764, kml:3.079},{n:"GT-2529",l:840, kml:3.030},
+  {n:"GT-2524",l:970, kml:2.976},{n:"GT-2523",l:862, kml:2.918},{n:"GT-2527",l:1144,kml:2.755},
+  {n:"GT-2534",l:1066,kml:2.635},{n:"GT-2526",l:741, kml:2.599},{n:"GT-2531",l:90,  kml:2.560},
+  {n:"GT-2403",l:1582,kml:2.482},{n:"GT-2533",l:966, kml:2.453},{n:"GT-2525",l:767, kml:2.395},
+  {n:"GT-2406",l:831, kml:2.231},{n:"GT-2409",l:1853,kml:2.197},{n:"GT-2408",l:2040,kml:2.143},
+  {n:"GT-2405",l:1557,kml:2.094},{n:"GT-2536",l:1413,kml:2.057},{n:"GT-2402",l:2222,kml:2.052},
+  {n:"GT-2401",l:1678,kml:2.017},{n:"GT-2404",l:2056,kml:1.999},{n:"GT-2520",l:918, kml:1.995},
+  {n:"GT-2407",l:903, kml:1.862},{n:"GT-2540",l:1230,kml:1.533},{n:"GT-2538",l:1413,kml:1.509},
+  {n:"GT-2539",l:2098,kml:1.486},{n:"GT-2537",l:900, kml:1.313},
+];
+
+const KM_DIA = {labels:['Jue 5','Vie 6','Sáb 7','Dom 8','Lun 9','Mar 10','Mié 11'],vals:[9524,9897,11614,6422,9853,9287,10390]};
+
+// ── PARAMS ────────────────────────────────────────────────────────────────────
+function P(){
+  return {
+    diesel:    parseFloat(document.getElementById('pDiesel').value)    || 21.50,
+    idleL:     parseFloat(document.getElementById('pIdleL').value)     || 3.5,
+    eventCost: parseFloat(document.getElementById('pEventCost').value) || 500,
+    bench:     parseFloat(document.getElementById('pBench').value)     || 2.50,
+    idleT:     parseFloat(document.getElementById('pIdleThresh').value)|| 30,
+  };
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+const mxn = v => '$'+Math.round(v).toLocaleString('es-MX');
+const fmt  = v => v==null?'—':v.toLocaleString('es-MX',{maximumFractionDigits:1});
+const fmtK = v => v==null?'—':(v/1000).toFixed(1)+'k';
+
+// ── EJES POR DEFECTO PARA TEMA CLARO ──────────────────────────────────────────
+const axX = (extra={}) => ({grid:{display:false},ticks:{color:C.txt,font:{size:10}},...extra});
+const axY = (extra={}) => ({grid:{color:C.grid},ticks:{color:C.txt,font:{size:10}},...extra});
+
+// ── CHART REFS ────────────────────────────────────────────────────────────────
+const CHARTS = {};
+function makeChart(id, cfg){
+  if(CHARTS[id]) CHARTS[id].destroy();
+  CHARTS[id] = new Chart(document.getElementById(id), cfg);
+}
+
+// ── S02 CHARTS ────────────────────────────────────────────────────────────────
+function buildS02(){
+  makeChart('cTiempo',{type:'doughnut',data:{
+    labels:['Conducción (20%)','Ralentí (80%)'],
+    datasets:[{data:[959,3866],backgroundColor:[C.bl,C.or],borderWidth:3,borderColor:C.cardBorder}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{
+    legend:{position:'bottom',labels:{color:C.txt,font:{size:11},padding:12,usePointStyle:true}},
+    tooltip:{callbacks:{label:ctx=>` ${ctx.raw.toLocaleString('es-MX')} horas`}}
+  }}});
+
+  makeChart('cKmDia',{type:'bar',data:{
+    labels:KM_DIA.labels,
+    datasets:[{data:KM_DIA.vals,backgroundColor:KM_DIA.vals.map(v=>v===Math.max(...KM_DIA.vals)?C.gr:C.bl),borderRadius:6}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+    tooltip:{callbacks:{label:ctx=>` ${ctx.raw.toLocaleString('es-MX')} km`}}},
+    scales:{x:axX(),y:axY({ticks:{color:C.txt,font:{size:10},callback:v=>(v/1000).toFixed(0)+'k'}})}
+  }});
+}
+
+// ── S03 CHARTS ────────────────────────────────────────────────────────────────
+function buildS03(){
+  const bench = P().bench;
+  const labels = COMB.map(r=>r.n);
+  const vals = COMB.map(r=>r.kml);
+  const colors = vals.map(v=>v>=bench?C.gr:v>=bench*0.8?C.or:C.rd);
+
+  document.getElementById('wrapKml').style.height = (COMB.length*28+60)+'px';
+  makeChart('cKml',{type:'bar',data:{
+    labels,datasets:[
+      {label:'km/L real',data:vals,backgroundColor:colors,borderRadius:4},
+      {label:'Benchmark',data:Array(labels.length).fill(bench),type:'line',borderColor:C.bench,borderDash:[4,4],borderWidth:1.5,pointRadius:0,fill:false}
+    ]
+  },options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.raw.toFixed(3)} km/L`}}},
+    scales:{x:axY({min:0,max:4}),y:axX()}
+  }});
+
+  // Top5 / Bot5
+  const sorted = [...COMB].sort((a,b)=>b.kml-a.kml);
+  const l100 = n => { const u=U.find(u=>u.n===n); const c=COMB.find(c=>c.n===n); if(!c||!u||u.km===0)return '—'; return (c.l/u.km*100).toFixed(1); };
+  const rowColor = v => v>=bench?C.grD:v>=bench*0.8?C.orD:C.rdD;
+
+  document.getElementById('tbTop5').innerHTML = sorted.slice(0,5).map(r=>
+    `<tr><td><strong>${r.n}</strong></td><td class="r" style="color:${rowColor(r.kml)};font-weight:700">${r.kml.toFixed(3)}</td><td class="r">${l100(r.n)}</td></tr>`
+  ).join('');
+  document.getElementById('tbBot5').innerHTML = sorted.slice(-5).reverse().map(r=>
+    `<tr><td><strong>${r.n}</strong></td><td class="r" style="color:${rowColor(r.kml)};font-weight:700">${r.kml.toFixed(3)}</td><td class="r">${l100(r.n)}</td></tr>`
+  ).join('');
+}
+
+// ── S04 CHARTS ────────────────────────────────────────────────────────────────
+function buildS04(){
+  const active = U.filter(u=>u.km>0);
+  const byExc = [...active].sort((a,b)=>b.e90-a.e90);
+
+  makeChart('cExc90',{type:'bar',data:{
+    labels:byExc.map(u=>u.n),
+    datasets:[{data:byExc.map(u=>u.e90),backgroundColor:byExc.map(u=>u.e90>25?C.rd:u.e90>10?C.or:C.bl),borderRadius:4}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:axX({ticks:{color:C.txt,font:{size:9},maxRotation:60}}),y:axY()}}});
+
+  const by100 = active.filter(u=>u.km>100).map(u=>({n:u.n,v:parseFloat((u.e90/u.km*100).toFixed(2)),e90:u.e90,km:u.km})).sort((a,b)=>b.v-a.v);
+  makeChart('cExc100',{type:'bar',data:{
+    labels:by100.map(u=>u.n),
+    datasets:[{data:by100.map(u=>u.v),backgroundColor:by100.map(u=>u.v>=1.5?C.rd:u.v>=0.8?C.or:C.bl),borderRadius:4}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+    tooltip:{callbacks:{label:ctx=>` ${ctx.raw} exc/100km`}}},
+    scales:{x:axX({ticks:{color:C.txt,font:{size:9},maxRotation:60}}),y:axY()}}});
+
+  // Tabla velocidades máximas
+  const sortedVm = [...active].filter(u=>u.vm).sort((a,b)=>b.vm-a.vm);
+  const vmColor = v => v>130?C.rdD:v>110?C.orD:v>90?C.ywD:C.grD;
+  const vmBadge = v => {
+    if(v>130) return '<span style="background:rgba(220,38,38,.12);color:#dc2626;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700">Crítico</span>';
+    if(v>110) return '<span style="background:rgba(234,88,12,.12);color:#ea580c;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700">Alto</span>';
+    if(v>90)  return '<span style="background:rgba(180,83,9,.12);color:#b45309;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700">Moderado</span>';
+    return '<span style="background:rgba(5,150,105,.12);color:#059669;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700">Normal</span>';
+  };
+  document.getElementById('tbVelMax').innerHTML = sortedVm.map(u=>
+    `<tr><td><strong>${u.n}</strong></td>
+    <td class="r" style="color:${vmColor(u.vm)};font-weight:700">${u.vm} km/h</td>
+    <td>${vmBadge(u.vm)}</td>
+    <td class="r">${fmt(u.km)}</td>
+    <td class="r">${u.e90}</td>
+    <td class="r">${u.km>100?(u.e90/u.km*100).toFixed(2):'—'}</td>
+    </tr>`
+  ).join('');
+}
+
+// ── S06 SCORE ────────────────────────────────────────────────────────────────
+function buildS06(){
+  const p = P();
+  const active = U.filter(u=>u.km>100);
+
+  function score(u){
+    const exc100 = u.km>0 ? u.e90/u.km*100 : 10;
+    const sComb = COMB.find(c=>c.n===u.n);
+    const kml = sComb ? sComb.kml : 1.5;
+    const s_seg  = Math.max(0, 40 - exc100*20);
+    const s_efic = Math.min(30, kml/p.bench*30);
+    const s_idle = Math.max(0, 30 - Math.max(0,(u.pi-30)/70*30));
+    return {total:Math.round(s_seg+s_efic+s_idle), seg:Math.round(s_seg), efic:Math.round(s_efic), idle:Math.round(s_idle)};
+  }
+
+  const scored = active.map(u=>({...u, sc:score(u)})).sort((a,b)=>b.sc.total-a.sc.total);
+
+  const colors = scored.map(u=>u.sc.total>=65?C.gr:u.sc.total>=45?C.or:C.rd);
+  const txtColors = scored.map(u=>u.sc.total>=65?C.grD:u.sc.total>=45?C.orD:C.rdD);
+  document.getElementById('wrapScore').style.height = (scored.length*28+60)+'px';
+  makeChart('cScore',{type:'bar',data:{
+    labels:scored.map(u=>u.n),
+    datasets:[{data:scored.map(u=>u.sc.total),backgroundColor:colors,borderRadius:4}]
+  },options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.raw} / 100 pts`}}},
+    scales:{x:axY({min:0,max:100}),y:axX()}}});
+
+  const catLabel = t => t>=65
+    ? '<span style="background:rgba(5,150,105,.12);color:#059669;padding:2px 7px;border-radius:100px;font-size:10px;font-weight:700">Seguro</span>'
+    : t>=45
+    ? '<span style="background:rgba(234,88,12,.12);color:#ea580c;padding:2px 7px;border-radius:100px;font-size:10px;font-weight:700">Regular</span>'
+    : '<span style="background:rgba(220,38,38,.12);color:#dc2626;padding:2px 7px;border-radius:100px;font-size:10px;font-weight:700">Riesgo</span>';
+
+  document.getElementById('tbScore').innerHTML = scored.map((u,i)=>
+    `<tr><td style="color:var(--t3)">${i+1}</td><td><strong>${u.n}</strong></td>
+    <td class="r" style="color:${txtColors[i]};font-weight:700">${u.sc.total}</td>
+    <td class="r">${u.sc.seg}</td><td class="r">${u.sc.efic}</td><td class="r">${u.sc.idle}</td>
+    <td>${catLabel(u.sc.total)}</td></tr>`
+  ).join('');
+}
+
+// ── S07 MONETIZACIÓN SEGURIDAD ────────────────────────────────────────────────
+function buildS07(){
+  const p = P();
+  const data = U.filter(u=>u.e90>0).map(u=>({n:u.n,e90:u.e90,cost:u.e90*p.eventCost})).sort((a,b)=>b.cost-a.cost);
+  const total = data.reduce((s,r)=>s+r.cost,0);
+
+  document.getElementById('kpiCostSeg').textContent = mxn(total);
+  document.getElementById('kpiCostSegMes').textContent = mxn(total*4.33);
+  document.getElementById('kpiCostSegAno').textContent = mxn(total*52);
+
+  makeChart('cCostSeg',{type:'bar',data:{
+    labels:data.map(r=>r.n),
+    datasets:[{data:data.map(r=>r.cost),backgroundColor:C.rd,borderRadius:4}]
+  },options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${mxn(ctx.raw)}`}}},
+    scales:{x:axX({ticks:{color:C.txt,font:{size:9},maxRotation:60}}),y:axY({ticks:{color:C.txt,font:{size:10},callback:v=>fmtK(v)}})}}});
+
+  document.getElementById('tbCostSeg').innerHTML = data.slice(0,10).map((r,i)=>
+    `<tr><td style="color:var(--t3)">${i+1}</td><td><strong>${r.n}</strong></td>
+    <td class="r">${r.e90}</td>
+    <td class="r" style="color:var(--rd);font-weight:700">${mxn(r.cost)}</td>
+    <td class="r">${(r.cost/total*100).toFixed(1)}%</td></tr>`
+  ).join('');
+}
+
+// ── S08 MONETIZACIÓN RALENTÍ ──────────────────────────────────────────────────
+function buildS08(){
+  const p = P();
+  const data = U.filter(u=>u.hm>0).map(u=>{
+    const exH = Math.max(0,(u.pi/100 - p.idleT/100)*u.hm);
+    const exL = exH * p.idleL;
+    return {n:u.n, exH:parseFloat(exH.toFixed(1)), exL:parseFloat(exL.toFixed(1)), cost:exL*p.diesel};
+  }).sort((a,b)=>b.cost-a.cost);
+
+  const totalCost = data.reduce((s,r)=>s+r.cost,0);
+  const totalH = data.reduce((s,r)=>s+r.exH,0);
+  const totalL = data.reduce((s,r)=>s+r.exL,0);
+
+  document.getElementById('kpiIdleSem').textContent = mxn(totalCost);
+  document.getElementById('kpiIdleLitros').textContent = Math.round(totalL).toLocaleString('es-MX')+' litros excedentes en idle';
+  document.getElementById('kpiIdleMes').textContent = mxn(totalCost*4.33);
+  document.getElementById('kpiIdleH').textContent = Math.round(totalH).toLocaleString('es-MX')+' h';
+  document.getElementById('kpiIdleThresh').textContent = `Por encima del umbral de ${p.idleT}%`;
+
+  document.getElementById('wrapIdle').style.height = (data.length*26+60)+'px';
+  makeChart('cIdle',{type:'bar',data:{
+    labels:data.map(r=>r.n),
+    datasets:[{data:data.map(r=>Math.round(r.cost)),backgroundColor:C.or,borderRadius:4}]
+  },options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${mxn(ctx.raw)} (${data[ctx.dataIndex].exH}h · ${data[ctx.dataIndex].exL}L)`}}},
+    scales:{x:axY({ticks:{color:C.txt,font:{size:10},callback:v=>fmtK(v)}}),y:axX({ticks:{color:C.txt,font:{size:9}}})}}});
+}
+
+// ── S09 MONETIZACIÓN RENDIMIENTO ──────────────────────────────────────────────
+function buildS09(){
+  const p = P();
+  const data = COMB.map(r=>{
+    const u = U.find(u=>u.n===r.n);
+    if(!u) return null;
+    const exL = u.km * (1/r.kml - 1/p.bench);
+    return {n:r.n, kml:r.kml, exL:parseFloat(exL.toFixed(1)), cost:Math.max(0,exL)*p.diesel};
+  }).filter(Boolean).sort((a,b)=>b.cost-a.cost);
+
+  const totalCost = data.reduce((s,r)=>s+Math.max(0,r.cost),0);
+  const totalL    = data.reduce((s,r)=>s+Math.max(0,r.exL),0);
+  const nAbove    = data.filter(r=>r.exL>0).length;
+
+  document.getElementById('kpiRendSem').textContent  = mxn(totalCost);
+  document.getElementById('kpiRendLitros').textContent = Math.round(totalL).toLocaleString('es-MX')+' L por encima del benchmark';
+  document.getElementById('kpiRendMes').textContent  = mxn(totalCost*4.33);
+  document.getElementById('kpiRendN').textContent    = nAbove;
+
+  const colors = data.map(r=>r.exL>0?C.rd:C.gr);
+  document.getElementById('wrapRend').style.height = (data.length*26+80)+'px';
+  makeChart('cRend',{type:'bar',data:{
+    labels:data.map(r=>r.n),
+    datasets:[
+      {label:'km/L real',data:data.map(r=>r.kml),backgroundColor:colors,borderRadius:4},
+      {label:`Benchmark ${p.bench}`,type:'line',data:Array(data.length).fill(p.bench),borderColor:C.bench,borderDash:[4,4],borderWidth:1.5,pointRadius:0,fill:false}
+    ]
+  },options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.raw.toFixed?ctx.raw.toFixed(3)+' km/L':ctx.raw}`}}},
+    scales:{x:axY({min:0,max:4}),y:axX({ticks:{color:C.txt,font:{size:9}}})}}});
+}
+
+// ── RECALCULATE ALL ───────────────────────────────────────────────────────────
+function recalcAll(){
+  buildS03(); buildS06(); buildS07(); buildS08(); buildS09();
+}
+
+// ── NAV HIGHLIGHT ─────────────────────────────────────────────────────────────
+const navLinks = document.querySelectorAll('nav a');
+const sections = document.querySelectorAll('section');
+const obs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      navLinks.forEach(a=>a.classList.remove('active'));
+      const a = document.querySelector(`nav a[href="#${e.target.id}"]`);
+      if(a) a.classList.add('active');
+    }
+  });
+},{threshold:.3});
+sections.forEach(s=>obs.observe(s));
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+window.addEventListener('load',()=>{
+  buildS02(); buildS03(); buildS04(); buildS06();
+  buildS07(); buildS08(); buildS09();
+});
+</script>
+</body>
+</html>
