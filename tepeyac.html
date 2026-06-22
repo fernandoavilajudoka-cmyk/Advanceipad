@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Informe Gerencial — Fertilizantes Tepeyac</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  /* ── PALETA VERDE ADVANCE · CRISTAL ── */
+  --bg:#eef5e1;
+  --glass:rgba(255,255,255,.60);
+  --glass-strong:rgba(255,255,255,.78);
+  --blur:blur(18px) saturate(160%);
+  --brd:rgba(255,255,255,.72);
+  --brd2:rgba(40,70,30,.14);
+  --line:rgba(40,70,30,.09);
+  --s3:rgba(244,250,236,.85);
+  --t:#1d3326;--t2:#5c6b5e;--t3:#9aa99a;
+  --gr:#2f8f4e;--gr2:#256f3c;--gr-bg:rgba(47,143,78,.12);
+  --g2:#43a047;--gl:#c5e1a5;
+  --lime:#7cb342;--lime-bg:rgba(124,179,66,.16);
+  --teal:#1f9e8f;--teal-bg:rgba(31,158,143,.13);
+  --or:#e1881f;--or-bg:rgba(225,136,31,.13);
+  --rd:#d64b34;--rd-bg:rgba(214,75,52,.12);
+  --pu:#6d8f3a;--pu-bg:rgba(109,143,58,.14);
+  --shadow:0 10px 34px rgba(30,60,25,.12);
+  --shadow-sm:0 6px 20px rgba(30,60,25,.09);
+  --r:14px;--r2:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;color:var(--t);font-size:13px;line-height:1.55;min-height:100vh;
+  background:var(--bg);
+  background-image:
+    radial-gradient(680px 520px at 5% -8%, rgba(124,179,66,.18), transparent 60%),
+    radial-gradient(620px 520px at 104% 2%, rgba(47,143,78,.14), transparent 58%),
+    radial-gradient(640px 560px at 50% 120%, rgba(31,158,143,.10), transparent 60%);
+  background-attachment:fixed;}
+nav{position:fixed;top:0;left:0;bottom:0;width:212px;background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-right:1px solid var(--brd);box-shadow:var(--shadow-sm);z-index:100;overflow-y:auto;padding:20px 0;}
+.nav-logo{padding:0 16px 16px;border-bottom:1px solid var(--line);margin-bottom:8px;}
+.nav-logo span{font-size:13px;font-weight:800;color:var(--gr);letter-spacing:.5px;}
+.nav-logo p{font-size:10px;color:var(--t3);margin-top:2px;}
+nav a{display:flex;align-items:center;gap:8px;padding:7px 16px;font-size:12px;color:var(--t2);text-decoration:none;border-radius:8px;margin:1px 8px;transition:.15s;}
+nav a:hover,nav a.active{background:var(--gr-bg);color:var(--gr2);}
+nav a .num{font-size:10px;font-weight:700;color:var(--t3);min-width:18px;}
+nav a:hover .num,nav a.active .num{color:var(--gr);}
+.nav-print{display:block;margin:0 12px 12px;padding:9px 12px;width:calc(100% - 24px);background:linear-gradient(135deg,var(--gr),#7cb342);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(47,143,78,.30);}
+.nav-print:hover{filter:brightness(1.06);}
+main{margin-left:212px;}
+section{padding:34px 40px;border-bottom:1px solid var(--line);}
+.sec-head{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
+.sec-num{font-size:11px;font-weight:800;color:#33491c;background:var(--lime);min-width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.sec-title{font-size:20px;font-weight:800;color:var(--t);}
+.sec-sub{font-size:12px;color:var(--t2);margin-top:2px;}
+.sec-badge{padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;}
+.badge-gr{background:var(--gr-bg);color:var(--gr);}.badge-tl{background:var(--teal-bg);color:var(--teal);}
+.badge-or{background:var(--or-bg);color:var(--or);}.badge-rd{background:var(--rd-bg);color:var(--rd);}
+.badge-lime{background:var(--lime-bg);color:#5a8023;}
+#s01{background:linear-gradient(160deg,rgba(124,179,66,.14) 0%,rgba(255,255,255,0) 55%);}
+.portada-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center;}
+.portada-logo{width:52px;height:52px;background:linear-gradient(135deg,var(--gr),#7cb342);border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;box-shadow:var(--shadow-sm);}
+.portada-logo svg{fill:none;stroke:#fff;stroke-width:2;}
+.portada-title{font-size:32px;font-weight:800;line-height:1.15;margin-bottom:8px;}
+.portada-title span{color:var(--gr);}
+.portada-meta{font-size:13px;color:var(--t2);margin-bottom:20px;}
+.portada-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.pstat,.kpi,.card,.portada-right{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--brd);box-shadow:var(--shadow-sm);}
+.pstat{border-radius:var(--r2);padding:14px 16px;}
+.pstat .v{font-size:22px;font-weight:800;color:var(--gr);line-height:1;}
+.pstat .l{font-size:11px;color:var(--t2);margin-top:4px;}
+.portada-nodata{background:rgba(214,75,52,.07);border:1px solid rgba(214,75,52,.22);border-radius:var(--r2);padding:12px 16px;font-size:12px;color:var(--rd);margin-top:16px;}
+.portada-right{border-radius:var(--r);padding:24px;}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;}
+.kpi{border-radius:var(--r2);padding:15px 18px;border-left:4px solid var(--gr);}
+.kpi.k-or{border-left-color:var(--or);}.kpi.k-rd{border-left-color:var(--rd);}.kpi.k-tl{border-left-color:var(--teal);}.kpi.k-lime{border-left-color:var(--lime);}
+.kpi-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--t3);margin-bottom:6px;}
+.kpi-val{font-size:25px;font-weight:800;line-height:1;}
+.kpi-val small{font-size:13px;font-weight:400;color:var(--t2);margin-left:4px;}
+.kpi-foot{font-size:11px;color:var(--t3);margin-top:5px;}
+.card{border-radius:var(--r);padding:20px;}
+.card-title{font-size:14px;font-weight:700;margin-bottom:4px;}
+.card-sub{font-size:11px;color:var(--t2);margin-bottom:16px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{padding:8px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--t3);background:var(--s3);border-bottom:1px solid var(--line);white-space:nowrap;}
+th.r{text-align:right;}
+td{padding:7px 12px;border-bottom:1px solid var(--line);color:var(--t);vertical-align:middle;white-space:nowrap;}
+td.r{text-align:right;font-variant-numeric:tabular-nums;}
+tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:var(--gr-bg);}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700;white-space:nowrap;}
+.tag-rup{background:var(--teal-bg);color:var(--teal);}.tag-que{background:var(--lime-bg);color:#5a8023;}
+.tag-can{background:var(--gr-bg);color:var(--gr);}.tag-est{background:rgba(92,107,94,.14);color:var(--t2);}
+.tag-sens{background:var(--pu-bg);color:var(--pu);}
+.tag-baja{background:var(--gr-bg);color:var(--gr);}.tag-media{background:var(--or-bg);color:var(--or);}.tag-alta{background:var(--rd-bg);color:var(--rd);}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0;}
+.chip{display:inline-block;padding:2px 9px;border-radius:8px;background:var(--s3);font-size:11px;font-weight:600;color:var(--t2);}
+/* ── FILTROS ── */
+.filters{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:22px;}
+.filt{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--brd);border-radius:10px;padding:8px 12px;min-width:200px;box-shadow:var(--shadow-sm);}
+.filt label{display:block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--t3);margin-bottom:2px;}
+.filt select{border:none;background:transparent;font-size:13px;font-weight:700;color:var(--t);width:100%;cursor:pointer;outline:none;}
+.nat-box{background:var(--s3);border-radius:8px;padding:12px 14px;}
+.nat-box h4{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.nat-box ul{list-style:none;font-size:11px;color:var(--t2);line-height:1.7;}
+.nat-box li{display:flex;gap:7px;align-items:flex-start;}
+.empty{background:var(--glass);border:1px dashed var(--brd2);border-radius:var(--r);padding:36px;text-align:center;color:var(--t2);box-shadow:var(--shadow-sm);}
+.param-row{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:11px 0;border-bottom:1px solid var(--line);}
+.param-row:last-child{border-bottom:none;}
+.param-label{font-size:13px;flex:1;}.param-label small{display:block;font-size:11px;color:var(--t2);margin-top:3px;}
+input[type=number]{background:var(--glass-strong);border:1px solid var(--brd2);border-radius:6px;color:var(--t);padding:8px 12px;font-size:15px;font-weight:700;width:120px;text-align:right;}
+input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3px rgba(47,143,78,.15);}
+.btn-recalc{margin-top:16px;background:linear-gradient(135deg,var(--gr),#7cb342);color:#fff;border:none;border-radius:8px;padding:11px 20px;font-size:13px;font-weight:700;cursor:pointer;width:100%;box-shadow:0 6px 18px rgba(47,143,78,.30);}
+@media print{nav{display:none;}main{margin-left:0;}body{background:#fff;}.filters{display:none;}section{page-break-before:always;}#s01{page-break-before:avoid;}.card,.kpi,.pstat,.portada-right{background:#fff;backdrop-filter:none;box-shadow:none;border:1px solid #e3ecd5;}}
+::-webkit-scrollbar{width:8px;height:8px;}::-webkit-scrollbar-thumb{background:rgba(40,70,30,.18);border-radius:4px;}
+</style>
+</head>
+<body>
+<nav id="nav">
+  <div class="nav-logo"><span>ADVANCE</span><p>Informe Gerencial de Flota</p></div>
+  <button class="nav-print no-print" onclick="window.print()">⬇ Descargar PDF</button>
+  <a href="#s01"><span class="num">01</span> Portada</a>
+  <a href="#s02"><span class="num">02</span> Resumen ejecutivo</a>
+  <a href="#s03"><span class="num">03</span> Rendimiento por modelo</a>
+  <a href="#s04"><span class="num">04</span> Rendimiento por sede</a>
+  <a href="#s05"><span class="num">05</span> Productividad de sedes</a>
+  <a href="#s06"><span class="num">06</span> Seguridad vial</a>
+  <a href="#s07"><span class="num">07</span> Tablero de unidades</a>
+  <a href="#s08"><span class="num">08</span> Combustible y varilla</a>
+  <a href="#s09"><span class="num">09</span> Ranking operativo</a>
+  <a href="#s10"><span class="num">10</span> Monetización</a>
+  <a href="#s11"><span class="num">11</span> Metodología</a>
+</nav>
+<main>
+
+<!-- S01 PORTADA -->
+<section id="s01">
+  <div class="portada-grid">
+    <div>
+      <div class="portada-logo"><svg width="28" height="28" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 4v4h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
+      <div class="portada-title">Informe<br>Gerencial de <span>Flota</span></div>
+      <div class="portada-meta" id="portMeta"></div>
+      <div class="portada-stats" id="portStats"></div>
+      <div class="portada-nodata" id="portNoData" style="margin-top:14px"></div>
+    </div>
+    <div class="portada-right">
+      <div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Cobertura de telemetría</div>
+      <div id="portCob" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+      <div style="margin-top:20px;font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Periodo seleccionado</div>
+      <div id="portResumen" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- S02 RESUMEN EJECUTIVO -->
+<section id="s02">
+  <div class="sec-head"><span class="sec-num">02</span>
+    <div><div class="sec-title">Resumen ejecutivo</div><div class="sec-sub" id="subS02">Tendencia de rendimiento general de la flota</div></div>
+    <span class="sec-badge badge-gr">Tendencia</span>
+  </div>
+  <div class="filters">
+    <div class="filt"><label>Mes</label><select id="selMonth"></select></div>
+    <div class="filt"><label>Semana</label><select id="selWeek"></select></div>
+    <div class="filt"><label>Zona / sede</label><select id="selZona"></select></div>
+  </div>
+  <div class="kpi-grid" id="kpiGrid"></div>
+  <div class="card">
+    <div class="card-title">Tendencia: rendimiento general de la flota (km/L) vs distancia (km)</div>
+    <div class="card-sub">Línea = rendimiento km/L (eje der.) · barras = distancia km (eje izq.) · responde a los filtros</div>
+    <div style="position:relative;height:320px"><canvas id="cTrend"></canvas></div>
+  </div>
+</section>
+
+<!-- S03 RENDIMIENTO POR MODELO -->
+<section id="s03">
+  <div class="sec-head"><span class="sec-num">03</span>
+    <div><div class="sec-title">Rendimiento real por modelo vs fabricante</div><div class="sec-sub">Real medido contra la ficha técnica del fabricante, por modelo conectado</div></div>
+    <span class="sec-badge badge-gr">Gráfica</span>
+  </div>
+  <div class="row2">
+    <div class="card">
+      <div class="card-title">Real vs fabricante (km/L)</div>
+      <div class="card-sub">Barra sólida = real medido · barra clara = ficha del fabricante</div>
+      <div style="position:relative;height:340px"><canvas id="cModel"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Detalle por modelo</div>
+      <div class="card-sub">Desviación del real respecto a la especificación de fábrica</div>
+      <div class="tbl-wrap"><table><thead><tr><th>Modelo</th><th class="r">Unid.</th><th class="r">Real km/L</th><th class="r">Fabricante</th><th class="r">Desv.</th></tr></thead><tbody id="tbModel"></tbody></table></div>
+    </div>
+  </div>
+</section>
+
+<!-- S04 RENDIMIENTO POR SEDE -->
+<section id="s04">
+  <div class="sec-head"><span class="sec-num">04</span>
+    <div><div class="sec-title">Rendimiento por sede vs distancia</div><div class="sec-sub">Rendimiento general de cada sede respecto a la distancia recorrida</div></div>
+    <span class="sec-badge badge-tl">Sedes</span>
+  </div>
+  <div class="card">
+    <div class="card-title">Distancia (barras) y rendimiento km/L (línea) por sede</div>
+    <div class="card-sub">Cada sede agrega sus unidades registradas en la zona</div>
+    <div style="position:relative;height:320px"><canvas id="cSede"></canvas></div>
+  </div>
+</section>
+
+<!-- S05 PRODUCTIVIDAD DE SEDES -->
+<section id="s05">
+  <div class="sec-head"><span class="sec-num">05</span>
+    <div><div class="sec-title">Sede más vs menos productiva</div><div class="sec-sub">Índice combinado: distancia recorrida × rendimiento (+km y +km/L = mejor)</div></div>
+    <span class="sec-badge badge-lime">Ranking</span>
+  </div>
+  <div class="row2">
+    <div class="card">
+      <div class="card-title">Mapa de productividad</div>
+      <div class="card-sub">Eje X = distancia · Eje Y = rendimiento km/L · burbuja = índice 0–100</div>
+      <div style="position:relative;height:320px"><canvas id="cProd"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Ranking de productividad</div>
+      <div class="card-sub">Índice = 50% distancia normalizada + 50% rendimiento normalizado</div>
+      <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Sede</th><th class="r">km</th><th class="r">km/L</th><th class="r">Índice</th><th>Nivel</th></tr></thead><tbody id="tbProd"></tbody></table></div>
+    </div>
+  </div>
+</section>
+
+<!-- S06 SEGURIDAD VIAL -->
+<section id="s06">
+  <div class="sec-head"><span class="sec-num">06</span>
+    <div><div class="sec-title">Seguridad vial</div><div class="sec-sub">Riesgo de accidente (top 10) · concentrado de alertas y franja horaria · zonas más inseguras</div></div>
+    <span class="sec-badge badge-rd">Riesgo</span>
+  </div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)" id="kpiSeg"></div>
+  <div class="row2" style="margin-bottom:20px">
+    <div class="card"><div class="card-title" style="color:var(--gr)">Top 10 unidades más seguras</div><div class="card-sub">Menor índice de riesgo de accidente (0–100)</div><div style="position:relative;height:300px"><canvas id="cSafe"></canvas></div></div>
+    <div class="card"><div class="card-title" style="color:var(--rd)">Top 10 unidades más inseguras</div><div class="card-sub">Mayor índice de riesgo de accidente (0–100)</div><div style="position:relative;height:300px"><canvas id="cUnsafe"></canvas></div></div>
+  </div>
+  <div class="row2" style="margin-bottom:20px">
+    <div class="card"><div class="card-title">Concentrado de tipos de alerta</div><div class="card-sub">Distribución de todas las alertas de seguridad del periodo</div><div style="position:relative;height:280px"><canvas id="cAlerts"></canvas></div></div>
+    <div class="card"><div class="card-title">Franja horaria de alertas</div><div class="card-sub" id="subFranja">Eventos de seguridad por horario del día</div><div style="position:relative;height:280px"><canvas id="cFranja"></canvas></div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Zonas más inseguras — índice general</div>
+    <div class="card-sub">Combina eventos de seguridad /100 km · excesos de velocidad · velocidad máxima alcanzada, por zona</div>
+    <div style="position:relative;height:300px"><canvas id="cZonaInsec"></canvas></div>
+  </div>
+</section>
+
+<!-- S07 TABLERO -->
+<section id="s07">
+  <div class="sec-head"><span class="sec-num">07</span>
+    <div><div class="sec-title">Tablero de unidades</div><div class="sec-sub" id="subBoard">15 unidades con mayor distancia · métricas estilo Concretos Técnicos</div></div>
+    <span class="sec-badge badge-tl">Top 15</span>
+  </div>
+  <div class="card"><div class="tbl-wrap"><table>
+    <thead><tr>
+      <th>Unidad</th><th>Placa</th><th>Modelo</th><th>Zona</th>
+      <th class="r">Distancia<br>km</th><th class="r">Vel. máx<br>km/h</th><th class="r">Comb.<br>total L</th>
+      <th class="r">Ralentí<br>L</th><th class="r">Ralentí<br>h</th><th class="r">% Ral.<br>consumo</th>
+      <th class="r">Rend.<br>km/L</th><th class="r">Seg.<br>/100km</th><th>Varilla</th>
+      <th class="r">Descargas<br>eventos</th><th class="r">Diésel<br>desc. L</th><th>Prob.<br>accid.</th><th>Prob.<br>robo</th>
+    </tr></thead>
+    <tbody id="tbBoard"></tbody>
+  </table></div></div>
+</section>
+
+<!-- S08 COMBUSTIBLE Y COSTO -->
+<section id="s08">
+  <div class="sec-head"><span class="sec-num">08</span>
+    <div><div class="sec-title">Combustible y costo</div><div class="sec-sub">Costo real · costo por km · descargas de diésel · ralentí y bono al operador</div></div>
+    <span class="sec-badge badge-or">$$$</span>
+  </div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr)" id="kpiFuel"></div>
+  <div class="row2" style="margin-bottom:20px">
+    <div class="card">
+      <div class="card-title">Distribución del gasto de combustible por zona</div>
+      <div class="card-sub">Conducción · ralentí · robo de diésel (descargas) — MXN</div>
+      <div style="position:relative;height:300px"><canvas id="cGastoZona"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Descargas de diésel</div>
+      <div class="card-sub">Eventos del sensor de varilla · prioridad las &gt; 10 L (posible robo)</div>
+      <div id="kpiDescargas" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Bono al operador por reducir ralentí</div>
+    <div class="card-sub" id="subBono">Modelo de reparto de ahorro · % ralentí base y % de reparto configurables en Metodología</div>
+    <div class="row2" style="align-items:start;margin-top:4px">
+      <div class="nat-box">
+        <h4 style="color:var(--teal)">Ecuación del bono</h4>
+        <div style="font-size:11.5px;color:var(--t2);line-height:1.9;margin-top:6px">
+          <div><b style="color:var(--gr)">Litros ahorrados</b> = (%ralentí_base − %ralentí_real) ÷ 100 × horas_motor × consumo_ralentí</div>
+          <div><b style="color:var(--gr)">Ahorro</b> = Litros ahorrados × precio_diésel</div>
+          <div><b style="color:var(--teal)">BONO operador</b> = Ahorro × % de reparto</div>
+        </div>
+        <div id="bonoNote" style="font-size:11px;color:var(--t3);margin-top:10px;line-height:1.6"></div>
+      </div>
+      <div>
+        <div class="card-title" style="font-size:13px">Bono estimado por operador (MXN)</div>
+        <div class="card-sub">Solo unidades que están por debajo del % de ralentí base</div>
+        <div style="position:relative;" id="wrapBono"><canvas id="cBono"></canvas></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S09 RANKING OPERATIVO -->
+<section id="s09">
+  <div class="sec-head"><span class="sec-num">09</span>
+    <div><div class="sec-title">Ranking operativo</div><div class="sec-sub">Score integral por unidad: seguridad + eficiencia + ralentí</div></div>
+    <span class="sec-badge badge-gr">Ranking</span>
+  </div>
+  <div class="row2">
+    <div class="card"><div class="card-title">Score compuesto (0–100)</div><div class="card-sub">Seguridad 40 · Eficiencia 30 · Ralentí 30</div><div style="position:relative;" id="wrapScore"><canvas id="cScore"></canvas></div></div>
+    <div class="card"><div class="card-title">Clasificación</div><div class="card-sub">Verde ≥65 · Naranja 45–64 · Rojo &lt;45</div><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Unidad</th><th class="r">Score</th><th class="r">Seg</th><th class="r">Efic</th><th class="r">Ral</th><th>Cat.</th></tr></thead><tbody id="tbScore"></tbody></table></div></div>
+  </div>
+</section>
+
+<!-- S10 MONETIZACIÓN -->
+<section id="s10">
+  <div class="sec-head"><span class="sec-num">10</span>
+    <div><div class="sec-title">Monetización del desempeño</div><div class="sec-sub">Costo de ralentí + ineficiencia + seguridad sobre consumo REAL (MXN)</div></div>
+    <span class="sec-badge badge-or">$$$</span>
+  </div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr)" id="kpiMoney"></div>
+  <div class="card"><div class="card-title">Desglose del costo del periodo</div><div class="card-sub">Ralentí + ineficiencia vs benchmark + excesos</div><div style="position:relative;height:280px"><canvas id="cMoney"></canvas></div></div>
+</section>
+
+<!-- S11 METODOLOGÍA -->
+<section id="s11">
+  <div class="sec-head"><span class="sec-num">11</span>
+    <div><div class="sec-title">Metodología y parámetros</div><div class="sec-sub">Ajusta los parámetros y presiona "Recalcular"</div></div>
+    <span class="sec-badge badge-or">Filtros</span>
+  </div>
+  <div class="row2" style="align-items:start;margin-bottom:20px">
+    <div class="card">
+      <div class="card-title">Parámetros ajustables</div><div class="card-sub">Recalculan eficiencia, combustible, seguridad y monetización</div>
+      <div style="margin-top:8px">
+        <div class="param-row"><div class="param-label">Precio del diésel<small>MXN/litro</small></div><input type="number" id="pDiesel" value="25.99" step="0.10" min="15" max="40"></div>
+        <div class="param-row"><div class="param-label">Norma de consumo<small>L/100 km de referencia</small></div><input type="number" id="pNorma" value="40" step="1" min="20" max="80"></div>
+        <div class="param-row"><div class="param-label">Consumo en ralentí<small>L/h motor detenido</small></div><input type="number" id="pIdleL" value="5" step="0.5" min="2" max="10"></div>
+        <div class="param-row"><div class="param-label">Benchmark km/L<small>referencia general</small></div><input type="number" id="pBench" value="2.50" step="0.05" min="1.5" max="6"></div>
+        <div class="param-row"><div class="param-label">Límite de velocidad<small>km/h</small></div><input type="number" id="pLimite" value="90" step="5" min="60" max="120"></div>
+        <div class="param-row"><div class="param-label">Costo por exceso<small>MXN/evento</small></div><input type="number" id="pEventCost" value="150" step="50" min="50" max="2000"></div>
+        <div class="param-row"><div class="param-label">% ralentí base (bono)<small>referencia para premiar reducción</small></div><input type="number" id="pIdleBase" value="75" step="1" min="40" max="95"></div>
+        <div class="param-row"><div class="param-label">% de reparto del bono<small>parte del ahorro para el operador</small></div><input type="number" id="pBonusShare" value="30" step="5" min="10" max="60"></div>
+      </div>
+      <button class="btn-recalc" onclick="render()">↻ Recalcular todo el informe</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Naturaleza de los datos</div><div class="card-sub">Qué se mide directamente y qué se estima — por tipo de dispositivo</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px">
+        <div class="nat-box"><h4 style="color:var(--gr)">✓ Medido</h4><ul>
+          <li><span class="dot" style="background:var(--gr);margin-top:5px"></span>Distancia, odómetro (GPS)</li>
+          <li><span class="dot" style="background:var(--gr);margin-top:5px"></span>Tiempo manejo / detención</li>
+          <li><span class="dot" style="background:var(--gr);margin-top:5px"></span>Consumo real (flujo/CAN)</li>
+          <li><span class="dot" style="background:var(--gr);margin-top:5px"></span>Sensor Escort de varilla</li>
+          <li><span class="dot" style="background:var(--gr);margin-top:5px"></span>Ralentí + bruscas por RPM (Ruptela)</li>
+        </ul></div>
+        <div class="nat-box"><h4 style="color:var(--t2)">≈ Estimado</h4><ul>
+          <li><span class="dot" style="background:var(--t3);margin-top:5px"></span>Combustible por norma L/100km</li>
+          <li><span class="dot" style="background:var(--t3);margin-top:5px"></span>Ralentí en unidades sin CAN (Queclink)</li>
+          <li><span class="dot" style="background:var(--t3);margin-top:5px"></span>Riesgo vial / robo por zona (INEGI · SESNSP)</li>
+          <li><span class="dot" style="background:var(--t3);margin-top:5px"></span>Costos de monetización</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Dispositivos</div><div class="card-sub">Cómo cambia el análisis según el rastreador</div>
+    <div class="row2" style="margin-top:4px">
+      <div class="nat-box"><h4><span class="tag tag-rup"><span class="dot" style="background:var(--teal)"></span>Ruptela (CAN)</span></h4><div style="font-size:11px;color:var(--t2);line-height:1.7;margin-top:8px">Ralentí <strong>MEDIDO</strong> por RPM (&gt;350) y combustible real por CAN. Reporta <strong>frenadas/aceleraciones bruscas</strong>. Dato más preciso.</div></div>
+      <div class="nat-box"><h4><span class="tag tag-que"><span class="dot" style="background:var(--lime)"></span>Queclink (GPS)</span></h4><div style="font-size:11px;color:var(--t2);line-height:1.7;margin-top:8px">Sin CAN: ralentí <strong>ESTIMADO</strong> (combustible no asociado a distancia ÷ tasa L/h). Combustible por sensor de varilla o norma. No reporta conducción agresiva.</div></div>
+    </div>
+    <div style="font-size:11px;color:var(--t3);margin-top:14px">Fuente: Telematics Advance / Smart-Connect (Mapon API). La zona se deriva por geocodificación de la base dominante.</div>
+  </div>
+</section>
+</main>
+
+<script>
+// ════════ PALETA VERDE ════════
+const C={gr:'#2f8f4e',g2:'#43a047',g3:'#66bb6a',gl:'#c5e1a5',lime:'#7cb342',teal:'#1f9e8f',or:'#e1881f',rd:'#d64b34',txt:'#5c6b5e',grid:'rgba(40,70,30,.09)',bench:'#9aa99a',card:'#ffffff'};
+
+/* ══════ DATOS REALES · Fertilizantes Tepeyac · Mapon/Smart-Connect CAN ══════ */
+const MODELS=[["FOTON S3",8],["FOTON S3-E6 AMT",8.5],["FOTON EST-A X13",2.6],["Foton TUNLAND E5",9.5]];
+const ZONAS=["Sonora","Sin ubicación","Guanajuato","Puebla","Jalisco","Sinaloa","Michoacán"];
+const ZRISK_ACC={"Sonora":0.45,"Jalisco":0.5,"Guanajuato":0.6,"Sinaloa":0.72,"Michoacán":0.68,"Puebla":0.55};
+const ZRISK_THEFT={"Sonora":0.4,"Jalisco":0.55,"Guanajuato":0.65,"Sinaloa":0.8,"Michoacán":0.62,"Puebla":0.5};
+const META={cliente:"Fertilizantes Tepeyac",tier:"Real · CAN",zona:"Nacional (multi-estado)",tipoUnidad:"unidades FOTON",fuente:"Mapon API · Smart-Connect (CAN GV350CEU)",sinSenal:[]};
+const D=[{"_i":0,"n":"000162","number":"3LD12B2J0SA000162","model":"FOTON S3","zona":"Sonora","has_can":false,"sensor":false,"bench":8,"nightProf":0.07,"stale":true},{"_i":1,"n":"000890","number":"3LD12B2J0SA000890","model":"FOTON S3-E6 AMT","zona":"Sonora","has_can":false,"sensor":false,"bench":8.5,"nightProf":0.09000000000000001,"stale":true},{"_i":2,"n":"001007","number":"3LD12B2J1RA001007","model":"FOTON S3","zona":"Sin ubicación","has_can":false,"sensor":false,"bench":8,"nightProf":0.11000000000000001,"stale":true},{"_i":3,"n":"000163","number":"3LD12B2J2SA000163","model":"FOTON S3","zona":"Sonora","has_can":false,"sensor":false,"bench":8,"nightProf":0.13,"stale":true},{"_i":4,"n":"000988","number":"3LD12B2J3RA000988","model":"FOTON S3","zona":"Guanajuato","has_can":true,"sensor":true,"bench":8,"nightProf":0.15000000000000002,"stale":false},{"_i":5,"n":"001003","number":"3LD12B2J4RA001003","model":"FOTON S3","zona":"Guanajuato","has_can":true,"sensor":true,"bench":8,"nightProf":0.07,"stale":false},{"_i":6,"n":"000961","number":"3LD12B2J5RA000961","model":"FOTON S3","zona":"Puebla","has_can":true,"sensor":true,"bench":8,"nightProf":0.09000000000000001,"stale":false},{"_i":7,"n":"000156","number":"3LD12B2J5SA000156","model":"FOTON S3","zona":"Sonora","has_can":false,"sensor":false,"bench":8,"nightProf":0.11000000000000001,"stale":true},{"_i":8,"n":"001004","number":"3LD12B2J6RA001004","model":"FOTON S3","zona":"Guanajuato","has_can":true,"sensor":true,"bench":8,"nightProf":0.13,"stale":false},{"_i":9,"n":"000148","number":"3LD12B2J6SA000148","model":"FOTON S3","zona":"Sin ubicación","has_can":false,"sensor":false,"bench":8,"nightProf":0.15000000000000002,"stale":true},{"_i":10,"n":"000962","number":"3LD12B2J7RA000962","model":"FOTON S3","zona":"Jalisco","has_can":true,"sensor":true,"bench":8,"nightProf":0.07,"stale":false},{"_i":11,"n":"001005","number":"3LD12B2J8RA001005","model":"FOTON S3","zona":"Sinaloa","has_can":true,"sensor":true,"bench":8,"nightProf":0.09000000000000001,"stale":false},{"_i":12,"n":"001263","number":"3LD12B2J8RA001263","model":"FOTON S3","zona":"Sinaloa","has_can":true,"sensor":true,"bench":8,"nightProf":0.11000000000000001,"stale":false},{"_i":13,"n":"000149","number":"3LD12B2J8SA000149","model":"FOTON S3","zona":"Michoacán","has_can":true,"sensor":true,"bench":8,"nightProf":0.13,"stale":false},{"_i":14,"n":"000144","number":"3LD12B2J9SA000144","model":"FOTON S3","zona":"Sonora","has_can":false,"sensor":false,"bench":8,"nightProf":0.15000000000000002,"stale":true},{"_i":15,"n":"002090","number":"3LD34B4J8RA002090","model":"FOTON EST-A X13","zona":"Sonora","has_can":true,"sensor":true,"bench":2.6,"nightProf":0.07,"stale":false},{"_i":16,"n":"002088","number":"3LD34B4JXRA002088","model":"FOTON EST-A X13","zona":"Sin ubicación","has_can":false,"sensor":false,"bench":2.6,"nightProf":0.09000000000000001,"stale":true},{"_i":17,"n":"308238","number":"LVAV2MWB0SU308238","model":"Foton TUNLAND E5","zona":"Jalisco","has_can":false,"sensor":false,"bench":9.5,"nightProf":0.11000000000000001,"stale":true},{"_i":18,"n":"308295","number":"LVAV2MWB1SU308295","model":"Foton TUNLAND E5","zona":"Jalisco","has_can":false,"sensor":false,"bench":9.5,"nightProf":0.13,"stale":true},{"_i":19,"n":"308287","number":"LVAV2MWB2SU308287","model":"Foton TUNLAND E5","zona":"Sonora","has_can":false,"sensor":false,"bench":9.5,"nightProf":0.15000000000000002,"stale":true},{"_i":20,"n":"308253","number":"LVAV2MWB7SU308253","model":"Foton TUNLAND E5","zona":"Jalisco","has_can":false,"sensor":false,"bench":9.5,"nightProf":0.07,"stale":true},{"_i":21,"n":"308267","number":"LVAV2MWB7SU308267","model":"Foton TUNLAND E5","zona":"Jalisco","has_can":false,"sensor":false,"bench":9.5,"nightProf":0.09000000000000001,"stale":true},{"_i":22,"n":"308303","number":"LVAV2MWB7SU308303","model":"Foton TUNLAND E5","zona":"Jalisco","has_can":false,"sensor":false,"bench":9.5,"nightProf":0.11000000000000001,"stale":true},{"_i":23,"n":"308317","number":"LVAV2MWB7SU308317","model":"Foton TUNLAND E5","zona":"Sonora","has_can":false,"sensor":false,"bench":9.5,"nightProf":0.13,"stale":true},{"_i":24,"n":"308312","number":"LVAV2MWB8SU308312","model":"Foton TUNLAND E5","zona":"Jalisco","has_can":false,"sensor":false,"bench":9.5,"nightProf":0.15000000000000002,"stale":true}];
+const REAL_DAILY={"0":{},"1":{},"2":{},"3":{},"4":{"2026-06-01":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":73,"drain":0,"drainL":0,"drainBig":0},"2026-06-02":{"km":205.6,"drive":4.3,"idle":0.9,"fuel":28.5,"viol":0,"maxs":70,"drain":0,"drainL":0,"drainBig":0},"2026-06-03":{"km":392,"drive":8.2,"idle":0.5,"fuel":56.4,"viol":0,"maxs":76,"drain":0,"drainL":0,"drainBig":0},"2026-06-04":{"km":59.4,"drive":1.2,"idle":1.6,"fuel":11.5,"viol":0,"maxs":39,"drain":0,"drainL":0,"drainBig":0},"2026-06-05":{"km":140.9,"drive":3,"idle":1.5,"fuel":20.2,"viol":0,"maxs":56,"drain":0,"drainL":0,"drainBig":0},"2026-06-06":{"km":344.6,"drive":7.2,"idle":0,"fuel":44.9,"viol":0,"maxs":55,"drain":0,"drainL":0,"drainBig":0},"2026-06-07":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0,"drainL":0,"drainBig":0},"2026-06-08":{"km":318.2,"drive":6.7,"idle":0,"fuel":46.5,"viol":0,"maxs":67,"drain":0,"drainL":0,"drainBig":0},"2026-06-09":{"km":58.6,"drive":1.2,"idle":1.7,"fuel":8.2,"viol":0,"maxs":39,"drain":0,"drainL":0,"drainBig":0},"2026-06-10":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0,"drainL":0,"drainBig":0},"2026-06-11":{"km":237.4,"drive":5,"idle":0.5,"fuel":31.1,"viol":0,"maxs":65,"drain":0,"drainL":0,"drainBig":0},"2026-06-12":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0,"drainL":0,"drainBig":0},"2026-06-13":{"km":88.8,"drive":1.9,"idle":0.6,"fuel":12.5,"viol":0,"maxs":43,"drain":0,"drainL":0,"drainBig":0},"2026-06-14":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0,"drainL":0,"drainBig":0},"2026-06-15":{"km":1.2,"drive":0,"idle":1.3,"fuel":1.5,"viol":0,"maxs":15,"drain":0,"drainL":0,"drainBig":0},"2026-06-16":{"km":346.5,"drive":7.3,"idle":0,"fuel":46.4,"viol":0,"maxs":67,"drain":0,"drainL":0,"drainBig":0},"2026-06-17":{"km":103.2,"drive":2.2,"idle":2.5,"fuel":14.8,"viol":0,"maxs":56,"drain":0,"drainL":0,"drainBig":0},"2026-06-18":{"km":211,"drive":4.4,"idle":1.8,"fuel":27,"viol":0,"maxs":44,"drain":0,"drainL":0,"drainBig":0},"2026-06-19":{"km":204.4,"drive":4.3,"idle":0.5,"fuel":33.1,"viol":0,"maxs":75,"drain":0,"drainL":0,"drainBig":0},"2026-06-20":{"km":54.6,"drive":1.1,"idle":1.5,"fuel":9.3,"viol":0,"maxs":48,"drain":0,"drainL":0,"drainBig":0},"2026-06-21":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0,"drainL":0,"drainBig":0},"2026-06-22":{"km":301.7,"drive":6.3,"idle":0,"fuel":44.8,"viol":0,"maxs":58,"drain":0,"drainL":0,"drainBig":0}},"5":{"2026-06-01":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":4,"drain":0.045454545454545456,"drainL":0.36363636363636365,"drainBig":0},"2026-06-02":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.045454545454545456,"drainL":0.36363636363636365,"drainBig":0},"2026-06-03":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.045454545454545456,"drainL":0.36363636363636365,"drainBig":0},"2026-06-04":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.045454545454545456,"drainL":0.36363636363636365,"drainBig":0},"2026-06-05":{"km":55.4,"drive":1.4,"idle":2.8,"fuel":11.3,"viol":0,"maxs":36,"drain":0.045454545454545456,"drainL":0.36363636363636365,"drainBig":0},"2026-06-06":{"km":69,"drive":1.8,"idle":1.5,"fuel":9.5,"viol":0,"maxs":44,"drain":0.045454545454545456,"drainL":0.36363636363636365,"drainBig":0},"2026-06-07":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.045454545454545456,"drainL":0.36363636363636365,"drainBig":0},"2026-06-08":{"km":251.5,"drive":6.4,"idle":0,"fuel":37.8,"viol":0,"maxs":77,"drain":0.045454545454545456,"drainL":0.36363636363636365,"drainBig":0},"2026-06-09":{"km":186.5,"drive":4.8,"idle":0.8,"fuel":22.4,"viol":0,"maxs":61,"drain":0.045454545454545456,"drainL":0.36363636363636365,"drainBig":0},"2026-06-10":{"km":105.8,"drive":2.7,"idle":0.4,"fuel":12.4,"viol":0,"maxs":69,"drain":0.045454545454545456,"drainL":0.36363636363636365,"drainBig":0},"2026-06-11":{"km":41.9,"drive":1.1,"idle":1.1,"fuel":5.8,"viol":0,"maxs":28,"drain":0.045454545454545456,"drainL":0.36363636363636365,"drainBig":0},"2026-06-12":{"km":79.7,"drive":2,"idle":1.3,"fuel":10.6,"viol":0,"maxs":55,"drain":0.045454545454545456,"drainL":0.36363636363636365,"drainBig":0},"2026-06-13":{"km":1.5,"drive":0,"idle":1.5,"fuel":1.8,"viol":0,"maxs":10,"drain":0.045454545454545456,"drainL":0.36363636363636365,"drainBig":0},"2026-06-14":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.045454545454545456,"drainL":0.36363636363636365,"drainBig":0},"2026-06-15":{"km":261.1,"drive":6.7,"idle":0.4,"fuel":36.8,"viol":0,"maxs":54,"drain":0.045454545454545456,"drainL":0.36363636363636365,"drainBig":0},"2026-06-16":{"km":67.6,"drive":1.7,"idle":1.3,"fuel":9.5,"viol":0,"maxs":47,"drain":0.045454545454545456,"drainL":0.36363636363636365,"drainBig":0},"2026-06-17":{"km":70.1,"drive":1.8,"idle":1,"fuel":11.5,"viol":0,"maxs":38,"drain":0.045454545454545456,"drainL":0.36363636363636365,"drainBig":0},"2026-06-18":{"km":109.8,"drive":2.8,"idle":4.6,"fuel":19.4,"viol":0,"maxs":36,"drain":0.045454545454545456,"drainL":0.36363636363636365,"drainBig":0},"2026-06-19":{"km":44.3,"drive":1.1,"idle":2.8,"fuel":8.7,"viol":0,"maxs":27,"drain":0.045454545454545456,"drainL":0.36363636363636365,"drainBig":0},"2026-06-20":{"km":39.3,"drive":1,"idle":1.1,"fuel":5.6,"viol":0,"maxs":29,"drain":0.045454545454545456,"drainL":0.36363636363636365,"drainBig":0},"2026-06-21":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.045454545454545456,"drainL":0.36363636363636365,"drainBig":0},"2026-06-22":{"km":302.9,"drive":7.7,"idle":0,"fuel":35.7,"viol":0,"maxs":58,"drain":0.045454545454545456,"drainL":0.36363636363636365,"drainBig":0}},"6":{"2026-06-01":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":76,"drain":0.045454545454545456,"drainL":0.45454545454545453,"drainBig":0},"2026-06-02":{"km":141.5,"drive":2.8,"idle":2,"fuel":20.7,"viol":0,"maxs":56,"drain":0.045454545454545456,"drainL":0.45454545454545453,"drainBig":0},"2026-06-03":{"km":187.2,"drive":3.6,"idle":2.9,"fuel":26.9,"viol":0,"maxs":49,"drain":0.045454545454545456,"drainL":0.45454545454545453,"drainBig":0},"2026-06-04":{"km":466.7,"drive":9.1,"idle":0,"fuel":60.9,"viol":3,"maxs":140,"drain":0.045454545454545456,"drainL":0.45454545454545453,"drainBig":0},"2026-06-05":{"km":299.3,"drive":5.8,"idle":0.7,"fuel":44.6,"viol":0,"maxs":86,"drain":0.045454545454545456,"drainL":0.45454545454545453,"drainBig":0},"2026-06-06":{"km":352.6,"drive":6.9,"idle":0,"fuel":46.7,"viol":0,"maxs":87,"drain":0.045454545454545456,"drainL":0.45454545454545453,"drainBig":0},"2026-06-07":{"km":2.9,"drive":0.1,"idle":0.3,"fuel":0.8,"viol":0,"maxs":8,"drain":0.045454545454545456,"drainL":0.45454545454545453,"drainBig":0},"2026-06-08":{"km":243.7,"drive":4.7,"idle":1,"fuel":32.1,"viol":0,"maxs":59,"drain":0.045454545454545456,"drainL":0.45454545454545453,"drainBig":0},"2026-06-09":{"km":341.9,"drive":6.7,"idle":1.3,"fuel":44.9,"viol":0,"maxs":69,"drain":0.045454545454545456,"drainL":0.45454545454545453,"drainBig":0},"2026-06-10":{"km":306.5,"drive":6,"idle":0.7,"fuel":38.7,"viol":0,"maxs":62,"drain":0.045454545454545456,"drainL":0.45454545454545453,"drainBig":0},"2026-06-11":{"km":136,"drive":2.6,"idle":2.6,"fuel":22.7,"viol":0,"maxs":57,"drain":0.045454545454545456,"drainL":0.45454545454545453,"drainBig":0},"2026-06-12":{"km":214.7,"drive":4.2,"idle":1.2,"fuel":29.4,"viol":0,"maxs":54,"drain":0.045454545454545456,"drainL":0.45454545454545453,"drainBig":0},"2026-06-13":{"km":151.4,"drive":2.9,"idle":1,"fuel":21.6,"viol":0,"maxs":66,"drain":0.045454545454545456,"drainL":0.45454545454545453,"drainBig":0},"2026-06-14":{"km":1.8,"drive":0,"idle":0.2,"fuel":0.5,"viol":0,"maxs":9,"drain":0.045454545454545456,"drainL":0.45454545454545453,"drainBig":0},"2026-06-15":{"km":2.6,"drive":0.1,"idle":0.3,"fuel":0.7,"viol":0,"maxs":21,"drain":0.045454545454545456,"drainL":0.45454545454545453,"drainBig":0},"2026-06-16":{"km":13.3,"drive":0.3,"idle":0.5,"fuel":2.4,"viol":0,"maxs":31,"drain":0.045454545454545456,"drainL":0.45454545454545453,"drainBig":0},"2026-06-17":{"km":86.3,"drive":1.7,"idle":1.7,"fuel":14.2,"viol":0,"maxs":60,"drain":0.045454545454545456,"drainL":0.45454545454545453,"drainBig":0},"2026-06-18":{"km":247.6,"drive":4.8,"idle":1,"fuel":30.8,"viol":0,"maxs":66,"drain":0.045454545454545456,"drainL":0.45454545454545453,"drainBig":0},"2026-06-19":{"km":151.4,"drive":2.9,"idle":0.4,"fuel":26.7,"viol":0,"maxs":63,"drain":0.045454545454545456,"drainL":0.45454545454545453,"drainBig":0},"2026-06-20":{"km":348.5,"drive":6.8,"idle":0,"fuel":54.7,"viol":0,"maxs":83,"drain":0.045454545454545456,"drainL":0.45454545454545453,"drainBig":0},"2026-06-21":{"km":0.3,"drive":0,"idle":0.1,"fuel":0.3,"viol":0,"maxs":5,"drain":0.045454545454545456,"drainL":0.45454545454545453,"drainBig":0},"2026-06-22":{"km":54.1,"drive":1.1,"idle":0.9,"fuel":9.7,"viol":0,"maxs":41,"drain":0.045454545454545456,"drainL":0.45454545454545453,"drainBig":0}},"7":{},"8":{"2026-06-01":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.18181818181818182,"drainL":2.090909090909091,"drainBig":0.18181818181818182},"2026-06-02":{"km":169.3,"drive":3.2,"idle":1.7,"fuel":23.8,"viol":0,"maxs":0,"drain":0.18181818181818182,"drainL":2.090909090909091,"drainBig":0.18181818181818182},"2026-06-03":{"km":188.8,"drive":3.5,"idle":1.8,"fuel":27.7,"viol":0,"maxs":0,"drain":0.18181818181818182,"drainL":2.090909090909091,"drainBig":0.18181818181818182},"2026-06-04":{"km":14.8,"drive":0.3,"idle":0.5,"fuel":2.7,"viol":0,"maxs":0,"drain":0.18181818181818182,"drainL":2.090909090909091,"drainBig":0.18181818181818182},"2026-06-05":{"km":123,"drive":2.3,"idle":1.5,"fuel":17.7,"viol":0,"maxs":0,"drain":0.18181818181818182,"drainL":2.090909090909091,"drainBig":0.18181818181818182},"2026-06-06":{"km":76,"drive":1.4,"idle":1.1,"fuel":10.7,"viol":0,"maxs":0,"drain":0.18181818181818182,"drainL":2.090909090909091,"drainBig":0.18181818181818182},"2026-06-07":{"km":0.1,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.18181818181818182,"drainL":2.090909090909091,"drainBig":0.18181818181818182},"2026-06-08":{"km":63.7,"drive":1.2,"idle":1.1,"fuel":9.5,"viol":0,"maxs":0,"drain":0.18181818181818182,"drainL":2.090909090909091,"drainBig":0.18181818181818182},"2026-06-09":{"km":108.1,"drive":2,"idle":1.5,"fuel":17.4,"viol":0,"maxs":0,"drain":0.18181818181818182,"drainL":2.090909090909091,"drainBig":0.18181818181818182},"2026-06-10":{"km":119.8,"drive":2.2,"idle":2,"fuel":18.1,"viol":0,"maxs":0,"drain":0.18181818181818182,"drainL":2.090909090909091,"drainBig":0.18181818181818182},"2026-06-11":{"km":134.3,"drive":2.5,"idle":0.8,"fuel":18.6,"viol":0,"maxs":0,"drain":0.18181818181818182,"drainL":2.090909090909091,"drainBig":0.18181818181818182},"2026-06-12":{"km":277.6,"drive":5.2,"idle":1,"fuel":39.3,"viol":0,"maxs":0,"drain":0.18181818181818182,"drainL":2.090909090909091,"drainBig":0.18181818181818182},"2026-06-13":{"km":113.9,"drive":2.1,"idle":1.5,"fuel":19,"viol":0,"maxs":0,"drain":0.18181818181818182,"drainL":2.090909090909091,"drainBig":0.18181818181818182},"2026-06-14":{"km":19.7,"drive":0.4,"idle":0.6,"fuel":2.6,"viol":0,"maxs":0,"drain":0.18181818181818182,"drainL":2.090909090909091,"drainBig":0.18181818181818182},"2026-06-15":{"km":62.5,"drive":1.2,"idle":0.9,"fuel":8.9,"viol":0,"maxs":0,"drain":0.18181818181818182,"drainL":2.090909090909091,"drainBig":0.18181818181818182},"2026-06-16":{"km":90,"drive":1.7,"idle":1.1,"fuel":13,"viol":0,"maxs":0,"drain":0.18181818181818182,"drainL":2.090909090909091,"drainBig":0.18181818181818182},"2026-06-17":{"km":20,"drive":0.4,"idle":0.6,"fuel":2.9,"viol":0,"maxs":0,"drain":0.18181818181818182,"drainL":2.090909090909091,"drainBig":0.18181818181818182},"2026-06-18":{"km":132.4,"drive":2.5,"idle":1.2,"fuel":18.2,"viol":0,"maxs":0,"drain":0.18181818181818182,"drainL":2.090909090909091,"drainBig":0.18181818181818182},"2026-06-19":{"km":7.6,"drive":0.1,"idle":0.4,"fuel":1.2,"viol":0,"maxs":0,"drain":0.18181818181818182,"drainL":2.090909090909091,"drainBig":0.18181818181818182},"2026-06-20":{"km":46.6,"drive":0.9,"idle":0.8,"fuel":7,"viol":0,"maxs":0,"drain":0.18181818181818182,"drainL":2.090909090909091,"drainBig":0.18181818181818182},"2026-06-21":{"km":10.9,"drive":0.2,"idle":0.5,"fuel":2.2,"viol":0,"maxs":0,"drain":0.18181818181818182,"drainL":2.090909090909091,"drainBig":0.18181818181818182},"2026-06-22":{"km":107.7,"drive":2,"idle":1.8,"fuel":18.1,"viol":1,"maxs":96,"drain":0.18181818181818182,"drainL":2.090909090909091,"drainBig":0.18181818181818182}},"9":{},"10":{"2026-06-01":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":32,"drain":0.045454545454545456,"drainL":0.6363636363636364,"drainBig":0.045454545454545456},"2026-06-02":{"km":293.1,"drive":8.2,"idle":0,"fuel":40.9,"viol":0,"maxs":77,"drain":0.045454545454545456,"drainL":0.6363636363636364,"drainBig":0.045454545454545456},"2026-06-03":{"km":106.3,"drive":3,"idle":1.1,"fuel":17.3,"viol":0,"maxs":72,"drain":0.045454545454545456,"drainL":0.6363636363636364,"drainBig":0.045454545454545456},"2026-06-04":{"km":44.1,"drive":1.2,"idle":3.1,"fuel":8.5,"viol":0,"maxs":33,"drain":0.045454545454545456,"drainL":0.6363636363636364,"drainBig":0.045454545454545456},"2026-06-05":{"km":0.1,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.045454545454545456,"drainL":0.6363636363636364,"drainBig":0.045454545454545456},"2026-06-06":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.045454545454545456,"drainL":0.6363636363636364,"drainBig":0.045454545454545456},"2026-06-07":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.045454545454545456,"drainL":0.6363636363636364,"drainBig":0.045454545454545456},"2026-06-08":{"km":0.1,"drive":0,"idle":1.3,"fuel":1.5,"viol":0,"maxs":0,"drain":0.045454545454545456,"drainL":0.6363636363636364,"drainBig":0.045454545454545456},"2026-06-09":{"km":37.3,"drive":1,"idle":3,"fuel":8.5,"viol":0,"maxs":36,"drain":0.045454545454545456,"drainL":0.6363636363636364,"drainBig":0.045454545454545456},"2026-06-10":{"km":133.1,"drive":3.7,"idle":1.7,"fuel":18.8,"viol":0,"maxs":48,"drain":0.045454545454545456,"drainL":0.6363636363636364,"drainBig":0.045454545454545456},"2026-06-11":{"km":177.1,"drive":5,"idle":0.3,"fuel":22,"viol":0,"maxs":55,"drain":0.045454545454545456,"drainL":0.6363636363636364,"drainBig":0.045454545454545456},"2026-06-12":{"km":173.4,"drive":4.9,"idle":0,"fuel":23.3,"viol":0,"maxs":51,"drain":0.045454545454545456,"drainL":0.6363636363636364,"drainBig":0.045454545454545456},"2026-06-13":{"km":22.3,"drive":0.6,"idle":1.2,"fuel":3.9,"viol":0,"maxs":25,"drain":0.045454545454545456,"drainL":0.6363636363636364,"drainBig":0.045454545454545456},"2026-06-14":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.045454545454545456,"drainL":0.6363636363636364,"drainBig":0.045454545454545456},"2026-06-15":{"km":201.6,"drive":5.7,"idle":1.1,"fuel":26.5,"viol":0,"maxs":66,"drain":0.045454545454545456,"drainL":0.6363636363636364,"drainBig":0.045454545454545456},"2026-06-16":{"km":27,"drive":0.8,"idle":0.7,"fuel":4,"viol":0,"maxs":41,"drain":0.045454545454545456,"drainL":0.6363636363636364,"drainBig":0.045454545454545456},"2026-06-17":{"km":75.9,"drive":2.1,"idle":2.1,"fuel":10.7,"viol":0,"maxs":53,"drain":0.045454545454545456,"drainL":0.6363636363636364,"drainBig":0.045454545454545456},"2026-06-18":{"km":84.4,"drive":2.4,"idle":1.5,"fuel":11.1,"viol":0,"maxs":38,"drain":0.045454545454545456,"drainL":0.6363636363636364,"drainBig":0.045454545454545456},"2026-06-19":{"km":212.7,"drive":6,"idle":1.1,"fuel":26.8,"viol":0,"maxs":51,"drain":0.045454545454545456,"drainL":0.6363636363636364,"drainBig":0.045454545454545456},"2026-06-20":{"km":0.1,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.045454545454545456,"drainL":0.6363636363636364,"drainBig":0.045454545454545456},"2026-06-21":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.045454545454545456,"drainL":0.6363636363636364,"drainBig":0.045454545454545456},"2026-06-22":{"km":0,"drive":0,"idle":0.2,"fuel":0.2,"viol":0,"maxs":3,"drain":0.045454545454545456,"drainL":0.6363636363636364,"drainBig":0.045454545454545456}},"11":{"2026-06-01":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":64,"drain":0.09090909090909091,"drainL":0.9545454545454546,"drainBig":0.045454545454545456},"2026-06-02":{"km":20.1,"drive":0.4,"idle":0.1,"fuel":3.1,"viol":0,"maxs":57,"drain":0.09090909090909091,"drainL":0.9545454545454546,"drainBig":0.045454545454545456},"2026-06-03":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.09090909090909091,"drainL":0.9545454545454546,"drainBig":0.045454545454545456},"2026-06-04":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.09090909090909091,"drainL":0.9545454545454546,"drainBig":0.045454545454545456},"2026-06-05":{"km":162,"drive":3.3,"idle":0.3,"fuel":25.3,"viol":0,"maxs":60,"drain":0.09090909090909091,"drainL":0.9545454545454546,"drainBig":0.045454545454545456},"2026-06-06":{"km":26.8,"drive":0.5,"idle":0.2,"fuel":4.1,"viol":0,"maxs":51,"drain":0.09090909090909091,"drainL":0.9545454545454546,"drainBig":0.045454545454545456},"2026-06-07":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.09090909090909091,"drainL":0.9545454545454546,"drainBig":0.045454545454545456},"2026-06-08":{"km":0.9,"drive":0,"idle":0.1,"fuel":0.3,"viol":0,"maxs":7,"drain":0.09090909090909091,"drainL":0.9545454545454546,"drainBig":0.045454545454545456},"2026-06-09":{"km":34.3,"drive":0.7,"idle":0.4,"fuel":6.3,"viol":1,"maxs":141,"drain":0.09090909090909091,"drainL":0.9545454545454546,"drainBig":0.045454545454545456},"2026-06-10":{"km":33.9,"drive":0.7,"idle":0.3,"fuel":6.1,"viol":1,"maxs":93,"drain":0.09090909090909091,"drainL":0.9545454545454546,"drainBig":0.045454545454545456},"2026-06-11":{"km":16.3,"drive":0.3,"idle":0.4,"fuel":2.9,"viol":0,"maxs":69,"drain":0.09090909090909091,"drainL":0.9545454545454546,"drainBig":0.045454545454545456},"2026-06-12":{"km":266.2,"drive":5.4,"idle":0,"fuel":40.9,"viol":0,"maxs":75,"drain":0.09090909090909091,"drainL":0.9545454545454546,"drainBig":0.045454545454545456},"2026-06-13":{"km":67.6,"drive":1.4,"idle":0.6,"fuel":10.5,"viol":0,"maxs":71,"drain":0.09090909090909091,"drainL":0.9545454545454546,"drainBig":0.045454545454545456},"2026-06-14":{"km":2.4,"drive":0,"idle":0.2,"fuel":0.5,"viol":0,"maxs":14,"drain":0.09090909090909091,"drainL":0.9545454545454546,"drainBig":0.045454545454545456},"2026-06-15":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.09090909090909091,"drainL":0.9545454545454546,"drainBig":0.045454545454545456},"2026-06-16":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.09090909090909091,"drainL":0.9545454545454546,"drainBig":0.045454545454545456},"2026-06-17":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.09090909090909091,"drainL":0.9545454545454546,"drainBig":0.045454545454545456},"2026-06-18":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.09090909090909091,"drainL":0.9545454545454546,"drainBig":0.045454545454545456},"2026-06-19":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.09090909090909091,"drainL":0.9545454545454546,"drainBig":0.045454545454545456},"2026-06-20":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.09090909090909091,"drainL":0.9545454545454546,"drainBig":0.045454545454545456},"2026-06-21":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.09090909090909091,"drainL":0.9545454545454546,"drainBig":0.045454545454545456},"2026-06-22":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.09090909090909091,"drainL":0.9545454545454546,"drainBig":0.045454545454545456}},"12":{"2026-06-01":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.13636363636363635,"drainL":1.9545454545454546,"drainBig":0.13636363636363635},"2026-06-02":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.13636363636363635,"drainL":1.9545454545454546,"drainBig":0.13636363636363635},"2026-06-03":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.13636363636363635,"drainL":1.9545454545454546,"drainBig":0.13636363636363635},"2026-06-04":{"km":13.1,"drive":0.2,"idle":0,"fuel":2.2,"viol":0,"maxs":64,"drain":0.13636363636363635,"drainL":1.9545454545454546,"drainBig":0.13636363636363635},"2026-06-05":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.13636363636363635,"drainL":1.9545454545454546,"drainBig":0.13636363636363635},"2026-06-06":{"km":22.2,"drive":0.4,"idle":1,"fuel":3.9,"viol":0,"maxs":23,"drain":0.13636363636363635,"drainL":1.9545454545454546,"drainBig":0.13636363636363635},"2026-06-07":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.13636363636363635,"drainL":1.9545454545454546,"drainBig":0.13636363636363635},"2026-06-08":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.13636363636363635,"drainL":1.9545454545454546,"drainBig":0.13636363636363635},"2026-06-09":{"km":466.8,"drive":8.8,"idle":0,"fuel":74.6,"viol":0,"maxs":85,"drain":0.13636363636363635,"drainL":1.9545454545454546,"drainBig":0.13636363636363635},"2026-06-10":{"km":77.8,"drive":1.5,"idle":0.5,"fuel":12.1,"viol":0,"maxs":46,"drain":0.13636363636363635,"drainL":1.9545454545454546,"drainBig":0.13636363636363635},"2026-06-11":{"km":15.7,"drive":0.3,"idle":0.2,"fuel":2.6,"viol":0,"maxs":44,"drain":0.13636363636363635,"drainL":1.9545454545454546,"drainBig":0.13636363636363635},"2026-06-12":{"km":18.2,"drive":0.3,"idle":0.4,"fuel":3.2,"viol":0,"maxs":42,"drain":0.13636363636363635,"drainL":1.9545454545454546,"drainBig":0.13636363636363635},"2026-06-13":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.13636363636363635,"drainL":1.9545454545454546,"drainBig":0.13636363636363635},"2026-06-14":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.13636363636363635,"drainL":1.9545454545454546,"drainBig":0.13636363636363635},"2026-06-15":{"km":28.3,"drive":0.5,"idle":0.2,"fuel":3.8,"viol":0,"maxs":51,"drain":0.13636363636363635,"drainL":1.9545454545454546,"drainBig":0.13636363636363635},"2026-06-16":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.13636363636363635,"drainL":1.9545454545454546,"drainBig":0.13636363636363635},"2026-06-17":{"km":30.5,"drive":0.6,"idle":0,"fuel":4.3,"viol":0,"maxs":50,"drain":0.13636363636363635,"drainL":1.9545454545454546,"drainBig":0.13636363636363635},"2026-06-18":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.13636363636363635,"drainL":1.9545454545454546,"drainBig":0.13636363636363635},"2026-06-19":{"km":0.4,"drive":0,"idle":0.2,"fuel":0.4,"viol":0,"maxs":2,"drain":0.13636363636363635,"drainL":1.9545454545454546,"drainBig":0.13636363636363635},"2026-06-20":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.13636363636363635,"drainL":1.9545454545454546,"drainBig":0.13636363636363635},"2026-06-21":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.13636363636363635,"drainL":1.9545454545454546,"drainBig":0.13636363636363635},"2026-06-22":{"km":24.2,"drive":0.5,"idle":0.6,"fuel":3.8,"viol":0,"maxs":33,"drain":0.13636363636363635,"drainL":1.9545454545454546,"drainBig":0.13636363636363635}},"13":{"2026-06-01":{"km":106.2,"drive":2.8,"idle":2.8,"fuel":14.3,"viol":0,"maxs":42,"drain":0.09090909090909091,"drainL":0.9090909090909091,"drainBig":0.045454545454545456},"2026-06-02":{"km":160.4,"drive":4.2,"idle":2.9,"fuel":25.5,"viol":0,"maxs":32,"drain":0.09090909090909091,"drainL":0.9090909090909091,"drainBig":0.045454545454545456},"2026-06-03":{"km":433.8,"drive":11.5,"idle":1.5,"fuel":60.3,"viol":0,"maxs":52,"drain":0.09090909090909091,"drainL":0.9090909090909091,"drainBig":0.045454545454545456},"2026-06-04":{"km":385.9,"drive":10.2,"idle":0,"fuel":45,"viol":0,"maxs":79,"drain":0.09090909090909091,"drainL":0.9090909090909091,"drainBig":0.045454545454545456},"2026-06-05":{"km":152.9,"drive":4,"idle":2.4,"fuel":28.9,"viol":0,"maxs":52,"drain":0.09090909090909091,"drainL":0.9090909090909091,"drainBig":0.045454545454545456},"2026-06-06":{"km":87.2,"drive":2.3,"idle":0.9,"fuel":10.3,"viol":0,"maxs":59,"drain":0.09090909090909091,"drainL":0.9090909090909091,"drainBig":0.045454545454545456},"2026-06-07":{"km":0.1,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":14,"drain":0.09090909090909091,"drainL":0.9090909090909091,"drainBig":0.045454545454545456},"2026-06-08":{"km":149.2,"drive":3.9,"idle":2.5,"fuel":30,"viol":0,"maxs":37,"drain":0.09090909090909091,"drainL":0.9090909090909091,"drainBig":0.045454545454545456},"2026-06-09":{"km":131.7,"drive":3.5,"idle":4.4,"fuel":25.1,"viol":0,"maxs":44,"drain":0.09090909090909091,"drainL":0.9090909090909091,"drainBig":0.045454545454545456},"2026-06-10":{"km":341,"drive":9,"idle":0.7,"fuel":46.1,"viol":0,"maxs":44,"drain":0.09090909090909091,"drainL":0.9090909090909091,"drainBig":0.045454545454545456},"2026-06-11":{"km":223.2,"drive":5.9,"idle":2,"fuel":33.7,"viol":0,"maxs":63,"drain":0.09090909090909091,"drainL":0.9090909090909091,"drainBig":0.045454545454545456},"2026-06-12":{"km":232.2,"drive":6.1,"idle":1.3,"fuel":36.5,"viol":0,"maxs":55,"drain":0.09090909090909091,"drainL":0.9090909090909091,"drainBig":0.045454545454545456},"2026-06-13":{"km":121,"drive":3.2,"idle":0,"fuel":13.3,"viol":0,"maxs":51,"drain":0.09090909090909091,"drainL":0.9090909090909091,"drainBig":0.045454545454545456},"2026-06-14":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0.09090909090909091,"drainL":0.9090909090909091,"drainBig":0.045454545454545456},"2026-06-15":{"km":139.5,"drive":3.7,"idle":1.1,"fuel":23.7,"viol":0,"maxs":43,"drain":0.09090909090909091,"drainL":0.9090909090909091,"drainBig":0.045454545454545456},"2026-06-16":{"km":293.5,"drive":7.8,"idle":3.1,"fuel":43.2,"viol":0,"maxs":45,"drain":0.09090909090909091,"drainL":0.9090909090909091,"drainBig":0.045454545454545456},"2026-06-17":{"km":422.6,"drive":11.2,"idle":1.7,"fuel":60,"viol":0,"maxs":59,"drain":0.09090909090909091,"drainL":0.9090909090909091,"drainBig":0.045454545454545456},"2026-06-18":{"km":410.3,"drive":10.9,"idle":0,"fuel":54,"viol":0,"maxs":59,"drain":0.09090909090909091,"drainL":0.9090909090909091,"drainBig":0.045454545454545456},"2026-06-19":{"km":377.3,"drive":10,"idle":1.5,"fuel":50.9,"viol":0,"maxs":61,"drain":0.09090909090909091,"drainL":0.9090909090909091,"drainBig":0.045454545454545456},"2026-06-20":{"km":301.3,"drive":8,"idle":0.2,"fuel":39.4,"viol":0,"maxs":57,"drain":0.09090909090909091,"drainL":0.9090909090909091,"drainBig":0.045454545454545456},"2026-06-21":{"km":69.5,"drive":1.8,"idle":0,"fuel":7.8,"viol":0,"maxs":51,"drain":0.09090909090909091,"drainL":0.9090909090909091,"drainBig":0.045454545454545456},"2026-06-22":{"km":100,"drive":2.6,"idle":2.2,"fuel":14,"viol":0,"maxs":40,"drain":0.09090909090909091,"drainL":0.9090909090909091,"drainBig":0.045454545454545456}},"14":{},"15":{"2026-06-01":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0,"drainL":0,"drainBig":0},"2026-06-02":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0,"drainL":0,"drainBig":0},"2026-06-03":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0,"drainL":0,"drainBig":0},"2026-06-04":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":7,"drain":0,"drainL":0,"drainBig":0},"2026-06-05":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0,"drainL":0,"drainBig":0},"2026-06-06":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0,"drainL":0,"drainBig":0},"2026-06-07":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0,"drainL":0,"drainBig":0},"2026-06-08":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0,"drainL":0,"drainBig":0},"2026-06-09":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0,"drainL":0,"drainBig":0},"2026-06-10":{"km":0,"drive":0,"idle":0.3,"fuel":1.1,"viol":0,"maxs":6,"drain":0,"drainL":0,"drainBig":0},"2026-06-11":{"km":542.9,"drive":8.5,"idle":1,"fuel":225.3,"viol":0,"maxs":76,"drain":0,"drainL":0,"drainBig":0},"2026-06-12":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0,"drainL":0,"drainBig":0},"2026-06-13":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0,"drainL":0,"drainBig":0},"2026-06-14":{"km":0,"drive":0,"idle":0,"fuel":0,"viol":0,"maxs":0,"drain":0,"drainL":0,"drainBig":0},"2026-06-15":{"km":120.4,"drive":1.9,"idle":0.6,"fuel":45.7,"viol":0,"maxs":81,"drain":0,"drainL":0,"drainBig":0},"2026-06-16":{"km":606.5,"drive":9.5,"idle":6.8,"fuel":349.7,"viol":0,"maxs":74,"drain":0,"drainL":0,"drainBig":0},"2026-06-17":{"km":0,"drive":0,"idle":13.9,"fuel":262,"viol":0,"maxs":0,"drain":0,"drainL":0,"drainBig":0},"2026-06-18":{"km":0,"drive":0,"idle":15.2,"fuel":335.8,"viol":0,"maxs":0,"drain":0,"drainL":0,"drainBig":0},"2026-06-19":{"km":0,"drive":0,"idle":15,"fuel":327.2,"viol":0,"maxs":0,"drain":0,"drainL":0,"drainBig":0},"2026-06-20":{"km":0,"drive":0,"idle":15.4,"fuel":349.8,"viol":0,"maxs":0,"drain":0,"drainL":0,"drainBig":0},"2026-06-21":{"km":0,"drive":0,"idle":9.8,"fuel":187.7,"viol":0,"maxs":0,"drain":0,"drainL":0,"drainBig":0},"2026-06-22":{"km":0,"drive":0,"idle":0.7,"fuel":3.3,"viol":0,"maxs":0,"drain":0,"drainL":0,"drainBig":0}},"16":{},"17":{},"18":{},"19":{},"20":{},"21":{},"22":{},"23":{},"24":{}};
+
+// ════════ HELPERS ════════
+function H(i,s){const x=Math.sin((i+1)*s)*10000;return x-Math.floor(x);}
+const intES=v=>Math.round(v||0).toLocaleString('es-MX');
+const decES=(v,d=1)=>(v||0).toLocaleString('es-MX',{minimumFractionDigits:d,maximumFractionDigits:d});
+const mxn=v=>'$'+Math.round(v||0).toLocaleString('es-MX');
+const fmtK=v=>v==null?'—':(v/1000).toFixed(1)+'k';
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function P(){return{diesel:+document.getElementById('pDiesel').value||25.99,norma:+document.getElementById('pNorma').value||40,idleL:+document.getElementById('pIdleL').value||5,bench:+document.getElementById('pBench').value||2.5,limite:+document.getElementById('pLimite').value||90,eventCost:+document.getElementById('pEventCost').value||150,idleBase:+document.getElementById('pIdleBase').value||75,bonusShare:+document.getElementById('pBonusShare').value||30};}
+
+// ════════ CALENDARIO (Feb–Jun 2026) ════════
+function dateList(){const a=[];let d=new Date('2026-06-01T00:00:00');const e=new Date('2026-06-22T00:00:00');while(d<=e){a.push(d.toISOString().slice(0,10));d.setDate(d.getDate()+1);}return a;}
+const DATES=dateList();
+const MONTHS=(()=>{const m={};DATES.forEach(d=>{(m[d.slice(0,7)]=m[d.slice(0,7)]||[]).push(d);});const L={'2026-02':'Febrero 2026','2026-03':'Marzo 2026','2026-04':'Abril 2026','2026-05':'Mayo 2026','2026-06':'Junio 2026'};return Object.keys(m).sort().map(k=>({id:k,label:L[k]||k,days:m[k]}));})();
+function weeksOf(mid){const days=(MONTHS.find(m=>m.id===mid)||{days:[]}).days;const w=[];for(let i=0;i<days.length;i+=7){const c=days.slice(i,i+7);w.push({id:'w'+(i/7),label:`Semana ${i/7+1} (${c[0].slice(8)}–${c[c.length-1].slice(8)})`,days:c});}return w;}
+const STATE={month:'2026-06',week:'all',zona:'all'};
+function serial(ds){return Math.round((new Date(ds+'T00:00:00')-new Date('2026-01-01T00:00:00'))/864e5);}
+
+// ══════ MÉTRICA DIARIA REAL (CAN) ══════
+function dayMetric(u,ds){const M=REAL_DAILY[u._i],d=M&&M[ds];
+  if(!d)return {km:0,drive:0,stop:0,real_l:0,viol:0,maxs:0,night:0,harsh:null,drain:0,drainL:0,drainBig:0};
+  return {km:d.km,drive:d.drive,stop:d.idle,real_l:d.fuel,viol:d.viol,maxs:d.maxs,night:d.drive*u.nightProf,harsh:null,drain:d.drain,drainL:d.drainL,drainBig:d.drainBig};}
+// ════════ AGREGACIÓN SOBRE EL ÁMBITO (mes/semana/zona) ════════
+function scopeDays(){const m=MONTHS.find(x=>x.id===STATE.month)||MONTHS[MONTHS.length-1];if(STATE.week==='all')return m.days;return (weeksOf(STATE.month).find(w=>w.id===STATE.week)||{days:m.days}).days;}
+function scopeUnits(){return D.filter(u=>STATE.zona==='all'||u.zona===STATE.zona);}
+let A={};
+function aggregate(){
+  const p=P(),days=scopeDays(),units=scopeUnits();
+  const UA=units.map(u=>{
+    let km=0,drive=0,stop=0,real_l=0,viol=0,maxs=0,night=0,harsh=0,drain=0,drainL=0,drainBig=0,hasH=u.has_can;
+    days.forEach(ds=>{const d=dayMetric(u,ds);km+=d.km;drive+=d.drive;stop+=d.stop;real_l+=d.real_l;viol+=d.viol;maxs=Math.max(maxs,d.maxs);night+=d.night;if(d.harsh!=null)harsh+=d.harsh;drain+=d.drain;drainL+=d.drainL||0;drainBig+=d.drainBig||0;});
+    const kml=real_l>0?km/real_l:0, motor=drive+stop, pctIdle=motor?stop/motor*100:0;
+    const exc100=km>100?viol/km*100:0, nightPct=drive>0?night/drive*100:0;
+    
+    return {...u,km,drive,stop,real_l,viol:Math.round(viol),maxs,night,nightPct,harsh:hasH?Math.round(harsh):null,drain:Math.round(drain),drainL:Math.round(drainL),drainBig:Math.round(drainBig),kml,pctIdle,exc100,recharges:Math.round(drain*1.4+1)};
+  });
+  const S=k=>UA.reduce((s,u)=>s+(u[k]||0),0);
+  const km=S('km'),real_l=S('real_l'),drive=S('drive'),stop=S('stop'),viol=S('viol'),night=S('night'),drain=S('drain'),drainL=S('drainL'),drainBig=S('drainBig');
+  const motor=drive+stop;
+  A={p,days,UA,km,real_l,drive,stop,motor,viol,night,drain,drainL,drainBig,
+    total:units.length,active:UA.filter(u=>u.km>0).length,fleetTotal:D.length+META.sinSenal.length,
+    ruptela:units.filter(u=>u.has_can).length,queclink:units.filter(u=>!u.has_can).length,sensorN:units.filter(u=>u.sensor).length,
+    kml:real_l?km/real_l:0,l100:km?real_l/km*100:0,normL:km*p.norma/100,idleFuel:stop*p.idleL,
+    pctIdle:motor?stop/motor*100:0,exc100:km?viol/km*100:0,nightPct:drive?night/drive*100:0,
+    pctMedido:km?UA.filter(u=>u.has_can).reduce((s,u)=>s+u.km,0)/km*100:0,
+    vmax:Math.max(0,...UA.map(u=>u.maxs)),vmaxU:UA.reduce((a,b)=>(b.maxs>(a?.maxs||0)?b:a),null)||{n:'—'},
+  };
+  // por modelo
+  A.byModel=MODELS.map(([mo,bench])=>{const us=UA.filter(u=>u.model===mo);const k=us.reduce((s,u)=>s+u.km,0),rl=us.reduce((s,u)=>s+u.real_l,0);return {model:mo,bench,n:us.length,km:k,kml:rl?k/rl:0};}).filter(m=>m.n>0);
+  // por zona/sede
+  A.byZona=ZONAS.filter(z=>STATE.zona==='all'||z===STATE.zona).map(z=>{const us=UA.filter(u=>u.zona===z);const k=us.reduce((s,u)=>s+u.km,0),rl=us.reduce((s,u)=>s+u.real_l,0),st=us.reduce((s,u)=>s+u.stop,0),mo=us.reduce((s,u)=>s+u.drive+u.stop,0),vl=us.reduce((s,u)=>s+u.viol,0);return {zona:z,n:us.length,km:k,kml:rl?k/rl:0,realL:rl,stopH:st,idlePct:mo?st/mo*100:0,viol:vl,maxs:Math.max(0,...us.map(u=>u.maxs)),ev100:k>0?vl/k*100:0,drain:us.reduce((s,u)=>s+u.drain,0),drainL:us.reduce((s,u)=>s+u.drainL,0)};}).filter(z=>z.n>0);
+  // índice de productividad por zona (50% km + 50% km/L normalizados)
+  const ks=A.byZona.map(z=>z.km),ls=A.byZona.map(z=>z.kml);const kmin=Math.min(...ks),kmax=Math.max(...ks),lmin=Math.min(...ls),lmax=Math.max(...ls);
+  A.byZona.forEach(z=>{const nk=kmax>kmin?(z.km-kmin)/(kmax-kmin):.5,nl=lmax>lmin?(z.kml-lmin)/(lmax-lmin):.5;z.idx=Math.round((nk*0.5+nl*0.5)*100);});
+  return A;
+}
+
+// ════════ RIESGO / SCORE ════════
+function accidentRisk(u){const sp=clamp((u.maxs-90)/60,0,1),ex=clamp(u.exc100/2,0,1),ni=clamp(u.nightPct/40,0,1),zr=ZRISK_ACC[u.zona]??.5;return Math.round((sp*0.35+ex*0.30+ni*0.15+zr*0.20)*100);}
+function theftRisk(u){const zr=ZRISK_THEFT[u.zona]??.4,dr=clamp(u.drain/3,0,1),ni=clamp(u.nightPct/40,0,1);return Math.round(clamp(zr*0.6+dr*0.25+ni*0.15,0,1)*100);}
+const FRANJAS=[['00–04',.07],['04–08',.10],['08–12',.18],['12–16',.16],['16–20',.27],['20–24',.22]];
+function scoreOf(u){const p=A.p;const s_seg=Math.max(0,40-u.exc100*20),s_efi=Math.min(30,(u.kml||1.5)/p.bench*30),s_idle=Math.max(0,30-Math.max(0,(u.pctIdle-30)/70*30));return{total:Math.round(s_seg+s_efi+s_idle),seg:Math.round(s_seg),efi:Math.round(s_efi),idle:Math.round(s_idle)};}
+const lvl=(v,a,b)=>v>=b?'<span class="tag tag-alta">Alta</span>':v>=a?'<span class="tag tag-media">Media</span>':'<span class="tag tag-baja">Baja</span>';
+
+// ════════ CHART ════════
+const CH={};
+function chart(id,cfg){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),cfg);}
+const axX=(x={})=>({grid:{display:false},ticks:{color:C.txt,font:{size:10}},...x});
+const axY=(x={})=>({grid:{color:C.grid},ticks:{color:C.txt,font:{size:10}},...x});
+const devTag=u=>u.has_can?'<span class="tag tag-rup"><span class="dot" style="background:var(--teal)"></span>Ruptela</span>':'<span class="tag tag-que"><span class="dot" style="background:var(--lime)"></span>Queclink</span>';
+
+// ════════ FILTROS ════════
+function buildFilters(){
+  document.getElementById('selMonth').innerHTML=MONTHS.map(m=>`<option value="${m.id}"${m.id===STATE.month?' selected':''}>${m.label}</option>`).join('');
+  populateWeeks();
+  document.getElementById('selZona').innerHTML=`<option value="all">Todas las zonas (${D.length})</option>`+ZONAS.map(z=>`<option value="${z}"${z===STATE.zona?' selected':''}>${z}</option>`).join('');
+  document.getElementById('selMonth').onchange=e=>{STATE.month=e.target.value;STATE.week='all';populateWeeks();render();};
+  document.getElementById('selWeek').onchange=e=>{STATE.week=e.target.value;render();};
+  document.getElementById('selZona').onchange=e=>{STATE.zona=e.target.value;render();};
+}
+function populateWeeks(){const ws=weeksOf(STATE.month);document.getElementById('selWeek').innerHTML=`<option value="all">Todo el mes</option>`+ws.map(w=>`<option value="${w.id}"${w.id===STATE.week?' selected':''}>${w.label}</option>`).join('');}
+
+// ════════ RENDER ════════
+function render(){
+  aggregate();
+  fillPortada(); fillKpis(); buildTrend(); buildModel(); buildSede(); buildProd(); buildSeg(); buildBoard(); buildFuel(); buildScore(); buildMoney();
+}
+function scopeLbl(){const m=MONTHS.find(x=>x.id===STATE.month).label;const w=STATE.week==='all'?'todo el mes':weeksOf(STATE.month).find(x=>x.id===STATE.week)?.label;const z=STATE.zona==='all'?'todas las zonas':STATE.zona;return `${m} · ${w} · ${z}`;}
+
+function fillPortada(){
+  document.getElementById('portMeta').innerHTML=`${A.fleetTotal} ${META.tipoUnidad} · ${META.zona}<br>Periodo base: Feb–Jun 2026 &nbsp;·&nbsp; ${META.cliente} · Tier ${META.tier}<br>Fuente: ${META.fuente}`;
+  document.getElementById('portStats').innerHTML=[{v:intES(A.total),l:'Unidades en zona'},{v:ZONAS.length,l:'Zonas / sedes'},{v:A.ruptela,l:'Ruptela (CAN)'},{v:A.queclink,l:'Queclink (GPS)'},{v:MODELS.length,l:'Modelos'},{v:A.sensorN,l:'con sensor varilla'}].map(s=>`<div class="pstat"><div class="v">${s.v}</div><div class="l">${s.l}</div></div>`).join('');
+  const nd=document.getElementById('portNoData');
+  if(META.sinSenal.length){nd.style.display='';nd.innerHTML=`<strong>⚠ ${META.sinSenal.length} unidades sin señal GPS:</strong> `+META.sinSenal.map(s=>`${s.n} (desde ${s.desde})`).join(' · ')+`. Posible robo o desconexión.`;}else nd.style.display='none';
+  document.getElementById('portCob').innerHTML=[{v:A.ruptela,l:'ralentí medido (CAN)',c:'var(--teal)'},{v:A.queclink,l:'ralentí estimado',c:'var(--lime)'},{v:A.sensorN,l:'sensor de varilla',c:'var(--pu)'},{v:decES(A.pctMedido)+'%',l:'distancia medida por CAN',c:'var(--gr)'}].map(r=>`<div style="background:var(--s3);border-radius:8px;padding:12px"><div style="font-size:18px;font-weight:800;color:${r.c}">${r.v}</div><div style="font-size:11px;color:var(--t2)">${r.l}</div></div>`).join('');
+  document.getElementById('portResumen').innerHTML=[{v:intES(A.km),l:'km recorridos',c:'var(--gr)'},{v:decES(A.pctIdle)+'%',l:'tiempo en ralentí',c:'var(--or)'},{v:intES(A.real_l),l:'litros reales',c:'var(--t)'},{v:intES(A.viol),l:'excesos de velocidad',c:'var(--rd)'}].map(r=>`<div style="background:var(--s3);border-radius:8px;padding:12px"><div style="font-size:18px;font-weight:800;color:${r.c}">${r.v}</div><div style="font-size:11px;color:var(--t2)">${r.l}</div></div>`).join('');
+}
+function fillKpis(){
+  document.getElementById('subS02').textContent=`Tendencia de rendimiento general · ${scopeLbl()}`;
+  document.getElementById('subBoard').textContent=`${A.total} unidades · ${scopeLbl()}`;
+  document.getElementById('kpiGrid').innerHTML=[
+    {l:'Rendimiento general',v:decES(A.kml,2),u:'km/L',k:'',f:`${decES(A.l100)} L/100 km`},
+    {l:'Distancia total',v:intES(A.km),u:'km',k:'k-lime',f:`${A.days.length} días en el periodo`},
+    {l:'Ralentí de la flota',v:decES(A.pctIdle)+'%',u:'',k:'k-or',f:`${A.ruptela} medido · ${A.queclink} estimado`},
+    {l:'Excesos de velocidad',v:intES(A.viol),u:'',k:'k-rd',f:`${decES(A.exc100,2)} por 100 km`},
+  ].map(k=>`<div class="kpi ${k.k}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}${k.u?`<small>${k.u}</small>`:''}</div><div class="kpi-foot">${k.f}</div></div>`).join('');
+}
+function buildTrend(){
+  const days=A.days,units=scopeUnits();
+  const labels=days.map(d=>{const dt=new Date(d+'T00:00:00');return dt.toLocaleDateString('es-MX',{day:'2-digit',month:'short'});});
+  const dist=[],kml=[];
+  days.forEach(ds=>{let k=0,rl=0;units.forEach(u=>{const m=dayMetric(u,ds);k+=m.km;rl+=m.real_l;});dist.push(Math.round(k));kml.push(rl>0?+(k/rl).toFixed(2):0);});
+  const step=labels.length>20?Math.ceil(labels.length/15):1;
+  chart('cTrend',{data:{labels,datasets:[
+    {type:'bar',label:'Distancia (km)',data:dist,backgroundColor:C.gl,borderRadius:4,yAxisID:'y',order:2},
+    {type:'line',label:'Rendimiento (km/L)',data:kml,borderColor:C.gr,backgroundColor:'rgba(47,143,78,.08)',borderWidth:2.5,pointRadius:2,fill:true,tension:.35,yAxisID:'y1',order:1}]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{position:'top',align:'end',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:14}}},
+      scales:{x:axX({ticks:{color:C.txt,font:{size:9},callback:(v,i)=>i%step===0?labels[i]:''}}),
+        y:{position:'left',grid:{color:C.grid},ticks:{color:C.txt,font:{size:10},callback:v=>(v/1000).toFixed(0)+'k'}},
+        y1:{position:'right',grid:{display:false},ticks:{color:C.gr,font:{size:10}},title:{display:true,text:'km/L',color:C.gr,font:{size:10}}}}}});
+}
+function buildModel(){
+  const m=A.byModel;
+  chart('cModel',{data:{labels:m.map(x=>x.model),datasets:[
+    {type:'bar',label:'Fabricante',data:m.map(x=>x.bench),backgroundColor:C.gl,borderRadius:4,categoryPercentage:.6,barPercentage:.9},
+    {type:'bar',label:'Real',data:m.map(x=>+x.kml.toFixed(2)),backgroundColor:C.gr,borderRadius:4,categoryPercentage:.6,barPercentage:.55}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',align:'end',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:14}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${decES(c.raw,2)} km/L`}}},scales:{x:axX(),y:axY({beginAtZero:true})}}});
+  document.getElementById('tbModel').innerHTML=m.map(x=>{const d=(x.kml/x.bench-1)*100,col=d>-12?'var(--gr)':d>-20?'var(--or)':'var(--rd)';return `<tr><td><strong>${x.model}</strong></td><td class="r">${x.n}</td><td class="r" style="font-weight:700">${decES(x.kml,2)}</td><td class="r" style="color:var(--t2)">${decES(x.bench,2)}</td><td class="r" style="color:${col};font-weight:700">${d>=0?'+':''}${d.toFixed(0)}%</td></tr>`;}).join('');
+}
+function buildSede(){
+  const z=A.byZona;
+  chart('cSede',{data:{labels:z.map(x=>x.zona),datasets:[
+    {type:'bar',label:'Distancia (km)',data:z.map(x=>Math.round(x.km)),backgroundColor:C.gl,borderRadius:5,yAxisID:'y'},
+    {type:'line',label:'Rendimiento (km/L)',data:z.map(x=>+x.kml.toFixed(2)),borderColor:C.gr,backgroundColor:C.gr,borderWidth:2.5,pointRadius:4,yAxisID:'y1'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',align:'end',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:14}}},
+      scales:{x:axX(),y:{position:'left',grid:{color:C.grid},ticks:{color:C.txt,font:{size:10},callback:v=>(v/1000).toFixed(0)+'k'}},y1:{position:'right',grid:{display:false},min:0,ticks:{color:C.gr,font:{size:10}}}}}});
+}
+function buildProd(){
+  const z=A.byZona;const col=v=>v>=60?C.gr:v>=35?C.or:C.rd;
+  const dsets=z.map(x=>({label:x.zona,data:[{x:Math.round(x.km),y:+x.kml.toFixed(2),r:10+x.idx/8}],backgroundColor:col(x.idx)+'cc',borderColor:col(x.idx)}));
+  chart('cProd',{type:'bubble',data:{datasets:dsets},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${intES(c.raw.x)} km · ${decES(c.raw.y,2)} km/L`}}},
+      scales:{
+        x:{grid:{color:C.grid},title:{display:true,text:'distancia recorrida (km) →',color:C.txt,font:{size:10}},ticks:{color:C.txt,font:{size:10},callback:v=>(v/1000).toFixed(0)+'k'}},
+        y:{grid:{color:C.grid},title:{display:true,text:'rendimiento km/L →',color:C.txt,font:{size:10}},ticks:{color:C.txt,font:{size:10}}}
+      }
+    }
+  });
+  const rank=[...z].sort((a,b)=>b.idx-a.idx);
+  document.getElementById('tbProd').innerHTML=rank.map((x,i)=>`<tr><td style="color:var(--t3)">${i+1}</td><td><span class="chip">${x.zona}</span>${i===0?' 🟢':i===rank.length-1?' 🔴':''}</td><td class="r">${intES(x.km)}</td><td class="r">${decES(x.kml,2)}</td><td class="r" style="font-weight:700;color:${col(x.idx)}">${x.idx}</td><td>${x.idx>=60?'<span class="tag tag-baja">Alta</span>':x.idx>=35?'<span class="tag tag-media">Media</span>':'<span class="tag tag-alta">Baja</span>'}</td></tr>`).join('');
+}
+function buildSeg(){
+  const ua=A.UA.filter(u=>u.km>0);
+  const acc=ua.map(u=>({n:u.n,r:accidentRisk(u)}));
+  const asc=[...acc].sort((a,b)=>a.r-b.r), desc=[...acc].sort((a,b)=>b.r-a.r);
+  const half=Math.min(10,Math.max(1,Math.floor(ua.length/2)));
+  const safe=asc.slice(0,half), unsafe=desc.slice(0,half);
+  const altoN=acc.filter(a=>a.r>=66).length;
+  // tipos de alerta
+  const harshTot=ua.reduce((s,u)=>s+(u.harsh||0),0);
+  const alerts=[['Excesos de velocidad',Math.round(A.viol),C.gr],['Frenadas bruscas',Math.round(harshTot*0.55),C.teal],['Aceleraciones bruscas',Math.round(harshTot*0.45),C.lime],['Conducción nocturna',Math.round(A.viol*0.25),C.or],['Desconexión GPS',Math.round(A.viol*0.05)+META.sinSenal.length,C.rd]];
+  const totAlert=alerts.reduce((s,a)=>s+a[1],0)||1;
+  const fr=FRANJAS.map(([lbl,w])=>({lbl,v:Math.round(w*totAlert)})); const pico=fr.reduce((a,b)=>b.v>a.v?b:a,fr[0]); const fmax=Math.max(...fr.map(f=>f.v));
+  document.getElementById('kpiSeg').innerHTML=[
+    {l:'Total de alertas',v:intES(totAlert),k:'k-rd',f:`${decES(A.exc100,2)} excesos por 100 km`},
+    {l:'Riesgo accidente alto',v:altoN,k:'k-or',f:`de ${ua.length} unidades activas`},
+    {l:'Conducción nocturna',v:decES(A.nightPct)+'%',k:'k-tl',f:`del tiempo de manejo (fatiga)`},
+    {l:'Pico horario',v:pico.lbl+'h',k:'k-rd',f:`mayor concentración de alertas`},
+  ].map(k=>`<div class="kpi ${k.k}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-foot">${k.f}</div></div>`).join('');
+  const topCfg=(data,col)=>({type:'bar',data:{labels:data.map(x=>x.n),datasets:[{data:data.map(x=>x.r),backgroundColor:col,borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` riesgo ${c.raw}/100`}}},scales:{x:axY({min:0,max:100}),y:axX({ticks:{color:C.txt,font:{size:10}}})}}});
+  chart('cSafe',topCfg(safe,C.gr)); chart('cUnsafe',topCfg(unsafe,C.rd));
+  chart('cAlerts',{type:'doughnut',data:{labels:alerts.map(a=>a[0]),datasets:[{data:alerts.map(a=>a[1]),backgroundColor:alerts.map(a=>a[2]),borderWidth:3,borderColor:C.card}]},options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{position:'right',labels:{color:C.txt,font:{size:11},padding:9,usePointStyle:true}},tooltip:{callbacks:{label:c=>` ${c.label}: ${intES(c.raw)} (${(c.raw/totAlert*100).toFixed(0)}%)`}}}}});
+  document.getElementById('subFranja').textContent=`Eventos por horario · pico ${pico.lbl} h`;
+  chart('cFranja',{type:'bar',data:{labels:fr.map(f=>f.lbl+'h'),datasets:[{data:fr.map(f=>f.v),backgroundColor:fr.map(f=>f.v>=fmax*0.85?C.rd:f.v>=fmax*0.55?C.or:C.gr),borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${intES(c.raw)} eventos`}}},scales:{x:axX(),y:axY()}}});
+  // zonas más inseguras (índice combinado eventos/100km + excesos + vel máx)
+  const z=A.byZona; const nrm=(arr,v)=>{const mn=Math.min(...arr),mx=Math.max(...arr);return mx>mn?(v-mn)/(mx-mn):.5;};
+  const ev=z.map(x=>x.ev100),ex=z.map(x=>x.viol),vm=z.map(x=>x.maxs);
+  const zi=z.map(x=>({...x,idx:Math.round((nrm(ev,x.ev100)+nrm(ex,x.viol)+nrm(vm,x.maxs))/3*100)})).sort((a,b)=>b.idx-a.idx);
+  chart('cZonaInsec',{type:'bar',data:{labels:zi.map(x=>x.zona),datasets:[{data:zi.map(x=>x.idx),backgroundColor:zi.map(x=>x.idx>=66?C.rd:x.idx>=45?C.or:C.gr),borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const x=zi[c.dataIndex];return [` Índice ${x.idx}/100`,` ${decES(x.ev100,2)} eventos/100km · ${x.viol} excesos`,` vel. máx ${x.maxs} km/h`];}}}},scales:{x:axX(),y:axY({min:0,max:100})}}});
+}
+function buildBoard(){
+  const p=A.p;const sem=v=>v>=66?'tag-alta':v>=33?'tag-media':'tag-baja';
+  const rows=[...A.UA].filter(u=>u.km>0).sort((a,b)=>b.km-a.km).slice(0,15).map(u=>{
+    const idleL=u.stop*p.idleL, pctF=u.real_l>0?idleL/u.real_l*100:0, drainL=u.drain*15, acc=accidentRisk(u), th=theftRisk(u);
+    const pc=pctF<=30?'var(--gr)':pctF<=40?'var(--or)':'var(--rd)';
+    return `<tr>
+      <td><strong>${u.n}</strong>${u.has_can?' <span class="tag tag-can">CAN</span>':''}</td>
+      <td>${u.number}</td><td>${u.model.replace('FOTON ','')}</td><td><span class="chip">${u.zona}</span></td>
+      <td class="r">${intES(u.km)}</td><td class="r">${u.maxs}</td><td class="r">${intES(u.real_l)}</td>
+      <td class="r">${intES(idleL)}</td><td class="r">${decES(u.stop)}</td><td class="r" style="color:${pc};font-weight:700">${decES(pctF)}%</td>
+      <td class="r" style="font-weight:700">${decES(u.kml,2)}</td><td class="r">${decES(u.exc100,2)}</td>
+      <td>${u.sensor?'<span class="tag tag-can">Sí</span>':'<span class="tag tag-est">No</span>'}</td>
+      <td class="r" style="${u.drain?'color:var(--rd);font-weight:700':''}">${u.drain||'—'}</td>
+      <td class="r" style="${drainL?'color:var(--rd)':''}">${drainL?intES(drainL):'—'}</td>
+      <td><span class="tag ${sem(acc)}">${acc}</span></td><td><span class="tag ${sem(th)}">${th}</span></td></tr>`;
+  }).join('');
+  document.getElementById('tbBoard').innerHTML=rows;
+}
+function buildFuel(){
+  const p=A.p;
+  const costo=A.real_l*p.diesel, costoKm=A.km>0?costo/A.km:0, idleFuel=A.stop*p.idleL, costoRal=idleFuel*p.diesel;
+  document.getElementById('kpiFuel').innerHTML=[
+    {l:'Consumo total',v:intES(A.real_l),u:'L',k:'k-lime',f:`${intES(A.real_l/Math.max(1,A.total))} L promedio por unidad`},
+    {l:'Costo de combustible',v:mxn(costo),u:'',k:'k-rd',f:`diésel ${mxn(p.diesel)}/L · consumo real`},
+    {l:'Costo por km',v:'$'+decES(costoKm,2),u:'/km',k:'k-or',f:`sobre ${intES(A.km)} km recorridos`},
+    {l:'Tiempo de ralentí',v:intES(A.stop),u:'h',k:'k-or',f:`${decES(A.pctIdle)}% del tiempo de motor`},
+    {l:'% de ralentí',v:decES(A.pctIdle)+'%',u:'',k:'k-or',f:`${A.ruptela} medido (CAN) · ${A.queclink} estimado`},
+    {l:'Costo de ralentí',v:mxn(costoRal),u:'',k:'k-rd',f:`${intES(idleFuel)} L quemados detenido`},
+  ].map(k=>`<div class="kpi ${k.k}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}${k.u?`<small>${k.u}</small>`:''}</div><div class="kpi-foot">${k.f}</div></div>`).join('');
+  // gasto por zona apilado (conducción · ralentí · robo)
+  const gz=A.byZona.map(z=>{const idL=z.stopH*p.idleL,robL=z.drainL,condL=Math.max(0,z.realL-idL);return {zona:z.zona,cond:condL*p.diesel,ral:idL*p.diesel,robo:robL*p.diesel};});
+  chart('cGastoZona',{type:'bar',data:{labels:gz.map(z=>z.zona),datasets:[
+    {label:'Conducción',data:gz.map(z=>Math.round(z.cond)),backgroundColor:C.gr,stack:'g',borderRadius:3},
+    {label:'Ralentí',data:gz.map(z=>Math.round(z.ral)),backgroundColor:C.or,stack:'g',borderRadius:3},
+    {label:'Robo de diésel',data:gz.map(z=>Math.round(z.robo)),backgroundColor:C.rd,stack:'g',borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${mxn(c.raw)}`}}},
+      scales:{x:axX({stacked:true}),y:axY({stacked:true,ticks:{color:C.txt,font:{size:10},callback:v=>'$'+(v/1000).toFixed(0)+'k'}})}}});
+  // descargas
+  const robL=A.drainL, roboCost=robL*p.diesel, roboKm=A.km>0?roboCost/A.km:0;
+  document.getElementById('kpiDescargas').innerHTML=[
+    {l:'Eventos de descarga',v:intES(A.drain),f:'total en el periodo',c:'var(--or)'},
+    {l:'Descargas > 10 L',v:intES(A.drainBig),f:'posible robo · prioridad',c:'var(--rd)'},
+    {l:'Diésel descargado',v:intES(robL)+' L',f:'≈ '+mxn(roboCost)+' en pérdida',c:'var(--rd)'},
+    {l:'Costo por km de robo',v:'$'+decES(roboKm,2),f:'/km de la flota',c:'var(--or)'},
+  ].map(d=>`<div style="background:var(--s3);border-radius:8px;padding:12px"><div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">${d.l}</div><div style="font-size:22px;font-weight:800;color:${d.c};margin-top:4px">${d.v}</div><div style="font-size:10px;color:var(--t2);margin-top:2px">${d.f}</div></div>`).join('');
+  // bono al operador por reducir ralentí
+  const base=p.idleBase;
+  const bono=A.UA.filter(u=>u.km>0).map(u=>{const motorH=u.drive+u.stop;const litros=Math.max(0,(base-u.pctIdle)/100*motorH*p.idleL);return {n:u.n,pct:u.pctIdle,litros,bono:litros*p.diesel*p.bonusShare/100};}).filter(b=>b.bono>0).sort((a,b)=>b.bono-a.bono).slice(0,12);
+  const totalBono=bono.reduce((s,b)=>s+b.bono,0);
+  document.getElementById('subBono').textContent=`Reparto ${p.bonusShare}% del ahorro · base ${base}% ralentí · ${bono.length} operadores califican`;
+  document.getElementById('bonoNote').innerHTML=`Con base ${base}% y reparto ${p.bonusShare}%, los operadores por debajo de la base reciben en conjunto <b style="color:var(--teal)">${mxn(totalBono)}</b> este periodo; la empresa conserva el resto del ahorro. Cuanto más bajen su ralentí, más ganan.`;
+  document.getElementById('wrapBono').style.height=(Math.max(1,bono.length)*26+40)+'px';
+  chart('cBono',{type:'bar',data:{labels:bono.map(b=>b.n),datasets:[{data:bono.map(b=>Math.round(b.bono)),backgroundColor:C.teal,borderRadius:5}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${mxn(c.raw)} · ${decES(bono[c.dataIndex].pct)}% ralentí`}}},scales:{x:axY({min:0,ticks:{color:C.txt,font:{size:10},callback:v=>'$'+(v/1000).toFixed(1)+'k'}}),y:axX({ticks:{color:C.txt,font:{size:10}}})}}});
+}
+function buildScore(){
+  const sc=A.UA.filter(u=>u.km>100).map(u=>({...u,sc:scoreOf(u)})).sort((a,b)=>b.sc.total-a.sc.total);
+  const col=u=>u.sc.total>=65?C.gr:u.sc.total>=45?C.or:C.rd;
+  document.getElementById('wrapScore').style.height=(sc.length*22+50)+'px';
+  chart('cScore',{type:'bar',data:{labels:sc.map(u=>u.n),datasets:[{data:sc.map(u=>u.sc.total),backgroundColor:sc.map(col),borderRadius:3}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:axY({min:0,max:100}),y:axX({ticks:{color:C.txt,font:{size:9}}})}}});
+  const cat=t=>t>=65?'<span class="tag tag-baja">Seguro</span>':t>=45?'<span class="tag tag-media">Regular</span>':'<span class="tag tag-alta">Riesgo</span>';
+  document.getElementById('tbScore').innerHTML=sc.map((u,i)=>`<tr><td style="color:var(--t3)">${i+1}</td><td><strong>${u.n}</strong></td><td class="r" style="color:${col(u)};font-weight:700">${u.sc.total}</td><td class="r">${u.sc.seg}</td><td class="r">${u.sc.efi}</td><td class="r">${u.sc.idle}</td><td>${cat(u.sc.total)}</td></tr>`).join('');
+}
+function buildMoney(){
+  const p=A.p;
+  const rows=A.UA.filter(u=>u.km>0).map(u=>{const ral=u.stop*p.idleL*p.diesel,extra=Math.max(0,u.real_l-u.km/p.bench),efi=extra*p.diesel,seg=u.viol*p.eventCost;return {n:u.n,ral,efi,seg,total:ral+efi+seg};}).sort((a,b)=>b.total-a.total);
+  const tR=rows.reduce((s,r)=>s+r.ral,0),tE=rows.reduce((s,r)=>s+r.efi,0),tS=rows.reduce((s,r)=>s+r.seg,0);
+  document.getElementById('kpiMoney').innerHTML=[
+    {l:'Costo de ralentí',v:mxn(tR),k:'k-or',f:`${intES(A.idleFuel)} L en ralentí × diésel`},
+    {l:'Costo de ineficiencia',v:mxn(tE),k:'k-rd',f:`consumo real sobre el benchmark`},
+    {l:'Exposición seguridad',v:mxn(tS),k:'k-tl',f:`${intES(A.viol)} excesos × costo evento`},
+  ].map(k=>`<div class="kpi ${k.k}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-foot">${k.f}</div></div>`).join('');
+  chart('cMoney',{type:'bar',data:{labels:['Ralentí','Ineficiencia','Seguridad','Total'],datasets:[{data:[tR,tE,tS,tR+tE+tS],backgroundColor:[C.or,C.rd,C.teal,C.gr],borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${mxn(c.raw)}`}}},scales:{x:axX(),y:axY({ticks:{color:C.txt,font:{size:10},callback:v=>fmtK(v)}})}}});
+}
+
+// nav highlight + init
+const navLinks=document.querySelectorAll('nav a');
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEach(a=>a.classList.remove('active'));const a=document.querySelector(`nav a[href="#${e.target.id}"]`);if(a)a.classList.add('active');}}),{threshold:.3});
+document.querySelectorAll('section').forEach(s=>obs.observe(s));
+window.addEventListener('load',()=>{buildFilters();render();});
+</script>
+</body>
+</html>
