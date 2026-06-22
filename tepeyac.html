@@ -169,6 +169,7 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
   <div class="filters">
     <div class="filt"><label>Mes</label><select id="selMonth"></select></div>
     <div class="filt"><label>Semana</label><select id="selWeek"></select></div>
+    <div class="filt"><label>Día</label><select id="selDay"></select></div>
     <div class="filt"><label>Zona / sede</label><select id="selZona"></select></div>
   </div>
   <div class="kpi-grid" id="kpiGrid" style="grid-template-columns:repeat(3,1fr)"></div>
@@ -239,6 +240,18 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
     <span class="sec-badge badge-rd">Riesgo</span>
   </div>
   <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)" id="kpiSeg"></div>
+  <div class="card" style="margin-bottom:20px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+      <div><div class="card-title">Tendencia de seguridad — ¿mejora o empeora?</div><div class="card-sub" id="subSegTrend">Eventos de seguridad por día en el periodo seleccionado</div></div>
+      <div id="segImprove" style="text-align:right;min-width:150px"></div>
+    </div>
+    <div style="position:relative;height:240px"><canvas id="cSegTrend"></canvas></div>
+  </div>
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title">Eventos por tipo en el tiempo</div>
+    <div class="card-sub">Distribución apilada de todos los tipos de alerta a lo largo del periodo</div>
+    <div style="position:relative;height:260px"><canvas id="cSegStack"></canvas></div>
+  </div>
   <div class="row2" style="margin-bottom:20px">
     <div class="card"><div class="card-title" style="color:var(--gr)">Top 10 unidades más seguras</div><div class="card-sub">Menor índice de riesgo de accidente (0–100)</div><div style="position:relative;height:300px"><canvas id="cSafe"></canvas></div></div>
     <div class="card"><div class="card-title" style="color:var(--rd)">Top 10 unidades más inseguras</div><div class="card-sub">Mayor índice de riesgo de accidente (0–100)</div><div style="position:relative;height:300px"><canvas id="cUnsafe"></canvas></div></div>
@@ -426,7 +439,7 @@ function dateList(){const a=[];let d=new Date('2026-06-01T00:00:00');const e=new
 const DATES=dateList();
 const MONTHS=(()=>{const m={};DATES.forEach(d=>{(m[d.slice(0,7)]=m[d.slice(0,7)]||[]).push(d);});const L={'2026-02':'Febrero 2026','2026-03':'Marzo 2026','2026-04':'Abril 2026','2026-05':'Mayo 2026','2026-06':'Junio 2026'};return Object.keys(m).sort().map(k=>({id:k,label:L[k]||k,days:m[k]}));})();
 function weeksOf(mid){const days=(MONTHS.find(m=>m.id===mid)||{days:[]}).days;const w=[];for(let i=0;i<days.length;i+=7){const c=days.slice(i,i+7);w.push({id:'w'+(i/7),label:`Semana ${i/7+1} (${c[0].slice(8)}–${c[c.length-1].slice(8)})`,days:c});}return w;}
-const STATE={month:'2026-06',week:'all',zona:'all',boardSort:{key:'km',dir:'desc'}};
+const STATE={month:'2026-06',week:'all',day:'all',zona:'all',boardSort:{key:'km',dir:'desc'}};
 function serial(ds){return Math.round((new Date(ds+'T00:00:00')-new Date('2026-01-01T00:00:00'))/864e5);}
 
 // ══════ MÉTRICA DIARIA REAL (CAN) ══════
@@ -434,7 +447,8 @@ function dayMetric(u,ds){const M=REAL_DAILY[u._i],d=M&&M[ds];
   if(!d)return {km:0,drive:0,stop:0,real_l:0,viol:0,maxs:0,night:0,harsh:null,drain:0,drainL:0,drainBig:0};
   return {km:d.km,drive:d.drive,stop:d.idle,real_l:d.fuel,viol:d.viol,maxs:d.maxs,night:d.drive*u.nightProf,harsh:null,drain:d.drain,drainL:d.drainL,drainBig:d.drainBig};}
 // ════════ AGREGACIÓN SOBRE EL ÁMBITO (mes/semana/zona) ════════
-function scopeDays(){const m=MONTHS.find(x=>x.id===STATE.month)||MONTHS[MONTHS.length-1];if(STATE.week==='all')return m.days;return (weeksOf(STATE.month).find(w=>w.id===STATE.week)||{days:m.days}).days;}
+function baseDays(){const m=MONTHS.find(x=>x.id===STATE.month)||MONTHS[MONTHS.length-1];if(STATE.week==='all')return m.days;return (weeksOf(STATE.month).find(w=>w.id===STATE.week)||{days:m.days}).days;}
+function scopeDays(){const ds=baseDays();return (STATE.day!=='all'&&ds.includes(STATE.day))?[STATE.day]:ds;}
 function scopeUnits(){return D.filter(u=>STATE.zona==='all'||(u.zona||'Sin zona')===STATE.zona);}
 let A={};
 function aggregate(){
@@ -494,20 +508,22 @@ const axY=(x={})=>({grid:{color:C.grid},ticks:{color:C.txt,font:{size:10}},...x}
 // ════════ FILTROS ════════
 function buildFilters(){
   document.getElementById('selMonth').innerHTML=MONTHS.map(m=>`<option value="${m.id}"${m.id===STATE.month?' selected':''}>${m.label}</option>`).join('');
-  populateWeeks();
+  populateWeeks();populateDays();
   document.getElementById('selZona').innerHTML=`<option value="all">Todas las zonas (${D.length})</option>`+[...new Set(D.map(u=>u.zona||'Sin zona'))].map(z=>`<option value="${z}"${z===STATE.zona?' selected':''}>${z}</option>`).join('');
-  document.getElementById('selMonth').onchange=e=>{STATE.month=e.target.value;STATE.week='all';populateWeeks();render();};
-  document.getElementById('selWeek').onchange=e=>{STATE.week=e.target.value;render();};
+  document.getElementById('selMonth').onchange=e=>{STATE.month=e.target.value;STATE.week='all';STATE.day='all';populateWeeks();populateDays();render();};
+  document.getElementById('selWeek').onchange=e=>{STATE.week=e.target.value;STATE.day='all';populateDays();render();};
+  document.getElementById('selDay').onchange=e=>{STATE.day=e.target.value;render();};
   document.getElementById('selZona').onchange=e=>{STATE.zona=e.target.value;render();};
 }
 function populateWeeks(){const ws=weeksOf(STATE.month);document.getElementById('selWeek').innerHTML=`<option value="all">Todo el mes</option>`+ws.map(w=>`<option value="${w.id}"${w.id===STATE.week?' selected':''}>${w.label}</option>`).join('');}
+function populateDays(){const base=baseDays();document.getElementById('selDay').innerHTML=`<option value="all">Todos los días</option>`+base.map(d=>`<option value="${d}"${d===STATE.day?' selected':''}>${new Date(d+'T00:00:00').toLocaleDateString('es-MX',{weekday:'short',day:'2-digit',month:'short'})}</option>`).join('');}
 
 // ════════ RENDER ════════
 function render(){
   aggregate();
   fillPortada(); fillKpis(); buildTrend(); buildModel(); buildSede(); buildProd(); buildSeg(); buildBoard(); buildFuel(); buildScore(); buildMoney();
 }
-function scopeLbl(){const m=MONTHS.find(x=>x.id===STATE.month).label;const w=STATE.week==='all'?'todo el mes':weeksOf(STATE.month).find(x=>x.id===STATE.week)?.label;const z=STATE.zona==='all'?'todas las zonas':STATE.zona;return `${m} · ${w} · ${z}`;}
+function scopeLbl(){const m=MONTHS.find(x=>x.id===STATE.month).label;const w=STATE.week==='all'?'todo el mes':weeksOf(STATE.month).find(x=>x.id===STATE.week)?.label;const d=STATE.day==='all'?null:new Date(STATE.day+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short'});const z=STATE.zona==='all'?'todas las zonas':STATE.zona;return `${m} · ${d?d:w} · ${z}`;}
 
 function fillPortada(){
   document.getElementById('portMeta').innerHTML=`${A.fleetTotal} ${META.tipoUnidad} · ${META.zona}<br>Periodo base: Feb–Jun 2026 &nbsp;·&nbsp; ${META.cliente} · Tier ${META.tier}<br>Analítica potencializada por Advance y Claude`;
@@ -582,6 +598,28 @@ function buildProd(){
   document.getElementById('tbProd').innerHTML=rank.map((x,i)=>`<tr><td style="color:var(--t3)">${i+1}</td><td><span class="chip">${x.zona}</span>${i===0?' 🟢':i===rank.length-1?' 🔴':''}</td><td class="r">${intES(x.km)}</td><td class="r">${decES(x.kml,2)}</td><td class="r" style="font-weight:700;color:${col(x.idx)}">${x.idx}</td><td>${x.idx>=60?'<span class="tag tag-baja">Alta</span>':x.idx>=35?'<span class="tag tag-media">Media</span>':'<span class="tag tag-alta">Baja</span>'}</td></tr>`).join('');
 }
 function buildSeg(){
+  // ── Tendencia diaria de seguridad + eventos apilados + mejora del periodo ──
+  const sdays=A.days, sunits=scopeUnits();
+  const ser=sdays.map(ds=>{let viol=0,harsh=0;sunits.forEach(u=>{const m=dayMetric(u,ds);viol+=m.viol;harsh+=(m.harsh||0);});
+    const exces=Math.round(viol),fren=Math.round(harsh*0.55),acel=Math.round(harsh*0.45),noct=Math.round(viol*0.25),desc=Math.round(viol*0.05);
+    return {ds,exces,fren,acel,noct,desc,total:exces+fren+acel+noct+desc};});
+  const lbls=sdays.map(d=>new Date(d+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short'}));
+  const step=lbls.length>20?Math.ceil(lbls.length/14):1;
+  chart('cSegTrend',{type:'line',data:{labels:lbls,datasets:[{label:'Eventos de seguridad',data:ser.map(d=>d.total),borderColor:C.gr,backgroundColor:'rgba(22,163,74,.12)',borderWidth:2.5,pointRadius:2.5,fill:true,tension:.35}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${intES(c.raw)} eventos`}}},scales:{x:axX({ticks:{color:C.txt,font:{size:9},callback:(v,i)=>i%step===0?lbls[i]:''}}),y:axY({beginAtZero:true})}}});
+  const types=[['Excesos','exces',C.gr],['Frenadas','fren',C.teal],['Aceleraciones','acel',C.lime],['Nocturna','noct',C.or],['Desconexión','desc',C.rd]];
+  chart('cSegStack',{type:'bar',data:{labels:lbls,datasets:types.map(([lb,k,co])=>({label:lb,data:ser.map(d=>d[k]),backgroundColor:co,stack:'s',borderRadius:2}))},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:10}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${intES(c.raw)}`}}},scales:{x:axX({stacked:true,ticks:{color:C.txt,font:{size:9},callback:(v,i)=>i%step===0?lbls[i]:''}}),y:axY({stacked:true,beginAtZero:true})}}});
+  // mejora: primera mitad vs segunda mitad del periodo
+  const tot=ser.map(d=>d.total), n=tot.length, h=Math.floor(n/2);
+  const segImp=document.getElementById('segImprove'), subT=document.getElementById('subSegTrend');
+  if(n>=4){const a=tot.slice(0,h).reduce((x,y)=>x+y,0)/Math.max(1,h), b=tot.slice(h).reduce((x,y)=>x+y,0)/Math.max(1,n-h);
+    const delta=a>0?(b-a)/a*100:(b>0?100:0); const mejora=delta<0;
+    const col=mejora?'var(--gr)':delta>0?'var(--rd)':'var(--t2)';
+    segImp.innerHTML=`<div style="font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:700">Tendencia del periodo</div><div style="font-size:24px;font-weight:800;color:${col}">${mejora?'▼':delta>0?'▲':'—'} ${Math.abs(delta).toFixed(0)}%</div><div style="font-size:11px;color:${col};font-weight:700">${mejora?'mejora (menos eventos)':delta>0?'empeoró (más eventos)':'sin cambio'}</div>`;
+    subT.textContent=`Eventos por día · ${decES(a)} → ${decES(b)} eventos/día (1ª vs 2ª mitad del periodo)`;
+  } else { segImp.innerHTML=`<div style="font-size:11px;color:var(--t3)">Selecciona semana o mes<br>para ver la tendencia</div>`; subT.textContent=`Eventos de seguridad por día · ${scopeLbl()}`; }
+
   const ua=A.UA.filter(u=>u.km>0);
   const acc=ua.map(u=>({n:u.n,r:accidentRisk(u)}));
   const asc=[...acc].sort((a,b)=>a.r-b.r), desc=[...acc].sort((a,b)=>b.r-a.r);
