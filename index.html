@@ -45,6 +45,8 @@ nav a{display:flex;align-items:center;gap:8px;padding:7px 16px;font-size:12px;co
 nav a:hover,nav a.active{background:var(--gr-bg);color:var(--gr2);}
 nav a .num{font-size:10px;font-weight:700;color:var(--t3);min-width:18px;}
 nav a:hover .num,nav a.active .num{color:var(--gr);}
+.nav-print{display:block;margin:0 12px 12px;padding:9px 12px;width:calc(100% - 24px);background:linear-gradient(135deg,var(--gr),#7cb342);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(47,143,78,.30);}
+.nav-print:hover{filter:brightness(1.06);}
 main{margin-left:212px;}
 section{padding:34px 40px;border-bottom:1px solid var(--line);}
 .sec-head{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
@@ -119,6 +121,7 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
 <body>
 <nav id="nav">
   <div class="nav-logo"><span>ADVANCE</span><p>Informe Gerencial de Flota</p></div>
+  <button class="nav-print no-print" onclick="window.print()">⬇ Descargar PDF</button>
   <a href="#s01"><span class="num">01</span> Portada</a>
   <a href="#s02"><span class="num">02</span> Resumen ejecutivo</a>
   <a href="#s03"><span class="num">03</span> Rendimiento por modelo</a>
