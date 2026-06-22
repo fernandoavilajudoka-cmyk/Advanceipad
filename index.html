@@ -91,6 +91,9 @@ td{padding:7px 12px;border-bottom:1px solid var(--line);color:var(--t);vertical-
 td.r{text-align:right;font-variant-numeric:tabular-nums;}
 tr:last-child td{border-bottom:none;}
 tbody tr:hover{background:var(--gr-bg);}
+th.sortable{cursor:pointer;user-select:none;transition:color .12s;}
+th.sortable:hover{color:var(--gr);}
+.sort-ind{color:var(--gr);font-weight:800;}
 .tag{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700;white-space:nowrap;}
 .tag-rup{background:var(--teal-bg);color:var(--teal);}.tag-que{background:var(--lime-bg);color:#5a8023;}
 .tag-can{background:var(--gr-bg);color:var(--gr);}.tag-est{background:rgba(92,107,94,.14);color:var(--t2);}
@@ -257,11 +260,22 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
   </div>
   <div class="card"><div class="tbl-wrap"><table>
     <thead><tr>
-      <th>Unidad</th><th>Placa</th><th>Modelo</th><th>Zona</th>
-      <th class="r">Distancia<br>km</th><th class="r">Vel. máx<br>km/h</th><th class="r">Comb.<br>total L</th>
-      <th class="r">Ralentí<br>L</th><th class="r">Ralentí<br>h</th><th class="r">% Ral.<br>consumo</th>
-      <th class="r">Rend.<br>km/L</th><th class="r">Seg.<br>/100km</th>
-      <th class="r">Descargas<br>eventos</th><th class="r">Diésel<br>desc. L</th><th>Prob.<br>accid.</th><th>Prob.<br>robo</th>
+      <th class="sortable" onclick="sortBoard('n')">Unidad<span class="sort-ind" data-k="n"></span></th>
+      <th class="sortable" onclick="sortBoard('number')">Placa<span class="sort-ind" data-k="number"></span></th>
+      <th class="sortable" onclick="sortBoard('model')">Modelo<span class="sort-ind" data-k="model"></span></th>
+      <th class="sortable" onclick="sortBoard('zona')">Zona<span class="sort-ind" data-k="zona"></span></th>
+      <th class="r sortable" onclick="sortBoard('km')">Distancia<br>km<span class="sort-ind" data-k="km"></span></th>
+      <th class="r sortable" onclick="sortBoard('maxs')">Vel. máx<br>km/h<span class="sort-ind" data-k="maxs"></span></th>
+      <th class="r sortable" onclick="sortBoard('real_l')">Comb.<br>total L<span class="sort-ind" data-k="real_l"></span></th>
+      <th class="r sortable" onclick="sortBoard('idleL')">Ralentí<br>L<span class="sort-ind" data-k="idleL"></span></th>
+      <th class="r sortable" onclick="sortBoard('stop')">Ralentí<br>h<span class="sort-ind" data-k="stop"></span></th>
+      <th class="r sortable" onclick="sortBoard('pctF')">% Ral.<br>consumo<span class="sort-ind" data-k="pctF"></span></th>
+      <th class="r sortable" onclick="sortBoard('kml')">Rend.<br>km/L<span class="sort-ind" data-k="kml"></span></th>
+      <th class="r sortable" onclick="sortBoard('exc100')">Seg.<br>/100km<span class="sort-ind" data-k="exc100"></span></th>
+      <th class="r sortable" onclick="sortBoard('drain')">Descargas<br>eventos<span class="sort-ind" data-k="drain"></span></th>
+      <th class="r sortable" onclick="sortBoard('drainL')">Diésel<br>desc. L<span class="sort-ind" data-k="drainL"></span></th>
+      <th class="sortable" onclick="sortBoard('acc')">Prob.<br>accid.<span class="sort-ind" data-k="acc"></span></th>
+      <th class="sortable" onclick="sortBoard('theft')">Prob.<br>robo<span class="sort-ind" data-k="theft"></span></th>
     </tr></thead>
     <tbody id="tbBoard"></tbody>
   </table></div></div>
@@ -448,7 +462,7 @@ function dateList(){const a=[];let d=new Date('2026-02-01T00:00:00');const e=new
 const DATES=dateList();
 const MONTHS=(()=>{const m={};DATES.forEach(d=>{(m[d.slice(0,7)]=m[d.slice(0,7)]||[]).push(d);});const L={'2026-02':'Febrero 2026','2026-03':'Marzo 2026','2026-04':'Abril 2026','2026-05':'Mayo 2026','2026-06':'Junio 2026'};return Object.keys(m).sort().map(k=>({id:k,label:L[k]||k,days:m[k]}));})();
 function weeksOf(mid){const days=(MONTHS.find(m=>m.id===mid)||{days:[]}).days;const w=[];for(let i=0;i<days.length;i+=7){const c=days.slice(i,i+7);w.push({id:'w'+(i/7),label:`Semana ${i/7+1} (${c[0].slice(8)}–${c[c.length-1].slice(8)})`,days:c});}return w;}
-const STATE={month:'2026-06',week:'all',zona:'all'};
+const STATE={month:'2026-06',week:'all',zona:'all',boardSort:{key:'km',dir:'desc'}};
 function serial(ds){return Math.round((new Date(ds+'T00:00:00')-new Date('2026-01-01T00:00:00'))/864e5);}
 
 // ════════ MÉTRICA DIARIA PROCEDURAL POR UNIDAD ════════
@@ -631,9 +645,15 @@ function buildSeg(){
   const zi=z.map(x=>({...x,idx:Math.round((nrm(ev,x.ev100)+nrm(ex,x.viol)+nrm(vm,x.maxs))/3*100)})).sort((a,b)=>b.idx-a.idx);
   chart('cZonaInsec',{type:'bar',data:{labels:zi.map(x=>x.zona),datasets:[{data:zi.map(x=>x.idx),backgroundColor:zi.map(x=>x.idx>=66?C.rd:x.idx>=45?C.or:C.gr),borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const x=zi[c.dataIndex];return [` Índice ${x.idx}/100`,` ${decES(x.ev100,2)} eventos/100km · ${x.viol} excesos`,` vel. máx ${x.maxs} km/h`];}}}},scales:{x:axX(),y:axY({min:0,max:100})}}});
 }
+function boardVal(u,k){const p=A.p;switch(k){
+  case 'n':return u.n; case 'number':return u.number||''; case 'model':return u.model; case 'zona':return u.zona||'';
+  case 'idleL':return u.stop*p.idleL; case 'pctF':return u.real_l>0?u.stop*p.idleL/u.real_l*100:0;
+  case 'drainL':return u.drain*15; case 'acc':return accidentRisk(u); case 'theft':return theftRisk(u);
+  default:return u[k];}}
+function sortBoard(k){const s=STATE.boardSort;if(s.key===k){s.dir=s.dir==='asc'?'desc':'asc';}else{s.key=k;s.dir=['n','number','model','zona'].includes(k)?'asc':'desc';}buildBoard();}
 function buildBoard(){
-  const p=A.p;const sem=v=>v>=66?'tag-alta':v>=33?'tag-media':'tag-baja';
-  const rows=[...A.UA].filter(u=>u.km>0).sort((a,b)=>b.km-a.km).slice(0,15).map(u=>{
+  const p=A.p;const sem=v=>v>=66?'tag-alta':v>=33?'tag-media':'tag-baja';const s=STATE.boardSort;
+  const rows=[...A.UA].filter(u=>u.km>0).sort((a,b)=>{let va=boardVal(a,s.key),vb=boardVal(b,s.key);if(typeof va==='string')return s.dir==='asc'?va.localeCompare(vb):vb.localeCompare(va);return s.dir==='asc'?(va||0)-(vb||0):(vb||0)-(va||0);}).slice(0,15).map(u=>{
     const idleL=u.stop*p.idleL, pctF=u.real_l>0?idleL/u.real_l*100:0, drainL=u.drain*15, acc=accidentRisk(u), th=theftRisk(u);
     const pc=pctF<=30?'var(--gr)':pctF<=40?'var(--or)':'var(--rd)';
     return `<tr>
@@ -647,6 +667,7 @@ function buildBoard(){
       <td><span class="tag ${sem(acc)}">${acc}</span></td><td><span class="tag ${sem(th)}">${th}</span></td></tr>`;
   }).join('');
   document.getElementById('tbBoard').innerHTML=rows;
+  document.querySelectorAll('#s07 .sort-ind').forEach(el=>{el.textContent=el.dataset.k===s.key?(s.dir==='asc'?' ▲':' ▼'):'';});
 }
 function buildFuel(){
   const p=A.p;
