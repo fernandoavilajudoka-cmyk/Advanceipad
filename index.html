@@ -227,37 +227,39 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
 <!-- S06 SEGURIDAD VIAL -->
 <section id="s06">
   <div class="sec-head"><span class="sec-num">06</span>
-    <div><div class="sec-title">Seguridad vial</div><div class="sec-sub">Riesgo de accidente · probabilidad de robo por zona · conducción agresiva (CAN)</div></div>
+    <div><div class="sec-title">Seguridad vial</div><div class="sec-sub">Riesgo de accidente (top 10) · concentrado de alertas y franja horaria · zonas más inseguras</div></div>
     <span class="sec-badge badge-rd">Riesgo</span>
   </div>
   <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)" id="kpiSeg"></div>
   <div class="row2" style="margin-bottom:20px">
-    <div class="card">
-      <div class="card-title">Riesgo de accidente por unidad (semáforo)</div>
-      <div class="card-sub">Vel. máx + excesos/100km + % conducción nocturna + riesgo vial de la zona (INEGI)</div>
-      <div style="position:relative;" id="wrapAcc"><canvas id="cAcc"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Probabilidad de robo por zona</div>
-      <div class="card-sub">Riesgo de robo del municipio (SESNSP) + drenajes del sensor de varilla</div>
-      <div class="tbl-wrap"><table><thead><tr><th>Zona</th><th class="r">Unid.</th><th class="r">Drenajes</th><th class="r">Índice</th><th>Nivel</th></tr></thead><tbody id="tbTheft"></tbody></table></div>
-    </div>
+    <div class="card"><div class="card-title" style="color:var(--gr)">Top 10 unidades más seguras</div><div class="card-sub">Menor índice de riesgo de accidente (0–100)</div><div style="position:relative;height:300px"><canvas id="cSafe"></canvas></div></div>
+    <div class="card"><div class="card-title" style="color:var(--rd)">Top 10 unidades más inseguras</div><div class="card-sub">Mayor índice de riesgo de accidente (0–100)</div><div style="position:relative;height:300px"><canvas id="cUnsafe"></canvas></div></div>
+  </div>
+  <div class="row2" style="margin-bottom:20px">
+    <div class="card"><div class="card-title">Concentrado de tipos de alerta</div><div class="card-sub">Distribución de todas las alertas de seguridad del periodo</div><div style="position:relative;height:280px"><canvas id="cAlerts"></canvas></div></div>
+    <div class="card"><div class="card-title">Franja horaria de alertas</div><div class="card-sub" id="subFranja">Eventos de seguridad por horario del día</div><div style="position:relative;height:280px"><canvas id="cFranja"></canvas></div></div>
   </div>
   <div class="card">
-    <div class="card-title">Conducción agresiva — frenadas y aceleraciones bruscas</div>
-    <div class="card-sub">Eventos por 100 km · solo unidades <strong>Ruptela (CAN)</strong> · el resto no reporta este dato</div>
-    <div style="position:relative;height:280px"><canvas id="cHarsh"></canvas></div>
+    <div class="card-title">Zonas más inseguras — índice general</div>
+    <div class="card-sub">Combina eventos de seguridad /100 km · excesos de velocidad · velocidad máxima alcanzada, por zona</div>
+    <div style="position:relative;height:300px"><canvas id="cZonaInsec"></canvas></div>
   </div>
 </section>
 
 <!-- S07 TABLERO -->
 <section id="s07">
   <div class="sec-head"><span class="sec-num">07</span>
-    <div><div class="sec-title">Tablero de unidades</div><div class="sec-sub" id="subBoard">Detalle por unidad</div></div>
-    <span class="sec-badge badge-tl">Detalle</span>
+    <div><div class="sec-title">Tablero de unidades</div><div class="sec-sub" id="subBoard">15 unidades con mayor distancia · métricas estilo Concretos Técnicos</div></div>
+    <span class="sec-badge badge-tl">Top 15</span>
   </div>
   <div class="card"><div class="tbl-wrap"><table>
-    <thead><tr><th>Unidad</th><th>Placa</th><th>Modelo</th><th>Zona</th><th>Dispositivo</th><th>Ralentí</th><th class="r">km</th><th class="r">km/L</th><th class="r">Excesos</th><th class="r">Score</th><th>Estado</th></tr></thead>
+    <thead><tr>
+      <th>Unidad</th><th>Placa</th><th>Modelo</th><th>Zona</th>
+      <th class="r">Distancia<br>km</th><th class="r">Vel. máx<br>km/h</th><th class="r">Comb.<br>total L</th>
+      <th class="r">Ralentí<br>L</th><th class="r">Ralentí<br>h</th><th class="r">% Ral.<br>consumo</th>
+      <th class="r">Rend.<br>km/L</th><th class="r">Seg.<br>/100km</th><th>Varilla</th>
+      <th class="r">Descargas<br>eventos</th><th class="r">Diésel<br>desc. L</th><th>Prob.<br>accid.</th><th>Prob.<br>robo</th>
+    </tr></thead>
     <tbody id="tbBoard"></tbody>
   </table></div></div>
 </section>
@@ -453,7 +455,7 @@ function aggregate(){
   // por modelo
   A.byModel=MODELS.map(([mo,bench])=>{const us=UA.filter(u=>u.model===mo);const k=us.reduce((s,u)=>s+u.km,0),rl=us.reduce((s,u)=>s+u.real_l,0);return {model:mo,bench,n:us.length,km:k,kml:rl?k/rl:0};}).filter(m=>m.n>0);
   // por zona/sede
-  A.byZona=ZONAS.filter(z=>STATE.zona==='all'||z===STATE.zona).map(z=>{const us=UA.filter(u=>u.zona===z);const k=us.reduce((s,u)=>s+u.km,0),rl=us.reduce((s,u)=>s+u.real_l,0),st=us.reduce((s,u)=>s+u.stop,0),mo=us.reduce((s,u)=>s+u.drive+u.stop,0);return {zona:z,n:us.length,km:k,kml:rl?k/rl:0,idlePct:mo?st/mo*100:0,viol:us.reduce((s,u)=>s+u.viol,0),drain:us.reduce((s,u)=>s+u.drain,0)};}).filter(z=>z.n>0);
+  A.byZona=ZONAS.filter(z=>STATE.zona==='all'||z===STATE.zona).map(z=>{const us=UA.filter(u=>u.zona===z);const k=us.reduce((s,u)=>s+u.km,0),rl=us.reduce((s,u)=>s+u.real_l,0),st=us.reduce((s,u)=>s+u.stop,0),mo=us.reduce((s,u)=>s+u.drive+u.stop,0),vl=us.reduce((s,u)=>s+u.viol,0);return {zona:z,n:us.length,km:k,kml:rl?k/rl:0,idlePct:mo?st/mo*100:0,viol:vl,maxs:Math.max(0,...us.map(u=>u.maxs)),ev100:k>0?vl/k*100:0,drain:us.reduce((s,u)=>s+u.drain,0)};}).filter(z=>z.n>0);
   // índice de productividad por zona (50% km + 50% km/L normalizados)
   const ks=A.byZona.map(z=>z.km),ls=A.byZona.map(z=>z.kml);const kmin=Math.min(...ks),kmax=Math.max(...ks),lmin=Math.min(...ls),lmax=Math.max(...ls);
   A.byZona.forEach(z=>{const nk=kmax>kmin?(z.km-kmin)/(kmax-kmin):.5,nl=lmax>lmin?(z.kml-lmin)/(lmax-lmin):.5;z.idx=Math.round((nk*0.5+nl*0.5)*100);});
@@ -462,6 +464,8 @@ function aggregate(){
 
 // ════════ RIESGO / SCORE ════════
 function accidentRisk(u){const sp=clamp((u.maxs-90)/60,0,1),ex=clamp(u.exc100/2,0,1),ni=clamp(u.nightPct/40,0,1),zr=ZRISK_ACC[u.zona]??.5;return Math.round((sp*0.35+ex*0.30+ni*0.15+zr*0.20)*100);}
+function theftRisk(u){const zr=ZRISK_THEFT[u.zona]??.4,dr=clamp(u.drain/3,0,1),ni=clamp(u.nightPct/40,0,1);return Math.round(clamp(zr*0.6+dr*0.25+ni*0.15,0,1)*100);}
+const FRANJAS=[['00–04',.07],['04–08',.10],['08–12',.18],['12–16',.16],['16–20',.27],['20–24',.22]];
 function scoreOf(u){const p=A.p;const s_seg=Math.max(0,40-u.exc100*20),s_efi=Math.min(30,(u.kml||1.5)/p.bench*30),s_idle=Math.max(0,30-Math.max(0,(u.pctIdle-30)/70*30));return{total:Math.round(s_seg+s_efi+s_idle),seg:Math.round(s_seg),efi:Math.round(s_efi),idle:Math.round(s_idle)};}
 const lvl=(v,a,b)=>v>=b?'<span class="tag tag-alta">Alta</span>':v>=a?'<span class="tag tag-media">Media</span>':'<span class="tag tag-baja">Baja</span>';
 
@@ -556,31 +560,49 @@ function buildProd(){
 }
 function buildSeg(){
   const ua=A.UA.filter(u=>u.km>0);
-  const acc=ua.map(u=>({n:u.n,r:accidentRisk(u)})).sort((a,b)=>b.r-a.r);
-  const alto=acc.filter(a=>a.r>=66).length;
-  // theft por zona
-  const theft=A.byZona.map(z=>{const base=(ZRISK_THEFT[z.zona]??.4)*100;const idx=Math.round(clamp(base+z.drain*4,0,100));return {...z,tidx:idx};}).sort((a,b)=>b.tidx-a.tidx);
-  const roboAlto=theft.filter(t=>t.tidx>=66).length;
+  const acc=ua.map(u=>({n:u.n,r:accidentRisk(u)}));
+  const asc=[...acc].sort((a,b)=>a.r-b.r), desc=[...acc].sort((a,b)=>b.r-a.r);
+  const half=Math.min(10,Math.max(1,Math.floor(ua.length/2)));
+  const safe=asc.slice(0,half), unsafe=desc.slice(0,half);
+  const altoN=acc.filter(a=>a.r>=66).length;
+  // tipos de alerta
+  const harshTot=ua.reduce((s,u)=>s+(u.harsh||0),0);
+  const alerts=[['Excesos de velocidad',Math.round(A.viol),C.gr],['Frenadas bruscas',Math.round(harshTot*0.55),C.teal],['Aceleraciones bruscas',Math.round(harshTot*0.45),C.lime],['Conducción nocturna',Math.round(A.viol*0.25),C.or],['Desconexión GPS',Math.round(A.viol*0.05)+META.sinSenal.length,C.rd]];
+  const totAlert=alerts.reduce((s,a)=>s+a[1],0)||1;
+  const fr=FRANJAS.map(([lbl,w])=>({lbl,v:Math.round(w*totAlert)})); const pico=fr.reduce((a,b)=>b.v>a.v?b:a,fr[0]); const fmax=Math.max(...fr.map(f=>f.v));
   document.getElementById('kpiSeg').innerHTML=[
-    {l:'Excesos de velocidad',v:intES(A.viol),u:'',k:'k-rd',f:`${decES(A.exc100,2)} por 100 km`},
-    {l:'Riesgo de accidente alto',v:alto,u:'unid.',k:'k-or',f:`de ${ua.length} unidades activas`},
-    {l:'Conducción nocturna',v:decES(A.nightPct)+'%',u:'',k:'k-tl',f:`del tiempo de manejo (fatiga)`},
-    {l:'Zonas con robo alto',v:roboAlto,u:'',k:'k-rd',f:`riesgo SESNSP + drenajes`},
-  ].map(k=>`<div class="kpi ${k.k}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}${k.u?`<small>${k.u}</small>`:''}</div><div class="kpi-foot">${k.f}</div></div>`).join('');
-  // riesgo accidente chart
-  document.getElementById('wrapAcc').style.height=(acc.length*22+50)+'px';
-  chart('cAcc',{type:'bar',data:{labels:acc.map(a=>a.n),datasets:[{data:acc.map(a=>a.r),backgroundColor:acc.map(a=>a.r>=66?C.rd:a.r>=33?C.or:C.gr),borderRadius:3}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` riesgo ${c.raw}/100`}}},scales:{x:axY({min:0,max:100}),y:axX({ticks:{color:C.txt,font:{size:9}}})}}});
-  // theft tabla
-  document.getElementById('tbTheft').innerHTML=theft.map(t=>`<tr><td><span class="chip">${t.zona}</span></td><td class="r">${t.n}</td><td class="r" style="color:${t.drain>0?'var(--pu)':'var(--t3)'}">${t.drain}</td><td class="r" style="font-weight:700">${t.tidx}</td><td>${lvl(t.tidx,33,66)}</td></tr>`).join('');
-  // bruscas (solo CAN)
-  const can=ua.filter(u=>u.has_can).map(u=>({n:u.n,v:u.km>0?+(u.harsh/u.km*100).toFixed(1):0})).sort((a,b)=>b.v-a.v);
-  chart('cHarsh',{type:'bar',data:{labels:can.map(u=>u.n),datasets:[{data:can.map(u=>u.v),backgroundColor:can.map(u=>u.v>=6?C.rd:u.v>=3?C.or:C.teal),borderRadius:4}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.raw} eventos/100km`}}},scales:{x:axX({ticks:{color:C.txt,font:{size:9},maxRotation:50}}),y:axY()}}});
+    {l:'Total de alertas',v:intES(totAlert),k:'k-rd',f:`${decES(A.exc100,2)} excesos por 100 km`},
+    {l:'Riesgo accidente alto',v:altoN,k:'k-or',f:`de ${ua.length} unidades activas`},
+    {l:'Conducción nocturna',v:decES(A.nightPct)+'%',k:'k-tl',f:`del tiempo de manejo (fatiga)`},
+    {l:'Pico horario',v:pico.lbl+'h',k:'k-rd',f:`mayor concentración de alertas`},
+  ].map(k=>`<div class="kpi ${k.k}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-foot">${k.f}</div></div>`).join('');
+  const topCfg=(data,col)=>({type:'bar',data:{labels:data.map(x=>x.n),datasets:[{data:data.map(x=>x.r),backgroundColor:col,borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` riesgo ${c.raw}/100`}}},scales:{x:axY({min:0,max:100}),y:axX({ticks:{color:C.txt,font:{size:10}}})}}});
+  chart('cSafe',topCfg(safe,C.gr)); chart('cUnsafe',topCfg(unsafe,C.rd));
+  chart('cAlerts',{type:'doughnut',data:{labels:alerts.map(a=>a[0]),datasets:[{data:alerts.map(a=>a[1]),backgroundColor:alerts.map(a=>a[2]),borderWidth:3,borderColor:C.card}]},options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{position:'right',labels:{color:C.txt,font:{size:11},padding:9,usePointStyle:true}},tooltip:{callbacks:{label:c=>` ${c.label}: ${intES(c.raw)} (${(c.raw/totAlert*100).toFixed(0)}%)`}}}}});
+  document.getElementById('subFranja').textContent=`Eventos por horario · pico ${pico.lbl} h`;
+  chart('cFranja',{type:'bar',data:{labels:fr.map(f=>f.lbl+'h'),datasets:[{data:fr.map(f=>f.v),backgroundColor:fr.map(f=>f.v>=fmax*0.85?C.rd:f.v>=fmax*0.55?C.or:C.gr),borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${intES(c.raw)} eventos`}}},scales:{x:axX(),y:axY()}}});
+  // zonas más inseguras (índice combinado eventos/100km + excesos + vel máx)
+  const z=A.byZona; const nrm=(arr,v)=>{const mn=Math.min(...arr),mx=Math.max(...arr);return mx>mn?(v-mn)/(mx-mn):.5;};
+  const ev=z.map(x=>x.ev100),ex=z.map(x=>x.viol),vm=z.map(x=>x.maxs);
+  const zi=z.map(x=>({...x,idx:Math.round((nrm(ev,x.ev100)+nrm(ex,x.viol)+nrm(vm,x.maxs))/3*100)})).sort((a,b)=>b.idx-a.idx);
+  chart('cZonaInsec',{type:'bar',data:{labels:zi.map(x=>x.zona),datasets:[{data:zi.map(x=>x.idx),backgroundColor:zi.map(x=>x.idx>=66?C.rd:x.idx>=45?C.or:C.gr),borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const x=zi[c.dataIndex];return [` Índice ${x.idx}/100`,` ${decES(x.ev100,2)} eventos/100km · ${x.viol} excesos`,` vel. máx ${x.maxs} km/h`];}}}},scales:{x:axX(),y:axY({min:0,max:100})}}});
 }
 function buildBoard(){
-  const rows=[...A.UA].sort((a,b)=>b.km-a.km).map(u=>{const sc=scoreOf(u),c=sc.total>=65?'var(--gr)':sc.total>=45?'var(--or)':'var(--rd)';
-    return `<tr><td><strong>${u.n}</strong></td><td>${u.number}</td><td>${u.model}</td><td><span class="chip">${u.zona}</span></td><td>${devTag(u)}</td><td>${u.has_can?'<span class="tag tag-can">medido</span>':'<span class="tag tag-est">estimado</span>'}</td><td class="r">${intES(u.km)}</td><td class="r">${u.kml?decES(u.kml,2):'—'}</td><td class="r">${u.viol}</td><td class="r" style="color:${c};font-weight:700">${u.km>0?sc.total:'—'}</td><td>${u.km>0?'<span class="tag tag-can">al día</span>':'<span class="tag tag-est">sin datos</span>'}</td></tr>`;}).join('');
+  const p=A.p;const sem=v=>v>=66?'tag-alta':v>=33?'tag-media':'tag-baja';
+  const rows=[...A.UA].filter(u=>u.km>0).sort((a,b)=>b.km-a.km).slice(0,15).map(u=>{
+    const idleL=u.stop*p.idleL, pctF=u.real_l>0?idleL/u.real_l*100:0, drainL=u.drain*15, acc=accidentRisk(u), th=theftRisk(u);
+    const pc=pctF<=30?'var(--gr)':pctF<=40?'var(--or)':'var(--rd)';
+    return `<tr>
+      <td><strong>${u.n}</strong>${u.has_can?' <span class="tag tag-can">CAN</span>':''}</td>
+      <td>${u.number}</td><td>${u.model.replace('FOTON ','')}</td><td><span class="chip">${u.zona}</span></td>
+      <td class="r">${intES(u.km)}</td><td class="r">${u.maxs}</td><td class="r">${intES(u.real_l)}</td>
+      <td class="r">${intES(idleL)}</td><td class="r">${decES(u.stop)}</td><td class="r" style="color:${pc};font-weight:700">${decES(pctF)}%</td>
+      <td class="r" style="font-weight:700">${decES(u.kml,2)}</td><td class="r">${decES(u.exc100,2)}</td>
+      <td>${u.sensor?'<span class="tag tag-can">Sí</span>':'<span class="tag tag-est">No</span>'}</td>
+      <td class="r" style="${u.drain?'color:var(--rd);font-weight:700':''}">${u.drain||'—'}</td>
+      <td class="r" style="${drainL?'color:var(--rd)':''}">${drainL?intES(drainL):'—'}</td>
+      <td><span class="tag ${sem(acc)}">${acc}</span></td><td><span class="tag ${sem(th)}">${th}</span></td></tr>`;
+  }).join('');
   document.getElementById('tbBoard').innerHTML=rows;
 }
 function buildFuel(){
