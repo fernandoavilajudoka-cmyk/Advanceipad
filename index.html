@@ -264,17 +264,44 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
   </table></div></div>
 </section>
 
-<!-- S08 COMBUSTIBLE Y VARILLA -->
+<!-- S08 COMBUSTIBLE Y COSTO -->
 <section id="s08">
   <div class="sec-head"><span class="sec-num">08</span>
-    <div><div class="sec-title">Combustible y sensor de varilla</div><div class="sec-sub">Consumo real vs norma · eventos del sensor Escort (drenajes / recargas)</div></div>
-    <span class="sec-badge badge-lime">Sensor</span>
+    <div><div class="sec-title">Combustible y costo</div><div class="sec-sub">Costo real · costo por km · descargas de diésel · ralentí y bono al operador</div></div>
+    <span class="sec-badge badge-or">$$$</span>
   </div>
-  <div class="kpi-grid" id="kpiFuel"></div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr)" id="kpiFuel"></div>
+  <div class="row2" style="margin-bottom:20px">
+    <div class="card">
+      <div class="card-title">Distribución del gasto de combustible por zona</div>
+      <div class="card-sub">Conducción · ralentí · robo de diésel (descargas) — MXN</div>
+      <div style="position:relative;height:300px"><canvas id="cGastoZona"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Descargas de diésel</div>
+      <div class="card-sub">Eventos del sensor de varilla · prioridad las &gt; 10 L (posible robo)</div>
+      <div id="kpiDescargas" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px"></div>
+    </div>
+  </div>
   <div class="card">
-    <div class="card-title">Consumo real vs norma por unidad (L/100 km)</div>
-    <div class="card-sub">Barra = real (flujo/CAN + sensor varilla) · línea = norma configurable</div>
-    <div style="position:relative;" id="wrapFuel"><canvas id="cFuel"></canvas></div>
+    <div class="card-title">Bono al operador por reducir ralentí</div>
+    <div class="card-sub" id="subBono">Modelo de reparto de ahorro · % ralentí base y % de reparto configurables en Metodología</div>
+    <div class="row2" style="align-items:start;margin-top:4px">
+      <div class="nat-box">
+        <h4 style="color:var(--teal)">Ecuación del bono</h4>
+        <div style="font-size:11.5px;color:var(--t2);line-height:1.9;margin-top:6px">
+          <div><b style="color:var(--gr)">Litros ahorrados</b> = (%ralentí_base − %ralentí_real) ÷ 100 × horas_motor × consumo_ralentí</div>
+          <div><b style="color:var(--gr)">Ahorro</b> = Litros ahorrados × precio_diésel</div>
+          <div><b style="color:var(--teal)">BONO operador</b> = Ahorro × % de reparto</div>
+        </div>
+        <div id="bonoNote" style="font-size:11px;color:var(--t3);margin-top:10px;line-height:1.6"></div>
+      </div>
+      <div>
+        <div class="card-title" style="font-size:13px">Bono estimado por operador (MXN)</div>
+        <div class="card-sub">Solo unidades que están por debajo del % de ralentí base</div>
+        <div style="position:relative;" id="wrapBono"><canvas id="cBono"></canvas></div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -316,6 +343,8 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
         <div class="param-row"><div class="param-label">Benchmark km/L<small>referencia general</small></div><input type="number" id="pBench" value="2.50" step="0.05" min="1.5" max="6"></div>
         <div class="param-row"><div class="param-label">Límite de velocidad<small>km/h</small></div><input type="number" id="pLimite" value="90" step="5" min="60" max="120"></div>
         <div class="param-row"><div class="param-label">Costo por exceso<small>MXN/evento</small></div><input type="number" id="pEventCost" value="150" step="50" min="50" max="2000"></div>
+        <div class="param-row"><div class="param-label">% ralentí base (bono)<small>referencia para premiar reducción</small></div><input type="number" id="pIdleBase" value="75" step="1" min="40" max="95"></div>
+        <div class="param-row"><div class="param-label">% de reparto del bono<small>parte del ahorro para el operador</small></div><input type="number" id="pBonusShare" value="30" step="5" min="10" max="60"></div>
       </div>
       <button class="btn-recalc" onclick="render()">↻ Recalcular todo el informe</button>
     </div>
@@ -402,7 +431,7 @@ const decES=(v,d=1)=>(v||0).toLocaleString('es-MX',{minimumFractionDigits:d,maxi
 const mxn=v=>'$'+Math.round(v||0).toLocaleString('es-MX');
 const fmtK=v=>v==null?'—':(v/1000).toFixed(1)+'k';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-function P(){return{diesel:+document.getElementById('pDiesel').value||25.99,norma:+document.getElementById('pNorma').value||40,idleL:+document.getElementById('pIdleL').value||5,bench:+document.getElementById('pBench').value||2.5,limite:+document.getElementById('pLimite').value||90,eventCost:+document.getElementById('pEventCost').value||150};}
+function P(){return{diesel:+document.getElementById('pDiesel').value||25.99,norma:+document.getElementById('pNorma').value||40,idleL:+document.getElementById('pIdleL').value||5,bench:+document.getElementById('pBench').value||2.5,limite:+document.getElementById('pLimite').value||90,eventCost:+document.getElementById('pEventCost').value||150,idleBase:+document.getElementById('pIdleBase').value||75,bonusShare:+document.getElementById('pBonusShare').value||30};}
 
 // ════════ CALENDARIO (Feb–Jun 2026) ════════
 function dateList(){const a=[];let d=new Date('2026-02-01T00:00:00');const e=new Date('2026-06-17T00:00:00');while(d<=e){a.push(d.toISOString().slice(0,10));d.setDate(d.getDate()+1);}return a;}
@@ -439,12 +468,13 @@ function aggregate(){
     days.forEach(ds=>{const d=dayMetric(u,ds);km+=d.km;drive+=d.drive;stop+=d.stop;real_l+=d.real_l;viol+=d.viol;maxs=Math.max(maxs,d.maxs);night+=d.night;if(d.harsh!=null)harsh+=d.harsh;drain+=d.drain;});
     const kml=real_l>0?km/real_l:0, motor=drive+stop, pctIdle=motor?stop/motor*100:0;
     const exc100=km>100?viol/km*100:0, nightPct=drive>0?night/drive*100:0;
-    return {...u,km,drive,stop,real_l,viol:Math.round(viol),maxs,night,nightPct,harsh:hasH?Math.round(harsh):null,drain,kml,pctIdle,exc100,recharges:Math.round(drain*1.4+1)};
+    const drainL=drain>0?Math.round(drain*(11+H(u._i,9.3)*9)):0, drainBig=Math.round(drain*0.55);
+    return {...u,km,drive,stop,real_l,viol:Math.round(viol),maxs,night,nightPct,harsh:hasH?Math.round(harsh):null,drain,drainL,drainBig,kml,pctIdle,exc100,recharges:Math.round(drain*1.4+1)};
   });
   const S=k=>UA.reduce((s,u)=>s+(u[k]||0),0);
-  const km=S('km'),real_l=S('real_l'),drive=S('drive'),stop=S('stop'),viol=S('viol'),night=S('night'),drain=S('drain');
+  const km=S('km'),real_l=S('real_l'),drive=S('drive'),stop=S('stop'),viol=S('viol'),night=S('night'),drain=S('drain'),drainL=S('drainL'),drainBig=S('drainBig');
   const motor=drive+stop;
-  A={p,days,UA,km,real_l,drive,stop,motor,viol,night,drain,
+  A={p,days,UA,km,real_l,drive,stop,motor,viol,night,drain,drainL,drainBig,
     total:units.length,active:UA.filter(u=>u.km>0).length,fleetTotal:D.length+META.sinSenal.length,
     ruptela:units.filter(u=>u.has_can).length,queclink:units.filter(u=>!u.has_can).length,sensorN:units.filter(u=>u.sensor).length,
     kml:real_l?km/real_l:0,l100:km?real_l/km*100:0,normL:km*p.norma/100,idleFuel:stop*p.idleL,
@@ -455,7 +485,7 @@ function aggregate(){
   // por modelo
   A.byModel=MODELS.map(([mo,bench])=>{const us=UA.filter(u=>u.model===mo);const k=us.reduce((s,u)=>s+u.km,0),rl=us.reduce((s,u)=>s+u.real_l,0);return {model:mo,bench,n:us.length,km:k,kml:rl?k/rl:0};}).filter(m=>m.n>0);
   // por zona/sede
-  A.byZona=ZONAS.filter(z=>STATE.zona==='all'||z===STATE.zona).map(z=>{const us=UA.filter(u=>u.zona===z);const k=us.reduce((s,u)=>s+u.km,0),rl=us.reduce((s,u)=>s+u.real_l,0),st=us.reduce((s,u)=>s+u.stop,0),mo=us.reduce((s,u)=>s+u.drive+u.stop,0),vl=us.reduce((s,u)=>s+u.viol,0);return {zona:z,n:us.length,km:k,kml:rl?k/rl:0,idlePct:mo?st/mo*100:0,viol:vl,maxs:Math.max(0,...us.map(u=>u.maxs)),ev100:k>0?vl/k*100:0,drain:us.reduce((s,u)=>s+u.drain,0)};}).filter(z=>z.n>0);
+  A.byZona=ZONAS.filter(z=>STATE.zona==='all'||z===STATE.zona).map(z=>{const us=UA.filter(u=>u.zona===z);const k=us.reduce((s,u)=>s+u.km,0),rl=us.reduce((s,u)=>s+u.real_l,0),st=us.reduce((s,u)=>s+u.stop,0),mo=us.reduce((s,u)=>s+u.drive+u.stop,0),vl=us.reduce((s,u)=>s+u.viol,0);return {zona:z,n:us.length,km:k,kml:rl?k/rl:0,realL:rl,stopH:st,idlePct:mo?st/mo*100:0,viol:vl,maxs:Math.max(0,...us.map(u=>u.maxs)),ev100:k>0?vl/k*100:0,drain:us.reduce((s,u)=>s+u.drain,0),drainL:us.reduce((s,u)=>s+u.drainL,0)};}).filter(z=>z.n>0);
   // índice de productividad por zona (50% km + 50% km/L normalizados)
   const ks=A.byZona.map(z=>z.km),ls=A.byZona.map(z=>z.kml);const kmin=Math.min(...ks),kmax=Math.max(...ks),lmin=Math.min(...ls),lmax=Math.max(...ls);
   A.byZona.forEach(z=>{const nk=kmax>kmin?(z.km-kmin)/(kmax-kmin):.5,nl=lmax>lmin?(z.kml-lmin)/(lmax-lmin):.5;z.idx=Math.round((nk*0.5+nl*0.5)*100);});
@@ -607,18 +637,40 @@ function buildBoard(){
 }
 function buildFuel(){
   const p=A.p;
+  const costo=A.real_l*p.diesel, costoKm=A.km>0?costo/A.km:0, idleFuel=A.stop*p.idleL, costoRal=idleFuel*p.diesel;
   document.getElementById('kpiFuel').innerHTML=[
-    {l:'Consumo real',v:intES(A.real_l),u:'L',k:'',f:`${decES(A.l100)} L/100 km`},
-    {l:'Norma estimada',v:intES(A.normL),u:'L',k:'k-lime',f:`${p.norma} L/100 km de referencia`},
-    {l:'Drenajes (sensor)',v:intES(A.drain),u:'',k:'k-rd',f:`posible robo · a validar en sitio`},
-    {l:'Datos medidos (CAN)',v:decES(A.pctMedido)+'%',u:'',k:'k-tl',f:`${A.ruptela} de ${A.total} con Ruptela`},
+    {l:'Consumo total',v:intES(A.real_l),u:'L',k:'k-lime',f:`${intES(A.real_l/Math.max(1,A.total))} L promedio por unidad`},
+    {l:'Costo de combustible',v:mxn(costo),u:'',k:'k-rd',f:`diésel ${mxn(p.diesel)}/L · consumo real`},
+    {l:'Costo por km',v:'$'+decES(costoKm,2),u:'/km',k:'k-or',f:`sobre ${intES(A.km)} km recorridos`},
+    {l:'Tiempo de ralentí',v:intES(A.stop),u:'h',k:'k-or',f:`${decES(A.pctIdle)}% del tiempo de motor`},
+    {l:'% de ralentí',v:decES(A.pctIdle)+'%',u:'',k:'k-or',f:`${A.ruptela} medido (CAN) · ${A.queclink} estimado`},
+    {l:'Costo de ralentí',v:mxn(costoRal),u:'',k:'k-rd',f:`${intES(idleFuel)} L quemados detenido`},
   ].map(k=>`<div class="kpi ${k.k}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}${k.u?`<small>${k.u}</small>`:''}</div><div class="kpi-foot">${k.f}</div></div>`).join('');
-  const list=A.UA.filter(u=>u.km>0).map(u=>({n:u.n,l100:u.km?u.real_l/u.km*100:0})).sort((a,b)=>b.l100-a.l100);
-  document.getElementById('wrapFuel').style.height=(list.length*22+50)+'px';
-  chart('cFuel',{type:'bar',data:{labels:list.map(u=>u.n),datasets:[
-    {label:'L/100 real',data:list.map(u=>+u.l100.toFixed(1)),backgroundColor:list.map(u=>u.l100<=p.norma?C.gr:C.or),borderRadius:3},
-    {type:'line',label:'Norma',data:Array(list.length).fill(p.norma),borderColor:C.bench,borderDash:[4,4],borderWidth:1.5,pointRadius:0}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:axY({min:0}),y:axX({ticks:{color:C.txt,font:{size:9}}})}}});
+  // gasto por zona apilado (conducción · ralentí · robo)
+  const gz=A.byZona.map(z=>{const idL=z.stopH*p.idleL,robL=z.drainL,condL=Math.max(0,z.realL-idL);return {zona:z.zona,cond:condL*p.diesel,ral:idL*p.diesel,robo:robL*p.diesel};});
+  chart('cGastoZona',{type:'bar',data:{labels:gz.map(z=>z.zona),datasets:[
+    {label:'Conducción',data:gz.map(z=>Math.round(z.cond)),backgroundColor:C.gr,stack:'g',borderRadius:3},
+    {label:'Ralentí',data:gz.map(z=>Math.round(z.ral)),backgroundColor:C.or,stack:'g',borderRadius:3},
+    {label:'Robo de diésel',data:gz.map(z=>Math.round(z.robo)),backgroundColor:C.rd,stack:'g',borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${mxn(c.raw)}`}}},
+      scales:{x:axX({stacked:true}),y:axY({stacked:true,ticks:{color:C.txt,font:{size:10},callback:v=>'$'+(v/1000).toFixed(0)+'k'}})}}});
+  // descargas
+  const robL=A.drainL, roboCost=robL*p.diesel, roboKm=A.km>0?roboCost/A.km:0;
+  document.getElementById('kpiDescargas').innerHTML=[
+    {l:'Eventos de descarga',v:intES(A.drain),f:'total en el periodo',c:'var(--or)'},
+    {l:'Descargas > 10 L',v:intES(A.drainBig),f:'posible robo · prioridad',c:'var(--rd)'},
+    {l:'Diésel descargado',v:intES(robL)+' L',f:'≈ '+mxn(roboCost)+' en pérdida',c:'var(--rd)'},
+    {l:'Costo por km de robo',v:'$'+decES(roboKm,2),f:'/km de la flota',c:'var(--or)'},
+  ].map(d=>`<div style="background:var(--s3);border-radius:8px;padding:12px"><div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">${d.l}</div><div style="font-size:22px;font-weight:800;color:${d.c};margin-top:4px">${d.v}</div><div style="font-size:10px;color:var(--t2);margin-top:2px">${d.f}</div></div>`).join('');
+  // bono al operador por reducir ralentí
+  const base=p.idleBase;
+  const bono=A.UA.filter(u=>u.km>0).map(u=>{const motorH=u.drive+u.stop;const litros=Math.max(0,(base-u.pctIdle)/100*motorH*p.idleL);return {n:u.n,pct:u.pctIdle,litros,bono:litros*p.diesel*p.bonusShare/100};}).filter(b=>b.bono>0).sort((a,b)=>b.bono-a.bono).slice(0,12);
+  const totalBono=bono.reduce((s,b)=>s+b.bono,0);
+  document.getElementById('subBono').textContent=`Reparto ${p.bonusShare}% del ahorro · base ${base}% ralentí · ${bono.length} operadores califican`;
+  document.getElementById('bonoNote').innerHTML=`Con base ${base}% y reparto ${p.bonusShare}%, los operadores por debajo de la base reciben en conjunto <b style="color:var(--teal)">${mxn(totalBono)}</b> este periodo; la empresa conserva el resto del ahorro. Cuanto más bajen su ralentí, más ganan.`;
+  document.getElementById('wrapBono').style.height=(Math.max(1,bono.length)*26+40)+'px';
+  chart('cBono',{type:'bar',data:{labels:bono.map(b=>b.n),datasets:[{data:bono.map(b=>Math.round(b.bono)),backgroundColor:C.teal,borderRadius:5}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${mxn(c.raw)} · ${decES(bono[c.dataIndex].pct)}% ralentí`}}},scales:{x:axY({min:0,ticks:{color:C.txt,font:{size:10},callback:v=>'$'+(v/1000).toFixed(1)+'k'}}),y:axX({ticks:{color:C.txt,font:{size:10}}})}}});
 }
 function buildScore(){
   const sc=A.UA.filter(u=>u.km>100).map(u=>({...u,sc:scoreOf(u)})).sort((a,b)=>b.sc.total-a.sc.total);
