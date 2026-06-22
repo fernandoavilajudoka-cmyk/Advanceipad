@@ -382,7 +382,20 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
 // ════════ PALETA VERDE ════════
 const C={gr:'#2f8f4e',g2:'#43a047',g3:'#66bb6a',gl:'#c5e1a5',lime:'#7cb342',teal:'#1f9e8f',or:'#e1881f',rd:'#d64b34',txt:'#5c6b5e',grid:'rgba(40,70,30,.09)',bench:'#9aa99a',card:'#ffffff'};
 
-// ════════ DATOS BASE (operación semanal por unidad) ════════
+/* ══════════════════════════════════════════════════════════════════════════════
+   PLANTILLA REUTILIZABLE · CONFIGURACIÓN DEL CLIENTE  (editar SOLO este bloque)
+   ──────────────────────────────────────────────────────────────────────────────
+   Esta plantilla sirve para CUALQUIER cliente. Para un cliente nuevo se reemplaza
+   únicamente lo de abajo; el resto (el "motor") no se toca.
+     · RAW    → unidades: [placa, km, h_motor, h_conducción, h_ralentí, %ralentí, excesos, vel_máx]
+     · REALW  → consumo real de diésel por unidad (L) — flujo/CAN + sensor de varilla
+     · MODELS → modelos del cliente y km/L de ficha del fabricante
+     · ZONAS  → sedes / zonas donde están registradas las unidades
+     · ZRISK_ACC / ZRISK_THEFT → riesgo 0–1 por zona (INEGI vial · SESNSP robo)
+     · META   → identidad del informe (cliente, tier DEMO/AA/AAA, periodo, fuente)
+   DEMO / AA / AAA = misma estructura; sólo cambia la CANTIDAD de unidades.
+   Los parámetros económicos (diésel, norma, L/h, bono…) se ajustan en «Metodología».
+   ══════════════════════════════════════════════════════════════════════════════ */
 const RAW=[
   ["GT-2402",4321.6,168,56.3,111.7,66.5,13,109],["GT-2408",4137.8,168,53.6,114.4,68.1,12,111],
   ["GT-2409",3922,168,59.2,108.8,64.8,10,106],["GT-2403",3895.4,168,53.5,114.5,68.1,13,106],
@@ -412,6 +425,7 @@ const PLACAS=["7AB","8CD","9EF","0RJ","3GH","5KL"];
 const META={cliente:"Cliente ID: 1",tier:"DEMO",zona:"Zona Norte (Sonora / Sinaloa)",tipoUnidad:"tractocamiones",
   fuente:"Telematics Advance / Smart-Connect (Mapon API)",sinSenal:[{n:"GT-2410",desde:"29 abr 2026"},{n:"GT-2519",desde:"29 may 2026"}]};
 
+/* ══════════ MOTOR DE LA PLANTILLA · no requiere edición por cliente ══════════ */
 // unidades enriquecidas (device-aware)
 const D=RAW.map((r,i)=>{
   const [n,km,hm,hc,hi,pi,e90,vm]=r;
