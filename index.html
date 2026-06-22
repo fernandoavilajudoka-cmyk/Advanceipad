@@ -65,7 +65,9 @@ section{padding:34px 40px;border-bottom:1px solid var(--line);}
 .portada-title span{color:var(--gr);}
 .portada-meta{font-size:13px;color:var(--t2);margin-bottom:20px;}
 .portada-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
-.pstat,.kpi,.card,.portada-right{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--brd);box-shadow:var(--shadow-sm);}
+.pstat,.kpi,.card,.portada-right{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--brd);box-shadow:var(--shadow-sm);transition:transform .2s ease, box-shadow .2s ease;}
+.card:hover,.kpi:hover,.pstat:hover{transform:translateY(-4px);box-shadow:0 18px 44px rgba(20,70,35,.18);}
+canvas{transition:filter .2s ease;}.card:hover canvas{filter:saturate(1.08);}
 .pstat{border-radius:var(--r2);padding:14px 16px;}
 .pstat .v{font-size:22px;font-weight:800;color:var(--gr);line-height:1;}
 .pstat .l{font-size:11px;color:var(--t2);margin-top:4px;}
@@ -169,7 +171,7 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
     <div class="filt"><label>Semana</label><select id="selWeek"></select></div>
     <div class="filt"><label>Zona / sede</label><select id="selZona"></select></div>
   </div>
-  <div class="kpi-grid" id="kpiGrid"></div>
+  <div class="kpi-grid" id="kpiGrid" style="grid-template-columns:repeat(3,1fr)"></div>
   <div class="card">
     <div class="card-title">Tendencia: rendimiento general de la flota (km/L) vs distancia (km)</div>
     <div class="card-sub">Línea = rendimiento km/L (eje der.) · barras = distancia km (eje izq.) · responde a los filtros</div>
@@ -382,8 +384,17 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
           <li><span class="dot" style="background:var(--t3);margin-top:5px"></span>Drenajes: a validar en sitio</li>
         </ul></div>
       </div>
-      <div style="font-size:11px;color:var(--t3);margin-top:14px;line-height:1.6">Fuente: Telematics Advance / Smart-Connect. La zona corresponde a la clasificación asignada por el cliente; si una unidad no tiene zona asignada, el campo se muestra vacío.</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:14px;line-height:1.6">Analítica potencializada por Advance y Claude. La zona corresponde a la clasificación asignada por el cliente; si una unidad no tiene zona asignada, el campo se muestra vacío.</div>
     </div>
+  </div>
+  <div class="card" style="margin-top:20px">
+    <div class="card-title">Modelo de probabilidad de accidente y robo</div>
+    <div class="card-sub">Índices 0–100 por unidad · semáforo: Baja &lt;33 · Media 33–65 · Alta ≥66</div>
+    <div class="row2" style="margin-top:4px">
+      <div class="nat-box"><h4 style="color:var(--rd)">Probabilidad de accidente</h4><div style="font-size:11px;color:var(--t2);line-height:1.8;margin-top:6px">Velocidad máxima <strong>35%</strong> · excesos por 100 km <strong>30%</strong> · riesgo vial de la zona (INEGI) <strong>20%</strong> · conducción nocturna <strong>15%</strong>.</div></div>
+      <div class="nat-box"><h4 style="color:var(--rd)">Probabilidad de robo</h4><div style="font-size:11px;color:var(--t2);line-height:1.8;margin-top:6px">Riesgo de robo de la zona (SESNSP) <strong>60%</strong> · descargas de diésel <strong>25%</strong> · exposición nocturna <strong>15%</strong>.</div></div>
+    </div>
+    <div style="font-size:11px;color:var(--t3);margin-top:12px">En el Resumen ejecutivo se muestra el nivel promedio de la flota y el número de unidades en riesgo alto; el detalle por unidad está en el Tablero y en Seguridad vial.</div>
   </div>
 </section>
 </main>
@@ -528,8 +539,13 @@ const CH={};
 // ── Cristal translúcido: convierte rellenos sólidos en vidrio con borde sólido ──
 function _rgba(c,a){if(typeof c!=='string')return c;if(c.startsWith('rgba'))return c;if(c.startsWith('rgb('))return c.replace('rgb(','rgba(').replace(')',`,${a})`);let h=c.replace('#','');if(h.length===3)h=h.split('').map(x=>x+x).join('');const n=parseInt(h,16);return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
 function glassify(cfg){(cfg.data&&cfg.data.datasets||[]).forEach(ds=>{const t=ds.type||cfg.type;if(t==='line')return;const a=t==='doughnut'?0.74:0.6;
-  if(Array.isArray(ds.backgroundColor)){const s=ds.backgroundColor.slice();ds.backgroundColor=s.map(c=>_rgba(c,a));if(ds.borderColor===undefined){ds.borderColor=s;ds.borderWidth=ds.borderWidth??1.4;}}
-  else if(typeof ds.backgroundColor==='string'){const s=ds.backgroundColor;ds.backgroundColor=_rgba(s,a);if(ds.borderColor===undefined){ds.borderColor=s;ds.borderWidth=ds.borderWidth??1.4;}}});return cfg;}
+  if(Array.isArray(ds.backgroundColor)){const s=ds.backgroundColor.slice();ds.backgroundColor=s.map(c=>_rgba(c,a));if(ds.borderColor===undefined){ds.borderColor=s;ds.borderWidth=ds.borderWidth??1.4;}ds.hoverBackgroundColor=s.map(c=>_rgba(c,Math.min(1,a+0.28)));}
+  else if(typeof ds.backgroundColor==='string'){const s=ds.backgroundColor;ds.backgroundColor=_rgba(s,a);if(ds.borderColor===undefined){ds.borderColor=s;ds.borderWidth=ds.borderWidth??1.4;}ds.hoverBackgroundColor=_rgba(s,Math.min(1,a+0.28));}
+  if(t==='doughnut'){ds.hoverOffset=12;ds.hoverBorderWidth=3;}else{ds.hoverBorderWidth=(ds.borderWidth||1.4)+2;}});
+  cfg.options=cfg.options||{};cfg.options.interaction=Object.assign({mode:'nearest',intersect:false},cfg.options.interaction);
+  cfg.options.animation=Object.assign({duration:700,easing:'easeOutQuart'},cfg.options.animation);
+  cfg.options.hover=Object.assign({animationDuration:200},cfg.options.hover);
+  return cfg;}
 function chart(id,cfg){glassify(cfg);if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),cfg);}
 const axX=(x={})=>({grid:{display:false},ticks:{color:C.txt,font:{size:10}},...x});
 const axY=(x={})=>({grid:{color:C.grid},ticks:{color:C.txt,font:{size:10}},...x});
@@ -553,7 +569,7 @@ function render(){
 function scopeLbl(){const m=MONTHS.find(x=>x.id===STATE.month).label;const w=STATE.week==='all'?'todo el mes':weeksOf(STATE.month).find(x=>x.id===STATE.week)?.label;const z=STATE.zona==='all'?'todas las zonas':STATE.zona;return `${m} · ${w} · ${z}`;}
 
 function fillPortada(){
-  document.getElementById('portMeta').innerHTML=`${A.fleetTotal} ${META.tipoUnidad} · ${META.zona}<br>Periodo base: Feb–Jun 2026 &nbsp;·&nbsp; ${META.cliente} · Tier ${META.tier}<br>Fuente: ${META.fuente}`;
+  document.getElementById('portMeta').innerHTML=`${A.fleetTotal} ${META.tipoUnidad} · ${META.zona}<br>Periodo base: Feb–Jun 2026 &nbsp;·&nbsp; ${META.cliente} · Tier ${META.tier}<br>Analítica potencializada por Advance y Claude`;
   document.getElementById('portStats').innerHTML=[{v:intES(A.total),l:'Unidades'},{v:A.active,l:'Activas'},{v:A.total-A.active,l:'Sin actividad'},{v:MODELS.length,l:'Modelos'},{v:[...new Set(D.map(u=>u.zona).filter(Boolean))].length,l:'Zonas / sedes'},{v:A.days.length,l:'Días'}].map(s=>`<div class="pstat"><div class="v">${s.v}</div><div class="l">${s.l}</div></div>`).join('');
   const nd=document.getElementById('portNoData');
   if(META.sinSenal.length){nd.style.display='';nd.innerHTML=`<strong>⚠ ${META.sinSenal.length} unidades sin señal GPS:</strong> `+META.sinSenal.map(s=>`${s.n} (desde ${s.desde})`).join(' · ')+`. Posible robo o desconexión.`;}else nd.style.display='none';
@@ -563,11 +579,19 @@ function fillPortada(){
 function fillKpis(){
   document.getElementById('subS02').textContent=`Tendencia de rendimiento general · ${scopeLbl()}`;
   document.getElementById('subBoard').textContent=`${A.total} unidades · ${scopeLbl()}`;
+  const act=A.UA.filter(u=>u.km>0);
+  const accs=act.map(accidentRisk), thfs=act.map(theftRisk);
+  const avg=a=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length):0;
+  const lvlW=v=>v>=66?'Alta':v>=33?'Media':'Baja';
+  const lvlK=v=>v>=66?'k-rd':v>=33?'k-or':'';
+  const aAcc=avg(accs),aThf=avg(thfs),hiAcc=accs.filter(v=>v>=66).length,hiThf=thfs.filter(v=>v>=66).length;
   document.getElementById('kpiGrid').innerHTML=[
     {l:'Rendimiento general',v:decES(A.kml,2),u:'km/L',k:'',f:`${decES(A.l100)} L/100 km`},
     {l:'Distancia total',v:intES(A.km),u:'km',k:'k-lime',f:`${A.days.length} días en el periodo`},
     {l:'Ralentí de la flota',v:decES(A.pctIdle)+'%',u:'',k:'k-or',f:`${intES(A.stop)} h de motor detenido`},
     {l:'Excesos de velocidad',v:intES(A.viol),u:'',k:'k-rd',f:`${decES(A.exc100,2)} por 100 km`},
+    {l:'Probabilidad de accidente',v:lvlW(aAcc),u:`· ${aAcc}`,k:lvlK(aAcc),f:`${hiAcc} unidad(es) en riesgo alto`},
+    {l:'Probabilidad de robo',v:lvlW(aThf),u:`· ${aThf}`,k:lvlK(aThf),f:`${hiThf} unidad(es) en riesgo alto`},
   ].map(k=>`<div class="kpi ${k.k}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}${k.u?`<small>${k.u}</small>`:''}</div><div class="kpi-foot">${k.f}</div></div>`).join('');
 }
 function buildTrend(){
