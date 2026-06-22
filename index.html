@@ -191,42 +191,18 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
         <svg width="28" height="28" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 4v4h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
       </div>
       <div class="portada-title">Informe<br>Gerencial de <span>Flota</span></div>
-      <div class="portada-meta">
-        32 tractocamiones FOTON EST-A 6×4 · Zona Norte (Sonora / Sinaloa)<br>
-        Periodo: 05 – 11 junio 2026 &nbsp;·&nbsp; Cliente ID: 1<br>
-        Fuente: Telematicsadvance · CAN bus + GPS
-      </div>
-      <div class="portada-stats">
-        <div class="pstat"><div class="v">30</div><div class="l">Unidades activas</div></div>
-        <div class="pstat"><div class="v">2</div><div class="l">Flota tractocamiones</div></div>
-        <div class="pstat"><div class="v">0</div><div class="l">Montacargas</div></div>
-        <div class="pstat"><div class="v">7</div><div class="l">Días analizados</div></div>
-        <div class="pstat"><div class="v">2,198</div><div class="l">Tramos de ruta</div></div>
-        <div class="pstat"><div class="v">11 jun</div><div class="l">Generado</div></div>
-      </div>
-      <div class="portada-nodata" style="margin-top:14px">
-        <strong>⚠ 2 unidades sin señal GPS:</strong>
-        GT-2410 (sin datos desde 29 abr 2026) · GT-2519 (sin datos desde 29 may 2026).
-        Posible robo o dispositivo desconectado.
-      </div>
+      <div class="portada-meta" id="portMeta"></div>
+      <div class="portada-stats" id="portStats"></div>
+      <div class="portada-nodata" id="portNoData" style="margin-top:14px"></div>
     </div>
     <div class="portada-right">
       <div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px">Flota en detalle</div>
       <table>
         <thead><tr><th>Modelo</th><th class="r">Unidades</th><th class="r">km prom/u</th></tr></thead>
-        <tbody>
-          <tr><td>FOTON EST-A 6×4</td><td class="r">21</td><td class="r">1,890</td></tr>
-          <tr><td>FOTON EST-A X13</td><td class="r">9</td><td class="r">3,100</td></tr>
-          <tr><td style="color:var(--rd)">Sin datos (robo)</td><td class="r" style="color:var(--rd)">2</td><td class="r">—</td></tr>
-        </tbody>
+        <tbody id="tbFlota"></tbody>
       </table>
       <div style="margin-top:20px;font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Resumen del periodo</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div style="background:var(--s3);border-radius:8px;padding:12px"><div style="font-size:18px;font-weight:800;color:var(--gr)">66,987</div><div style="font-size:11px;color:var(--t2)">km recorridos</div></div>
-        <div style="background:var(--s3);border-radius:8px;padding:12px"><div style="font-size:18px;font-weight:800;color:var(--or)">80.1%</div><div style="font-size:11px;color:var(--t2)">tiempo en ralentí</div></div>
-        <div style="background:var(--s3);border-radius:8px;padding:12px"><div style="font-size:18px;font-weight:800;color:var(--t)">31,542</div><div style="font-size:11px;color:var(--t2)">litros consumidos</div></div>
-        <div style="background:var(--s3);border-radius:8px;padding:12px"><div style="font-size:18px;font-weight:800;color:var(--rd)">462</div><div style="font-size:11px;color:var(--t2)">excesos &gt;90 km/h</div></div>
-      </div>
+      <div id="portResumen" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
     </div>
   </div>
 </section>
@@ -235,57 +211,16 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
 <section id="s02">
   <div class="sec-head">
     <span class="sec-num">02</span>
-    <div><div class="sec-title">Resumen gerencial</div><div class="sec-sub">8 KPIs clave · periodo 05–11 jun 2026 · 30 unidades activas</div></div>
+    <div><div class="sec-title">Resumen gerencial</div><div class="sec-sub" id="subS02">8 KPIs clave</div></div>
     <span class="sec-badge badge-gr">KPIs</span>
   </div>
 
-  <div class="kpi-grid">
-    <div class="kpi">
-      <div class="kpi-lbl">Distancia total</div>
-      <div class="kpi-val" style="color:var(--gr)">66,987<small>km</small></div>
-      <div class="kpi-foot">9,569 km promedio diario</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-lbl">Horas de conducción</div>
-      <div class="kpi-val">959<small>h</small></div>
-      <div class="kpi-foot">32 h por unidad activa</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-lbl">Horas de ralentí</div>
-      <div class="kpi-val" style="color:var(--or)">3,866<small>h</small></div>
-      <div class="kpi-foot">129 h por unidad · 80.1% del motor</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-lbl">Combustible total</div>
-      <div class="kpi-val">31,542<small>L</small></div>
-      <div class="kpi-foot">1,051 L promedio por unidad</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-lbl">Eficiencia promedio</div>
-      <div class="kpi-val" style="color:var(--gr)">2.22<small>km/L</small></div>
-      <div class="kpi-foot">52.0 L/100km promedio flota</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-lbl">Excesos &gt;90 km/h</div>
-      <div class="kpi-val" style="color:var(--rd)">462</div>
-      <div class="kpi-foot">6.9 excesos por 100 km</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-lbl">Velocidad máx registrada</div>
-      <div class="kpi-val" style="color:var(--rd)">173<small>km/h</small></div>
-      <div class="kpi-foot">GT-2536 · Sinaloa</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-lbl">Tramos de ruta</div>
-      <div class="kpi-val">2,198</div>
-      <div class="kpi-foot">73 tramos por unidad activa</div>
-    </div>
-  </div>
+  <div class="kpi-grid" id="kpiGrid"></div>
 
   <div class="row2">
     <div class="card">
       <div class="card-title">Distribución del tiempo motor</div>
-      <div class="card-sub">Flota completa · 4,825 horas totales de motor</div>
+      <div class="card-sub" id="subTiempo">Flota completa</div>
       <div style="position:relative;height:200px">
         <canvas id="cTiempo" role="img" aria-label="Distribución tiempo motor: 959h conducción (20%) vs 3866h ralentí (80%)">Conducción 959h, Ralentí 3866h</canvas>
       </div>
@@ -334,15 +269,15 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
       <div class="card-sub">FOTON EST-A 6×4 con carga completa</div>
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
         <div style="background:var(--s3);border-radius:8px;padding:12px">
-          <div style="font-size:18px;font-weight:800;color:var(--gr)">2.50 km/L</div>
+          <div style="font-size:18px;font-weight:800;color:var(--gr)" id="benchFab">2.50 km/L</div>
           <div style="font-size:11px;color:var(--t2)">Benchmark fabricante (plena carga)</div>
         </div>
         <div style="background:var(--s3);border-radius:8px;padding:12px">
-          <div style="font-size:18px;font-weight:800;color:var(--or)">2.22 km/L</div>
+          <div style="font-size:18px;font-weight:800;color:var(--or)" id="benchReal">— km/L</div>
           <div style="font-size:11px;color:var(--t2)">Promedio real esta semana</div>
         </div>
         <div style="background:var(--rd-bg);border:1px solid rgba(220,38,38,.2);border-radius:8px;padding:12px">
-          <div style="font-size:18px;font-weight:800;color:var(--rd)">−11.2%</div>
+          <div style="font-size:18px;font-weight:800;color:var(--rd)" id="benchDelta">—</div>
           <div style="font-size:11px;color:var(--t2)">Delta vs benchmark</div>
         </div>
       </div>
@@ -493,7 +428,7 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
   <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
     <div class="kpi"><div class="kpi-lbl">Sobrecosto semanal</div><div class="kpi-val" style="color:var(--rd)" id="kpiRendSem">—</div><div class="kpi-foot" id="kpiRendLitros">— L por encima del benchmark</div></div>
     <div class="kpi"><div class="kpi-lbl">Ahorro potencial mensual</div><div class="kpi-val" style="color:var(--gr)" id="kpiRendMes">—</div><div class="kpi-foot">Si toda la flota alcanzara el benchmark</div></div>
-    <div class="kpi"><div class="kpi-lbl">Unidades por encima del bench</div><div class="kpi-val" id="kpiRendN">—</div><div class="kpi-foot">de 27 unidades con datos de combustible</div></div>
+    <div class="kpi"><div class="kpi-lbl">Unidades por encima del bench</div><div class="kpi-val" id="kpiRendN">—</div><div class="kpi-foot" id="kpiRendNFoot">de 27 unidades con datos de combustible</div></div>
   </div>
 
   <div class="card">
@@ -640,6 +575,128 @@ const COMB = [
 
 const KM_DIA = {labels:['Jue 5','Vie 6','Sáb 7','Dom 8','Lun 9','Mar 10','Mié 11'],vals:[9524,9897,11614,6422,9853,9287,10390]};
 
+// ── METADATOS DEL INFORME ─────────────────────────────────────────────────────
+// La estructura es IDÉNTICA para DEMO / AA / AAA. Lo único que cambia entre tiers
+// es la CANTIDAD DE UNIDADES (arreglos U / COMB / KM_DIA). Todas las cifras de
+// portada y KPIs se calculan solas a partir de los datos: al cambiar el número
+// de unidades, el informe completo se actualiza automáticamente.
+const META = {
+  cliente:    'Cliente ID: 1',
+  tier:       'DEMO',                  // DEMO · AA · AAA  (no afecta la estructura)
+  periodo:    '05 – 11 junio 2026',
+  zona:       'Zona Norte (Sonora / Sinaloa)',
+  tipoUnidad: 'tractocamiones',
+  modelo:     'FOTON EST-A 6×4',
+  generado:   '11 jun',
+  montacargas:0,
+  tramos:     2198,
+  modelos: [                           // distribución por modelo (no se deriva de U)
+    {modelo:'FOTON EST-A 6×4', u:21, km:1890},
+    {modelo:'FOTON EST-A X13', u:9,  km:3100},
+  ],
+  sinSenal: [                          // unidades fuera de U (sin señal / robo)
+    {n:'GT-2410', desde:'29 abr 2026'},
+    {n:'GT-2519', desde:'29 may 2026'},
+  ],
+};
+
+// ── AGREGADOS (derivados de los datos) ────────────────────────────────────────
+const intES = v => Math.round(v).toLocaleString('es-MX');
+const decES = (v,d=1) => v.toLocaleString('es-MX',{minimumFractionDigits:d,maximumFractionDigits:d});
+
+function agg(){
+  const sum = k => U.reduce((s,u)=>s+(u[k]||0),0);
+  const km=sum('km'), hc=sum('hc'), hi=sum('hi'), hm=sum('hm'), e90=sum('e90');
+  const litros = COMB.reduce((s,c)=>s+c.l,0);
+  const vmax = Math.max(...U.map(u=>u.vm||0));
+  const vmaxU = U.find(u=>u.vm===vmax) || {n:'—'};
+  const dias = KM_DIA.labels.length;
+  const total = U.length;
+  return {
+    total, active:U.filter(u=>u.km>0).length, fleetTotal: total + META.sinSenal.length,
+    km, hc, hi, hm, litros, e90, vmax, vmaxU, dias, combUnits: COMB.length,
+    pctIdle: hm ? hi/hm*100 : 0,
+    kml:     litros ? km/litros : 0,
+    l100:    km ? litros/km*100 : 0,
+    exc100:  km ? e90/km*100 : 0,
+    kmDia:   dias ? km/dias : 0,
+  };
+}
+const A = agg();
+
+// ── RELLENO DE CABECERA (portada + KPIs) ──────────────────────────────────────
+function fillReport(){
+  // Portada · metadatos
+  document.getElementById('portMeta').innerHTML =
+    `${A.fleetTotal} ${META.tipoUnidad} ${META.modelo} · ${META.zona}<br>`+
+    `Periodo: ${META.periodo} &nbsp;·&nbsp; ${META.cliente}<br>`+
+    `Fuente: Telematicsadvance · CAN bus + GPS`;
+
+  // Portada · estadísticas
+  const stats = [
+    {v:intES(A.total),       l:'Unidades activas'},
+    {v:META.modelos.length,  l:'Modelos en flota'},
+    {v:META.montacargas,     l:'Montacargas'},
+    {v:A.dias,               l:'Días analizados'},
+    {v:intES(META.tramos),   l:'Tramos de ruta'},
+    {v:META.generado,        l:'Generado'},
+  ];
+  document.getElementById('portStats').innerHTML = stats.map(s=>
+    `<div class="pstat"><div class="v">${s.v}</div><div class="l">${s.l}</div></div>`).join('');
+
+  // Portada · unidades sin señal
+  const nd = document.getElementById('portNoData');
+  if(META.sinSenal.length){
+    nd.style.display='';
+    nd.innerHTML = `<strong>⚠ ${META.sinSenal.length} unidades sin señal GPS:</strong> `+
+      META.sinSenal.map(s=>`${s.n} (sin datos desde ${s.desde})`).join(' · ')+
+      `. Posible robo o dispositivo desconectado.`;
+  } else { nd.style.display='none'; }
+
+  // Portada · flota en detalle
+  let flota = META.modelos.map(m=>
+    `<tr><td>${m.modelo}</td><td class="r">${m.u}</td><td class="r">${intES(m.km)}</td></tr>`).join('');
+  if(META.sinSenal.length)
+    flota += `<tr><td style="color:var(--rd)">Sin datos (robo)</td><td class="r" style="color:var(--rd)">${META.sinSenal.length}</td><td class="r">—</td></tr>`;
+  document.getElementById('tbFlota').innerHTML = flota;
+
+  // Portada · resumen del periodo
+  const res = [
+    {v:intES(A.km),          l:'km recorridos',      c:'var(--gr)'},
+    {v:decES(A.pctIdle)+'%', l:'tiempo en ralentí',  c:'var(--or)'},
+    {v:intES(A.litros),      l:'litros consumidos',  c:'var(--t)'},
+    {v:intES(A.e90),         l:'excesos &gt;90 km/h',c:'var(--rd)'},
+  ];
+  document.getElementById('portResumen').innerHTML = res.map(r=>
+    `<div style="background:var(--s3);border-radius:8px;padding:12px"><div style="font-size:18px;font-weight:800;color:${r.c}">${r.v}</div><div style="font-size:11px;color:var(--t2)">${r.l}</div></div>`).join('');
+
+  // S02 · subtítulos
+  document.getElementById('subS02').textContent =
+    `8 KPIs clave · periodo ${META.periodo} · ${A.total} unidades activas`;
+  document.getElementById('subTiempo').textContent =
+    `Flota completa · ${intES(A.hm)} horas totales de motor`;
+
+  // S02 · KPIs
+  const kpis = [
+    {l:'Distancia total',          v:intES(A.km),     u:'km',   c:'var(--gr)', f:`${intES(A.kmDia)} km promedio diario`},
+    {l:'Horas de conducción',      v:intES(A.hc),     u:'h',    c:'',          f:`${intES(A.hc/A.total)} h por unidad`},
+    {l:'Horas de ralentí',         v:intES(A.hi),     u:'h',    c:'var(--or)', f:`${intES(A.hi/A.total)} h por unidad · ${decES(A.pctIdle)}% del motor`},
+    {l:'Combustible total',        v:intES(A.litros), u:'L',    c:'',          f:`${intES(A.litros/A.total)} L promedio por unidad`},
+    {l:'Eficiencia promedio',      v:decES(A.kml,2),  u:'km/L', c:'var(--gr)', f:`${decES(A.l100)} L/100km promedio flota`},
+    {l:'Excesos &gt;90 km/h',      v:intES(A.e90),    u:'',     c:'var(--rd)', f:`${decES(A.exc100,2)} excesos por 100 km`},
+    {l:'Velocidad máx registrada', v:A.vmax,          u:'km/h', c:'var(--rd)', f:`${A.vmaxU.n}`},
+    {l:'Tramos de ruta',           v:intES(META.tramos),u:'',   c:'',          f:`${intES(META.tramos/A.total)} tramos por unidad`},
+  ];
+  document.getElementById('kpiGrid').innerHTML = kpis.map(k=>
+    `<div class="kpi"><div class="kpi-lbl">${k.l}</div>`+
+    `<div class="kpi-val"${k.c?` style="color:${k.c}"`:''}>${k.v}${k.u?`<small>${k.u}</small>`:''}</div>`+
+    `<div class="kpi-foot">${k.f}</div></div>`).join('');
+
+  // S09 · unidades con combustible
+  const fEl = document.getElementById('kpiRendNFoot');
+  if(fEl) fEl.textContent = `de ${A.combUnits} unidades con datos de combustible`;
+}
+
 // ── PARAMS ────────────────────────────────────────────────────────────────────
 function P(){
   return {
@@ -669,9 +726,11 @@ function makeChart(id, cfg){
 
 // ── S02 CHARTS ────────────────────────────────────────────────────────────────
 function buildS02(){
+  const pctI = (A.hc+A.hi) ? Math.round(A.hi/(A.hc+A.hi)*100) : 0;
+  const pctD = 100 - pctI;
   makeChart('cTiempo',{type:'doughnut',data:{
-    labels:['Conducción (20%)','Ralentí (80%)'],
-    datasets:[{data:[959,3866],backgroundColor:[C.bl,C.or],borderWidth:3,borderColor:C.cardBorder}]
+    labels:[`Conducción (${pctD}%)`,`Ralentí (${pctI}%)`],
+    datasets:[{data:[A.hc,A.hi],backgroundColor:[C.bl,C.or],borderWidth:3,borderColor:C.cardBorder}]
   },options:{responsive:true,maintainAspectRatio:false,plugins:{
     legend:{position:'bottom',labels:{color:C.txt,font:{size:11},padding:12,usePointStyle:true}},
     tooltip:{callbacks:{label:ctx=>` ${ctx.raw.toLocaleString('es-MX')} horas`}}
@@ -715,6 +774,11 @@ function buildS03(){
   document.getElementById('tbBot5').innerHTML = sorted.slice(-5).reverse().map(r=>
     `<tr><td><strong>${r.n}</strong></td><td class="r" style="color:${rowColor(r.kml)};font-weight:700">${r.kml.toFixed(3)}</td><td class="r">${l100(r.n)}</td></tr>`
   ).join('');
+
+  // Tarjetas de benchmark (se recalculan con el parámetro)
+  const efF=document.getElementById('benchFab');   if(efF) efF.textContent = `${bench.toFixed(2)} km/L`;
+  const efR=document.getElementById('benchReal');  if(efR) efR.textContent = `${A.kml.toFixed(2)} km/L`;
+  const efD=document.getElementById('benchDelta'); if(efD){ const d=(A.kml/bench-1)*100; efD.textContent = `${d>=0?'+':'−'}${Math.abs(d).toFixed(1)}%`; }
 }
 
 // ── S04 CHARTS ────────────────────────────────────────────────────────────────
@@ -903,6 +967,7 @@ sections.forEach(s=>obs.observe(s));
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 window.addEventListener('load',()=>{
+  fillReport();
   buildS02(); buildS03(); buildS04(); buildS06();
   buildS07(); buildS08(); buildS09();
 });
