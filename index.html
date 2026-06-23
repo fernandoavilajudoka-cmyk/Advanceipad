@@ -129,10 +129,14 @@ th.sortable:hover{color:var(--gr);}
 .nat-box h4{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
 .nat-box ul{list-style:none;font-size:11px;color:var(--t2);line-height:1.7;}
 .nat-box li{display:flex;gap:7px;align-items:flex-start;}
-.bono-pillar-val{font-size:23px;font-weight:800;line-height:1;margin:7px 0 4px;}
-.bono-eq{font-size:10.5px;color:var(--t2);line-height:1.65;}
-.bono-eq b{color:var(--t);}
-.bono-pillar-meta{font-size:10.5px;color:var(--t3);margin-top:9px;line-height:1.5;}
+.bono-pillar-val{font-size:23px;font-weight:800;line-height:1;margin:2px 0 4px;}
+.bono-pillar-lbl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);margin-top:10px;}
+.bono-pillar-meta{font-size:10.5px;color:var(--t3);margin-top:8px;line-height:1.5;}
+.bono-scn{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--t2);margin:9px 0 5px;flex-wrap:wrap;}
+.bono-scn b{color:var(--t);font-weight:800;}
+.bono-arrow{color:var(--gr);font-weight:800;font-size:13px;}
+.bono-save{font-size:11px;color:var(--t2);}
+.bono-save b{color:var(--t);font-weight:800;}
 .empty{background:var(--glass);border:1px dashed var(--brd2);border-radius:var(--r);padding:36px;text-align:center;color:var(--t2);box-shadow:var(--shadow-sm);}
 .param-row{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:11px 0;border-bottom:1px solid var(--line);}
 .param-row:last-child{border-bottom:none;}
@@ -337,30 +341,36 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
     </div>
   </div>
   <div class="card">
-    <div class="card-title">Bono al operador — modelo de 3 pilares</div>
-    <div class="card-sub" id="subBono">Scorecard por conductor → recompensa · Seguridad + Ralentí + Rendimiento (enfoque Samsara · Geotab · Airbag)</div>
+    <div class="card-title">Bono al operador — escenario «¿qué pasaría si?» (3 pilares)</div>
+    <div class="card-sub" id="subBono">De las métricas actuales a un objetivo · el operador recibe su parte del ahorro</div>
     <div class="row3" style="margin-top:8px">
       <div class="nat-box" style="border-left:3px solid var(--rd)">
         <h4 style="color:var(--rd)">1 · Seguridad</h4>
+        <div class="bono-scn"><span>Actual <b id="segAct">—</b></span><span class="bono-arrow">→</span><span>Objetivo <b id="segObj">—</b></span></div>
+        <div class="bono-save">Ahorro potencial <b id="segSave">$—</b></div>
+        <div class="bono-pillar-lbl">Le toca al operador</div>
         <div class="bono-pillar-val" id="bonoSegTot" style="color:var(--rd)">$—</div>
-        <div class="bono-eq">Score = 100 − excesos/100 km − eventos bruscos<br><b>Bono = bolsa_seguridad × score ÷ 100</b></div>
         <div class="bono-pillar-meta" id="bonoSegMeta"></div>
       </div>
       <div class="nat-box" style="border-left:3px solid var(--or)">
         <h4 style="color:var(--or)">2 · Ralentí</h4>
+        <div class="bono-scn"><span>Actual <b id="ralAct">—</b></span><span class="bono-arrow">→</span><span>Objetivo <b id="ralObj">—</b></span></div>
+        <div class="bono-save">Ahorro potencial <b id="ralSave">$—</b></div>
+        <div class="bono-pillar-lbl">Le toca al operador</div>
         <div class="bono-pillar-val" id="bonoRalTot" style="color:var(--or)">$—</div>
-        <div class="bono-eq">Litros = (%base − %real) ÷ 100 × h_motor × L/h<br><b>Bono = Litros × diésel × % reparto</b></div>
         <div class="bono-pillar-meta" id="bonoRalMeta"></div>
       </div>
       <div class="nat-box" style="border-left:3px solid var(--gr)">
         <h4 style="color:var(--gr)">3 · Rendimiento</h4>
+        <div class="bono-scn"><span>Actual <b id="efiAct">—</b></span><span class="bono-arrow">→</span><span>Objetivo <b id="efiObj">—</b></span></div>
+        <div class="bono-save">Ahorro potencial <b id="efiSave">$—</b></div>
+        <div class="bono-pillar-lbl">Le toca al operador</div>
         <div class="bono-pillar-val" id="bonoEfiTot" style="color:var(--gr)">$—</div>
-        <div class="bono-eq">Litros = km ÷ benchmark − litros_reales<br><b>Bono = Litros × diésel × % reparto</b></div>
         <div class="bono-pillar-meta" id="bonoEfiMeta"></div>
       </div>
     </div>
     <div style="margin-top:18px">
-      <div class="card-title" style="font-size:13px">Bono total por operador (MXN) — desglosado por pilar</div>
+      <div class="card-title" style="font-size:13px">Bono potencial por operador si alcanza los objetivos (MXN)</div>
       <div class="card-sub" id="bonoNote">Suma de los tres pilares por operador</div>
       <div style="position:relative;" id="wrapBono"><canvas id="cBono"></canvas></div>
     </div>
@@ -393,9 +403,10 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
         <div class="param-row"><div class="param-label">Benchmark km/L<small>referencia general</small></div><input type="number" id="pBench" value="2.50" step="0.05" min="1.5" max="6"></div>
         <div class="param-row"><div class="param-label">Límite de velocidad<small>km/h</small></div><input type="number" id="pLimite" value="90" step="5" min="60" max="120"></div>
         <div class="param-row"><div class="param-label">Costo por exceso<small>MXN/evento</small></div><input type="number" id="pEventCost" value="150" step="50" min="50" max="2000"></div>
-        <div class="param-row"><div class="param-label">% ralentí base (bono)<small>referencia para premiar reducción</small></div><input type="number" id="pIdleBase" value="75" step="1" min="40" max="95"></div>
-        <div class="param-row"><div class="param-label">% de reparto del bono<small>parte del ahorro para el operador (ralentí y rendimiento)</small></div><input type="number" id="pBonusShare" value="30" step="5" min="10" max="60"></div>
-        <div class="param-row"><div class="param-label">Bolsa de bono de seguridad<small>MXN máx por operador · pilar de seguridad</small></div><input type="number" id="pSafetyPool" value="600" step="50" min="0" max="5000"></div>
+        <div class="param-row"><div class="param-label">Objetivo de ralentí<small>% meta · el ahorro va de actual → objetivo</small></div><input type="number" id="pIdleTarget" value="60" step="1" min="20" max="90"></div>
+        <div class="param-row"><div class="param-label">Objetivo de rendimiento<small>km/L meta a alcanzar</small></div><input type="number" id="pKmlTarget" value="3.0" step="0.1" min="1.5" max="8"></div>
+        <div class="param-row"><div class="param-label">Objetivo de excesos<small>/100 km · meta de seguridad (0 = ninguno)</small></div><input type="number" id="pExcTarget" value="0" step="0.1" min="0" max="5"></div>
+        <div class="param-row"><div class="param-label">% de reparto del bono<small>parte del ahorro para el operador (los 3 pilares)</small></div><input type="number" id="pBonusShare" value="30" step="5" min="10" max="60"></div>
       </div>
       <button class="btn-recalc" onclick="render()">↻ Recalcular todo el informe</button>
     </div>
@@ -498,7 +509,7 @@ const decES=(v,d=1)=>(v||0).toLocaleString('es-MX',{minimumFractionDigits:d,maxi
 const mxn=v=>'$'+Math.round(v||0).toLocaleString('es-MX');
 const fmtK=v=>v==null?'—':(v/1000).toFixed(1)+'k';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-function P(){return{diesel:+document.getElementById('pDiesel').value||25.99,norma:+document.getElementById('pNorma').value||40,idleL:+document.getElementById('pIdleL').value||5,bench:+document.getElementById('pBench').value||2.5,limite:+document.getElementById('pLimite').value||90,eventCost:+document.getElementById('pEventCost').value||150,idleBase:+document.getElementById('pIdleBase').value||75,bonusShare:+document.getElementById('pBonusShare').value||30,safetyPool:+document.getElementById('pSafetyPool').value||600};}
+function P(){return{diesel:+document.getElementById('pDiesel').value||25.99,norma:+document.getElementById('pNorma').value||40,idleL:+document.getElementById('pIdleL').value||5,bench:+document.getElementById('pBench').value||2.5,limite:+document.getElementById('pLimite').value||90,eventCost:+document.getElementById('pEventCost').value||150,idleTarget:+document.getElementById('pIdleTarget').value||60,kmlTarget:+document.getElementById('pKmlTarget').value||3,excTarget:+document.getElementById('pExcTarget').value||0,bonusShare:+document.getElementById('pBonusShare').value||30};}
 
 // ════════ CALENDARIO (Feb–Jun 2026) ════════
 function dateList(){const a=[];let d=new Date('2026-02-01T00:00:00');const e=new Date('2026-06-17T00:00:00');while(d<=e){a.push(d.toISOString().slice(0,10));d.setDate(d.getDate()+1);}return a;}
@@ -787,30 +798,38 @@ function buildFuel(){
     {l:'Diésel descargado',v:intES(robL)+' L',f:'≈ '+mxn(roboCost)+' en pérdida',c:'var(--rd)'},
     {l:'Costo por km de robo',v:'$'+decES(roboKm,2),f:'/km de la flota',c:'var(--or)'},
   ].map(d=>`<div style="background:var(--s3);border-radius:8px;padding:12px"><div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">${d.l}</div><div style="font-size:22px;font-weight:800;color:${d.c};margin-top:4px">${d.v}</div><div style="font-size:10px;color:var(--t2);margin-top:2px">${d.f}</div></div>`).join('');
-  // ── Bono al operador · modelo de 3 pilares: Seguridad + Ralentí + Rendimiento ──
-  const base=p.idleBase, pool=p.safetyPool;
+  // ── Bono al operador · escenario "¿qué pasaría si?": de las métricas actuales al objetivo ──
+  const idleT=p.idleTarget, kmlT=p.kmlTarget, excT=p.excTarget, share=p.bonusShare/100;
   const calcBono=u=>{
     const motorH=u.drive+u.stop;
-    const harshRate=(u.harsh!=null&&u.km>0)?u.harsh/u.km*100:0;
-    const segScore=clamp(100-u.exc100*22-harshRate*1.5,0,100);
-    const seg=pool*segScore/100;
-    const litrosRal=Math.max(0,(base-u.pctIdle)/100*motorH*p.idleL);
-    const ral=litrosRal*p.diesel*p.bonusShare/100;
-    const litrosEfi=u.kml>0?Math.max(0,u.km/p.bench-u.real_l):0;
-    const efi=litrosEfi*p.diesel*p.bonusShare/100;
-    return {n:u.n,segScore,seg,ral,efi,litrosRal,litrosEfi,pct:u.pctIdle,kml:u.kml,total:seg+ral+efi};
+    // Ralentí: bajar de %actual a %objetivo
+    const litrosRal=Math.max(0,(u.pctIdle-idleT)/100*motorH*p.idleL), saveRal=litrosRal*p.diesel, ral=saveRal*share;
+    // Rendimiento: subir de km/L actual a objetivo (litros que se dejarían de gastar)
+    const litrosEfi=(u.kml>0&&kmlT>u.kml)?Math.max(0,u.real_l-u.km/kmlT):0, saveEfi=litrosEfi*p.diesel, efi=saveEfi*share;
+    // Seguridad: bajar excesos/100km al objetivo → costo de los eventos evitados
+    const excEvit=Math.max(0,(u.exc100-excT)/100*u.km), saveSeg=excEvit*p.eventCost, seg=saveSeg*share;
+    return {n:u.n,saveRal,saveEfi,saveSeg,ral,efi,seg,total:seg+ral+efi};
   };
   const allB=A.UA.filter(u=>u.km>0).map(calcBono);
-  const tSeg=allB.reduce((s,b)=>s+b.seg,0),tRal=allB.reduce((s,b)=>s+b.ral,0),tEfi=allB.reduce((s,b)=>s+b.efi,0),tAll=tSeg+tRal+tEfi;
+  const sumB=k=>allB.reduce((s,b)=>s+b[k],0);
+  const tSeg=sumB('seg'),tRal=sumB('ral'),tEfi=sumB('efi'),tAll=tSeg+tRal+tEfi;
+  const sSeg=sumB('saveSeg'),sRal=sumB('saveRal'),sEfi=sumB('saveEfi'),sAll=sSeg+sRal+sEfi;
   const bono=[...allB].filter(b=>b.total>0).sort((a,b)=>b.total-a.total).slice(0,12);
-  const avgScore=allB.length?Math.round(allB.reduce((s,b)=>s+b.segScore,0)/allB.length):0;
   const setTxt=(id,t)=>{const e=document.getElementById(id);if(e)e.textContent=t;};
-  setTxt('bonoSegTot',mxn(tSeg)); setTxt('bonoRalTot',mxn(tRal)); setTxt('bonoEfiTot',mxn(tEfi));
-  setTxt('bonoSegMeta',`${allB.filter(b=>b.seg>0).length} operadores · score promedio ${avgScore}/100`);
-  setTxt('bonoRalMeta',`${allB.filter(b=>b.ral>0).length} operadores por debajo del ${base}% de ralentí base`);
-  setTxt('bonoEfiMeta',`${allB.filter(b=>b.efi>0).length} operadores por encima de ${decES(p.bench,2)} km/L`);
-  setTxt('subBono',`Scorecard por conductor → recompensa · Seguridad + Ralentí + Rendimiento · ${bono.length} operadores con bono`);
-  document.getElementById('bonoNote').innerHTML=`En conjunto reciben <b style="color:var(--gr)">${mxn(tAll)}</b> este periodo: <b style="color:var(--rd)">${mxn(tSeg)}</b> seguridad · <b style="color:var(--or)">${mxn(tRal)}</b> ralentí · <b style="color:var(--gr2)">${mxn(tEfi)}</b> rendimiento. Cada barra es un operador; los colores son el desglose y la etiqueta el total.`;
+  // pilar Seguridad
+  setTxt('segAct',`${decES(A.exc100,2)} exc/100km`); setTxt('segObj',`${decES(excT,2)} exc/100km`);
+  setTxt('segSave',mxn(sSeg)); setTxt('bonoSegTot',mxn(tSeg));
+  setTxt('bonoSegMeta',`${allB.filter(b=>b.seg>0).length} operadores con margen · reparto ${p.bonusShare}%`);
+  // pilar Ralentí
+  setTxt('ralAct',`${decES(A.pctIdle)}%`); setTxt('ralObj',`${decES(idleT)}%`);
+  setTxt('ralSave',mxn(sRal)); setTxt('bonoRalTot',mxn(tRal));
+  setTxt('bonoRalMeta',`${allB.filter(b=>b.ral>0).length} operadores con margen · reparto ${p.bonusShare}%`);
+  // pilar Rendimiento
+  setTxt('efiAct',`${decES(A.kml,2)} km/L`); setTxt('efiObj',`${decES(kmlT,2)} km/L`);
+  setTxt('efiSave',mxn(sEfi)); setTxt('bonoEfiTot',mxn(tEfi));
+  setTxt('bonoEfiMeta',`${allB.filter(b=>b.efi>0).length} operadores con margen · reparto ${p.bonusShare}%`);
+  setTxt('subBono',`Escenario "¿qué pasaría si?" · de las métricas actuales al objetivo · el operador recibe el ${p.bonusShare}% del ahorro`);
+  document.getElementById('bonoNote').innerHTML=`Si la flota alcanza los objetivos, el ahorro potencial es <b style="color:var(--gr)">${mxn(sAll)}</b> y a los operadores les tocaría <b style="color:var(--gr2)">${mxn(tAll)}</b> (${p.bonusShare}% del ahorro). Cada barra es un operador; colores = pilar, etiqueta = total.`;
   document.getElementById('wrapBono').style.height=(Math.max(1,bono.length)*30+54)+'px';
   const pil=[['Seguridad','seg',C.rd],['Ralentí','ral',C.or],['Rendimiento','efi',C.gr]];
   chart('cBono',{type:'bar',data:{labels:bono.map(b=>b.n),datasets:pil.map(([lb,k,co],di)=>({label:lb,data:bono.map(b=>Math.round(b[k])),backgroundColor:co,stack:'b',borderRadius:di===2?5:2,datalabels:di===2?dlH({color:_dlC,formatter:(v,c)=>'$'+intES(bono[c.dataIndex].total)}):{display:false}}))},
