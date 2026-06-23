@@ -704,11 +704,12 @@ function buildSeg(){
     return {ds,exces,fren,acel,noct,desc,total:exces+fren+acel+noct+desc};});
   const lbls=sdays.map(d=>new Date(d+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short'}));
   const step=lbls.length>20?Math.ceil(lbls.length/14):1;
+  const stepL=Math.max(1,Math.ceil(lbls.length/8));
   chart('cSegTrend',{type:'line',data:{labels:lbls,datasets:[{label:'Eventos de seguridad',data:ser.map(d=>d.total),borderColor:C.gr,backgroundColor:'rgba(22,163,74,.12)',borderWidth:2.5,pointRadius:2.5,fill:true,tension:.35}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${intES(c.raw)} eventos`}}},scales:{x:axX({ticks:{color:C.txt,font:{size:9},callback:(v,i)=>i%step===0?lbls[i]:''}}),y:axY({beginAtZero:true})}}});
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${intES(c.raw)} eventos`}},datalabels:dlV({color:C.gr2,align:'top',offset:6,display:(c)=>c.dataIndex%stepL===0,formatter:v=>intES(v)})},scales:{x:axX({ticks:{color:C.txt,font:{size:9},callback:(v,i)=>i%step===0?lbls[i]:''}}),y:axY({beginAtZero:true})}}});
   const types=[['Excesos','exces',C.gr],['Frenadas','fren',C.teal],['Aceleraciones','acel',C.lime],['Nocturna','noct',C.or],['Desconexión','desc',C.rd]];
-  chart('cSegStack',{type:'bar',data:{labels:lbls,datasets:types.map(([lb,k,co])=>({label:lb,data:ser.map(d=>d[k]),backgroundColor:co,stack:'s',borderRadius:2}))},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:10}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${intES(c.raw)}`}}},scales:{x:axX({stacked:true,ticks:{color:C.txt,font:{size:9},callback:(v,i)=>i%step===0?lbls[i]:''}}),y:axY({stacked:true,beginAtZero:true})}}});
+  chart('cSegStack',{type:'bar',data:{labels:lbls,datasets:types.map(([lb,k,co],ti)=>({label:lb,data:ser.map(d=>d[k]),backgroundColor:co,stack:'s',borderRadius:2,datalabels:ti===types.length-1?dlV({color:_dlC,anchor:'end',align:'top',offset:3,display:(c)=>c.dataIndex%stepL===0,formatter:(v,c)=>intES(ser[c.dataIndex].total)}):{display:false}}))},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:10}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${intES(c.raw)}`,footer:it=>'Total: '+intES(ser[it[0].dataIndex].total)}}},scales:{x:axX({stacked:true,ticks:{color:C.txt,font:{size:9},callback:(v,i)=>i%step===0?lbls[i]:''}}),y:axY({stacked:true,beginAtZero:true})}}});
   // mejora: primera mitad vs segunda mitad del periodo
   const tot=ser.map(d=>d.total), n=tot.length, h=Math.floor(n/2);
   const segImp=document.getElementById('segImprove'), subT=document.getElementById('subSegTrend');
@@ -784,10 +785,11 @@ function buildFuel(){
   ].map(k=>`<div class="kpi ${k.k}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}${k.u?`<small>${k.u}</small>`:''}</div><div class="kpi-foot">${k.f}</div></div>`).join('');
   // gasto por zona apilado (conducción · ralentí · robo)
   const gz=A.byZona.map(z=>{const idL=z.stopH*p.idleL,robL=z.drainL,condL=Math.max(0,z.realL-idL);return {zona:z.zona,cond:condL*p.diesel,ral:idL*p.diesel,robo:robL*p.diesel};});
+  const gtot=gz.map(z=>z.cond+z.ral+z.robo);
   chart('cGastoZona',{type:'bar',data:{labels:gz.map(z=>z.zona),datasets:[
     {label:'Conducción',data:gz.map(z=>Math.round(z.cond)),backgroundColor:C.gr,stack:'g',borderRadius:3},
     {label:'Ralentí',data:gz.map(z=>Math.round(z.ral)),backgroundColor:C.or,stack:'g',borderRadius:3},
-    {label:'Robo de diésel',data:gz.map(z=>Math.round(z.robo)),backgroundColor:C.rd,stack:'g',borderRadius:3}]},
+    {label:'Robo de diésel',data:gz.map(z=>Math.round(z.robo)),backgroundColor:C.rd,stack:'g',borderRadius:3,datalabels:dlV({color:_dlC,anchor:'end',align:'top',offset:3,formatter:(v,c)=>'$'+(gtot[c.dataIndex]/1000).toFixed(0)+'k'})}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${mxn(c.raw)}`}}},
       scales:{x:axX({stacked:true}),y:axY({stacked:true,ticks:{color:C.txt,font:{size:10},callback:v=>'$'+(v/1000).toFixed(0)+'k'}})}}});
   // descargas
