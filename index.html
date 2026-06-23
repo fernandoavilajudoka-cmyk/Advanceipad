@@ -5,41 +5,46 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Informe Gerencial de Flota — Advance</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <style>
 :root{
-  /* ── PALETA VERDE ADVANCE · CRISTAL ── */
-  --bg:#eef5e1;
-  --glass:rgba(255,255,255,.60);
-  --glass-strong:rgba(255,255,255,.78);
-  --blur:blur(18px) saturate(160%);
-  --brd:rgba(255,255,255,.72);
-  --brd2:rgba(40,70,30,.14);
-  --line:rgba(40,70,30,.09);
-  --s3:rgba(244,250,236,.85);
-  --t:#1d3326;--t2:#5c6b5e;--t3:#9aa99a;
-  --gr:#16a34a;--gr2:#15803d;--gr-bg:rgba(22,163,74,.15);
-  --g2:#22c55e;--gl:#bbe9a0;
-  --lime:#65a30d;--lime-bg:rgba(101,163,13,.16);
-  --teal:#0d9488;--teal-bg:rgba(13,148,136,.14);
-  --or:#e1881f;--or-bg:rgba(225,136,31,.13);
+  /* ── PALETA VERDE ADVANCE · PREMIUM GLASS ── */
+  --bg:#e6f1de;
+  --glass:rgba(255,255,255,.46);
+  --glass-strong:rgba(255,255,255,.68);
+  --blur:blur(24px) saturate(175%);
+  --brd:rgba(255,255,255,.60);
+  --brd2:rgba(21,128,61,.16);
+  --line:rgba(21,128,61,.10);
+  --s3:rgba(238,248,231,.66);
+  --t:#10261c;--t2:#4c6053;--t3:#85a08f;
+  /* verdes Advance: bosque · primario · esmeralda · menta */
+  --forest:#0f5132;--gr:#16a34a;--gr2:#15803d;--gr-bg:rgba(22,163,74,.13);
+  --g2:#22c55e;--g3:#34d399;--gl:#a3dd86;--mint:#6ee7b7;
+  --lime:#4f9c2d;--lime-bg:rgba(79,156,45,.15);
+  --teal:#0d9488;--teal-bg:rgba(13,148,136,.13);
+  --or:#d98324;--or-bg:rgba(217,131,36,.13);
   --rd:#d64b34;--rd-bg:rgba(214,75,52,.12);
-  --pu:#6d8f3a;--pu-bg:rgba(109,143,58,.14);
-  --shadow:0 10px 34px rgba(30,60,25,.12);
-  --shadow-sm:0 6px 20px rgba(30,60,25,.09);
-  --r:14px;--r2:10px;
+  --pu:#5b8c34;--pu-bg:rgba(91,140,52,.14);
+  --glow:0 0 22px rgba(22,163,74,.10);
+  --shadow:0 18px 48px rgba(16,70,38,.16);
+  --shadow-sm:0 10px 30px rgba(16,70,38,.10);
+  --r:16px;--r2:11px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;color:var(--t);font-size:13px;line-height:1.55;min-height:100vh;
   background:var(--bg);
   background-image:
-    radial-gradient(680px 520px at 5% -8%, rgba(101,163,13,.17), transparent 60%),
-    radial-gradient(620px 520px at 104% 2%, rgba(22,163,74,.17), transparent 58%),
-    radial-gradient(640px 560px at 50% 120%, rgba(13,148,136,.12), transparent 60%);
+    radial-gradient(720px 560px at 2% -10%, rgba(34,197,94,.22), transparent 58%),
+    radial-gradient(680px 560px at 106% 0%, rgba(22,163,74,.20), transparent 56%),
+    radial-gradient(560px 520px at 80% 108%, rgba(15,81,50,.16), transparent 60%),
+    radial-gradient(620px 600px at 18% 118%, rgba(13,148,136,.12), transparent 62%),
+    linear-gradient(155deg, rgba(167,221,134,.10) 0%, transparent 45%);
   background-attachment:fixed;}
 nav{position:fixed;top:0;left:0;bottom:0;width:212px;background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-right:1px solid var(--brd);box-shadow:var(--shadow-sm);z-index:100;overflow-y:auto;padding:20px 0;}
 .nav-logo{padding:0 16px 16px;border-bottom:1px solid var(--line);margin-bottom:8px;}
-.nav-logo span{font-size:13px;font-weight:800;color:var(--gr);letter-spacing:.5px;}
+.nav-logo span{font-size:14px;font-weight:800;letter-spacing:1px;background:linear-gradient(135deg,var(--gr),var(--forest));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
 .nav-logo p{font-size:10px;color:var(--t3);margin-top:2px;}
 nav a{display:flex;align-items:center;gap:8px;padding:7px 16px;font-size:12px;color:var(--t2);text-decoration:none;border-radius:8px;margin:1px 8px;transition:.15s;}
 nav a:hover,nav a.active{background:var(--gr-bg);color:var(--gr2);}
@@ -50,7 +55,7 @@ nav a:hover .num,nav a.active .num{color:var(--gr);}
 main{margin-left:212px;}
 section{padding:34px 40px;border-bottom:1px solid var(--line);}
 .sec-head{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
-.sec-num{font-size:11px;font-weight:800;color:#33491c;background:var(--lime);min-width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.sec-num{font-size:11px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--gr),var(--forest));min-width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(22,163,74,.34);}
 .sec-title{font-size:20px;font-weight:800;color:var(--t);}
 .sec-sub{font-size:12px;color:var(--t2);margin-top:2px;}
 .sec-badge{padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;}
@@ -65,11 +70,13 @@ section{padding:34px 40px;border-bottom:1px solid var(--line);}
 .portada-title span{color:var(--gr);}
 .portada-meta{font-size:13px;color:var(--t2);margin-bottom:20px;}
 .portada-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
-.pstat,.kpi,.card,.portada-right{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--brd);box-shadow:var(--shadow-sm);transition:transform .2s ease, box-shadow .2s ease;}
-.card:hover,.kpi:hover,.pstat:hover{transform:translateY(-4px);box-shadow:0 18px 44px rgba(20,70,35,.18);}
-canvas{transition:filter .2s ease;}.card:hover canvas{filter:saturate(1.08);}
+.pstat,.kpi,.card,.portada-right{position:relative;background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--brd);box-shadow:var(--shadow-sm);transition:transform .25s cubic-bezier(.2,.7,.3,1), box-shadow .25s ease, border-color .25s ease;}
+.pstat::before,.kpi::before,.card::before,.portada-right::before{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(140deg,rgba(255,255,255,.40),rgba(255,255,255,0) 40%);pointer-events:none;z-index:0;}
+.pstat>*,.kpi>*,.card>*,.portada-right>*{position:relative;z-index:1;}
+.card:hover,.kpi:hover,.pstat:hover{transform:translateY(-5px);box-shadow:0 22px 50px rgba(16,70,38,.20),var(--glow);border-color:rgba(22,163,74,.32);}
+canvas{transition:filter .2s ease;position:relative;}.card:hover canvas{filter:saturate(1.1);}
 .pstat{border-radius:var(--r2);padding:14px 16px;}
-.pstat .v{font-size:22px;font-weight:800;color:var(--gr);line-height:1;}
+.pstat .v{font-size:22px;font-weight:800;line-height:1;background:linear-gradient(135deg,var(--gr),var(--forest));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
 .pstat .l{font-size:11px;color:var(--t2);margin-top:4px;}
 .portada-nodata{background:rgba(214,75,52,.07);border:1px solid rgba(214,75,52,.22);border-radius:var(--r2);padding:12px 16px;font-size:12px;color:var(--rd);margin-top:16px;}
 .portada-right{border-radius:var(--r);padding:24px;}
@@ -135,9 +142,8 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
   <a href="#s06"><span class="num">06</span> Seguridad vial</a>
   <a href="#s07"><span class="num">07</span> Tablero de unidades</a>
   <a href="#s08"><span class="num">08</span> Combustible y costo</a>
-  <a href="#s09"><span class="num">09</span> Ranking operativo</a>
-  <a href="#s10"><span class="num">10</span> Monetización</a>
-  <a href="#s11"><span class="num">11</span> Metodología</a>
+  <a href="#s09"><span class="num">09</span> Monetización</a>
+  <a href="#s10"><span class="num">10</span> Metodología</a>
 </nav>
 <main>
 
@@ -337,21 +343,9 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
   </div>
 </section>
 
-<!-- S09 RANKING OPERATIVO -->
+<!-- S09 MONETIZACIÓN -->
 <section id="s09">
   <div class="sec-head"><span class="sec-num">09</span>
-    <div><div class="sec-title">Ranking operativo</div><div class="sec-sub">Score integral por unidad: seguridad + eficiencia + ralentí</div></div>
-    <span class="sec-badge badge-gr">Ranking</span>
-  </div>
-  <div class="row2">
-    <div class="card"><div class="card-title">Score compuesto (0–100)</div><div class="card-sub">Seguridad 40 · Eficiencia 30 · Ralentí 30</div><div style="position:relative;" id="wrapScore"><canvas id="cScore"></canvas></div></div>
-    <div class="card"><div class="card-title">Clasificación</div><div class="card-sub">Verde ≥65 · Naranja 45–64 · Rojo &lt;45</div><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Unidad</th><th class="r">Score</th><th class="r">Seg</th><th class="r">Efic</th><th class="r">Ral</th><th>Cat.</th></tr></thead><tbody id="tbScore"></tbody></table></div></div>
-  </div>
-</section>
-
-<!-- S10 MONETIZACIÓN -->
-<section id="s10">
-  <div class="sec-head"><span class="sec-num">10</span>
     <div><div class="sec-title">Monetización del desempeño</div><div class="sec-sub">Costo de ralentí + ineficiencia + seguridad sobre consumo REAL (MXN)</div></div>
     <span class="sec-badge badge-or">$$$</span>
   </div>
@@ -359,9 +353,9 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
   <div class="card"><div class="card-title">Desglose del costo del periodo</div><div class="card-sub">Ralentí + ineficiencia vs benchmark + excesos</div><div style="position:relative;height:280px"><canvas id="cMoney"></canvas></div></div>
 </section>
 
-<!-- S11 METODOLOGÍA -->
-<section id="s11">
-  <div class="sec-head"><span class="sec-num">11</span>
+<!-- S10 METODOLOGÍA -->
+<section id="s10">
+  <div class="sec-head"><span class="sec-num">10</span>
     <div><div class="sec-title">Metodología y parámetros</div><div class="sec-sub">Ajusta los parámetros y presiona "Recalcular"</div></div>
     <span class="sec-badge badge-or">Filtros</span>
   </div>
@@ -550,6 +544,8 @@ const lvl=(v,a,b)=>v>=b?'<span class="tag tag-alta">Alta</span>':v>=a?'<span cla
 
 // ════════ CHART ════════
 const CH={};
+// ── Etiquetas de datos (números / %) — desactivadas por defecto, se activan por gráfica ──
+if(window.ChartDataLabels){Chart.register(ChartDataLabels);Chart.defaults.set('plugins.datalabels',{display:false});}
 // ── Cristal translúcido: convierte rellenos sólidos en vidrio con borde sólido ──
 function _rgba(c,a){if(typeof c!=='string')return c;if(c.startsWith('rgba'))return c;if(c.startsWith('rgb('))return c.replace('rgb(','rgba(').replace(')',`,${a})`);let h=c.replace('#','');if(h.length===3)h=h.split('').map(x=>x+x).join('');const n=parseInt(h,16);return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
 function glassify(cfg){(cfg.data&&cfg.data.datasets||[]).forEach(ds=>{const t=ds.type||cfg.type;if(t==='line')return;const a=t==='doughnut'?0.74:0.6;
@@ -557,12 +553,18 @@ function glassify(cfg){(cfg.data&&cfg.data.datasets||[]).forEach(ds=>{const t=ds
   else if(typeof ds.backgroundColor==='string'){const s=ds.backgroundColor;ds.backgroundColor=_rgba(s,a);if(ds.borderColor===undefined){ds.borderColor=s;ds.borderWidth=ds.borderWidth??1.4;}ds.hoverBackgroundColor=_rgba(s,Math.min(1,a+0.28));}
   if(t==='doughnut'){ds.hoverOffset=12;ds.hoverBorderWidth=3;}else{ds.hoverBorderWidth=(ds.borderWidth||1.4)+2;}});
   cfg.options=cfg.options||{};cfg.options.interaction=Object.assign({mode:'nearest',intersect:false},cfg.options.interaction);
-  cfg.options.animation=Object.assign({duration:700,easing:'easeOutQuart'},cfg.options.animation);
-  cfg.options.hover=Object.assign({animationDuration:200},cfg.options.hover);
+  cfg.options.animation=Object.assign({duration:900,easing:'easeOutQuart',delay:(c)=>(c.type==='data'&&c.mode==='default'&&typeof c.dataIndex==='number')?c.dataIndex*32:0},cfg.options.animation);
+  cfg.options.animations=Object.assign({numbers:{type:'number',duration:900,easing:'easeOutQuart'}},cfg.options.animations);
+  cfg.options.hover=Object.assign({animationDuration:220},cfg.options.hover);
   return cfg;}
 function chart(id,cfg){glassify(cfg);if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),cfg);}
 const axX=(x={})=>({grid:{display:false},ticks:{color:C.txt,font:{size:10}},...x});
 const axY=(x={})=>({grid:{color:C.grid},ticks:{color:C.txt,font:{size:10}},...x});
+// ── Etiquetas premium sobre barras / segmentos: vertical, horizontal e interior ──
+const _dlC='#10261c';
+const dlV=(o={})=>Object.assign({display:true,anchor:'end',align:'top',offset:2,clamp:true,color:_dlC,font:{weight:'700',size:10}},o);
+const dlH=(o={})=>Object.assign({display:true,anchor:'end',align:'right',offset:4,clamp:true,color:_dlC,font:{weight:'700',size:10}},o);
+const dlIn=(o={})=>Object.assign({display:true,anchor:'center',align:'center',color:'#fff',font:{weight:'800',size:11}},o);
 
 // ════════ FILTROS ════════
 function buildFilters(){
@@ -580,13 +582,13 @@ function populateDays(){const base=baseDays();document.getElementById('selDay').
 // ════════ RENDER ════════
 function render(){
   aggregate();
-  fillPortada(); fillKpis(); buildTrend(); buildModel(); buildSede(); buildProd(); buildSeg(); buildBoard(); buildFuel(); buildScore(); buildMoney();
+  fillPortada(); fillKpis(); buildTrend(); buildModel(); buildSede(); buildProd(); buildSeg(); buildBoard(); buildFuel(); buildMoney();
 }
 function scopeLbl(){const m=MONTHS.find(x=>x.id===STATE.month).label;const w=STATE.week==='all'?'todo el mes':weeksOf(STATE.month).find(x=>x.id===STATE.week)?.label;const d=STATE.day==='all'?null:new Date(STATE.day+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short'});const z=STATE.zona==='all'?'todas las zonas':STATE.zona;return `${m} · ${d?d:w} · ${z}`;}
 
 function fillPortada(){
   document.getElementById('portMeta').innerHTML=`${A.fleetTotal} ${META.tipoUnidad} · ${META.zona}<br>Periodo base: Feb–Jun 2026 &nbsp;·&nbsp; ${META.cliente} · Tier ${META.tier}<br>Analítica potencializada por Advance y Claude`;
-  document.getElementById('portStats').innerHTML=[{v:intES(A.total),l:'Unidades'},{v:A.active,l:'Activas'},{v:A.total-A.active,l:'Sin actividad'},{v:MODELS.length,l:'Modelos'},{v:[...new Set(D.map(u=>u.zona).filter(Boolean))].length,l:'Zonas / sedes'},{v:A.days.length,l:'Días'}].map(s=>`<div class="pstat"><div class="v">${s.v}</div><div class="l">${s.l}</div></div>`).join('');
+  document.getElementById('portStats').innerHTML=[{v:intES(A.total),l:'Unidades'},{v:A.active,l:'Activas'},{v:A.total-A.active,l:'Sin actividad'},{v:MODELS.length,l:'Modelos'},{v:[...new Set(D.map(u=>u.zona).filter(Boolean))].length,l:'Zonas / sedes'},{v:A.days.length,l:'Días con datos',t:'Cantidad de días incluidos en el periodo seleccionado (según los filtros de mes / semana / día del Resumen ejecutivo). Es el rango de tiempo sobre el que se calculan todas las métricas.'}].map(s=>`<div class="pstat"${s.t?` title="${s.t}" style="cursor:help"`:''}><div class="v">${s.v}</div><div class="l">${s.l}${s.t?' <span style="opacity:.45;font-size:9px;vertical-align:super">ⓘ</span>':''}</div></div>`).join('');
   const nd=document.getElementById('portNoData');
   if(META.sinSenal.length){nd.style.display='';nd.innerHTML=`<strong>⚠ ${META.sinSenal.length} unidades sin señal GPS:</strong> `+META.sinSenal.map(s=>`${s.n} (desde ${s.desde})`).join(' · ')+`. Posible robo o desconexión.`;}else nd.style.display='none';
   document.getElementById('portCob').innerHTML=[{v:A.active,l:'unidades activas',c:'var(--gr)'},{v:A.total-A.active,l:'sin actividad',c:'var(--t2)'},{v:MODELS.length,l:'modelos en flota',c:'var(--teal)'},{v:decES(A.pctIdle)+'%',l:'tiempo en ralentí',c:'var(--or)'}].map(r=>`<div style="background:var(--s3);border-radius:8px;padding:12px"><div style="font-size:18px;font-weight:800;color:${r.c}">${r.v}</div><div style="font-size:11px;color:var(--t2)">${r.l}</div></div>`).join('');
@@ -620,7 +622,8 @@ function buildTrend(){
     {type:'bar',label:'Distancia (km)',data:dist,backgroundColor:C.gl,borderRadius:4,yAxisID:'y',order:2},
     {type:'line',label:'Rendimiento (km/L)',data:kml,borderColor:C.gr,backgroundColor:'rgba(47,143,78,.08)',borderWidth:2.5,pointRadius:2,fill:true,tension:.35,yAxisID:'y1',order:1}]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{position:'top',align:'end',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:14}}},
+      plugins:{legend:{position:'top',align:'end',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:14}},
+        datalabels:dlV({color:C.gr,align:'top',offset:6,display:(c)=>c.dataset.type==='line'&&(c.chart.data.labels.length<=14||c.dataIndex%3===0),formatter:v=>v?decES(v,1):''})},
       scales:{x:axX({ticks:{color:C.txt,font:{size:9},callback:(v,i)=>i%step===0?labels[i]:''}}),
         y:{position:'left',grid:{color:C.grid},ticks:{color:C.txt,font:{size:10},callback:v=>(v/1000).toFixed(0)+'k'}},
         y1:{position:'right',grid:{display:false},ticks:{color:C.gr,font:{size:10}},title:{display:true,text:'km/L',color:C.gr,font:{size:10}}}}}});
@@ -630,7 +633,7 @@ function buildModel(){
   chart('cModel',{data:{labels:m.map(x=>x.model),datasets:[
     {type:'bar',label:'Fabricante',data:m.map(x=>x.bench),backgroundColor:C.gl,borderRadius:4,categoryPercentage:.6,barPercentage:.9},
     {type:'bar',label:'Real',data:m.map(x=>+x.kml.toFixed(2)),backgroundColor:C.gr,borderRadius:4,categoryPercentage:.6,barPercentage:.55}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',align:'end',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:14}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${decES(c.raw,2)} km/L`}}},scales:{x:axX(),y:axY({beginAtZero:true})}}});
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',align:'end',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:14}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${decES(c.raw,2)} km/L`}},datalabels:dlV({display:(c)=>c.datasetIndex===1,color:C.gr2,formatter:v=>decES(v,2)})},scales:{x:axX(),y:axY({beginAtZero:true})}}});
   document.getElementById('tbModel').innerHTML=m.map(x=>{const d=(x.kml/x.bench-1)*100,col=d>-12?'var(--gr)':d>-20?'var(--or)':'var(--rd)';return `<tr><td><strong>${x.model}</strong></td><td class="r">${x.n}</td><td class="r" style="font-weight:700">${decES(x.kml,2)}</td><td class="r" style="color:var(--t2)">${decES(x.bench,2)}</td><td class="r" style="color:${col};font-weight:700">${d>=0?'+':''}${d.toFixed(0)}%</td></tr>`;}).join('');
 }
 function buildSede(){
@@ -638,7 +641,8 @@ function buildSede(){
   chart('cSede',{data:{labels:z.map(x=>x.zona),datasets:[
     {type:'bar',label:'Distancia (km)',data:z.map(x=>Math.round(x.km)),backgroundColor:C.gl,borderRadius:5,yAxisID:'y'},
     {type:'line',label:'Rendimiento (km/L)',data:z.map(x=>+x.kml.toFixed(2)),borderColor:C.gr,backgroundColor:C.gr,borderWidth:2.5,pointRadius:4,yAxisID:'y1'}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',align:'end',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:14}}},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',align:'end',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:14}},
+      datalabels:dlV({color:C.gr2,align:'top',offset:6,display:(c)=>c.dataset.type==='line',formatter:v=>decES(v,2)})},
       scales:{x:axX(),y:{position:'left',grid:{color:C.grid},ticks:{color:C.txt,font:{size:10},callback:v=>(v/1000).toFixed(0)+'k'}},y1:{position:'right',grid:{display:false},min:0,ticks:{color:C.gr,font:{size:10}}}}}});
 }
 function buildProd(){
@@ -646,7 +650,7 @@ function buildProd(){
   const dsets=z.map(x=>({label:x.zona,data:[{x:Math.round(x.km),y:+x.kml.toFixed(2),r:10+x.idx/8}],backgroundColor:col(x.idx)+'cc',borderColor:col(x.idx)}));
   chart('cProd',{type:'bubble',data:{datasets:dsets},
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${intES(c.raw.x)} km · ${decES(c.raw.y,2)} km/L`}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${intES(c.raw.x)} km · ${decES(c.raw.y,2)} km/L`}},datalabels:dlIn({font:{weight:'800',size:10},formatter:(v)=>Math.round((v.r-10)*8)})},
       scales:{
         x:{grid:{color:C.grid},title:{display:true,text:'distancia recorrida (km) →',color:C.txt,font:{size:10}},ticks:{color:C.txt,font:{size:10},callback:v=>(v/1000).toFixed(0)+'k'}},
         y:{grid:{color:C.grid},title:{display:true,text:'rendimiento km/L →',color:C.txt,font:{size:10}},ticks:{color:C.txt,font:{size:10}}}
@@ -696,16 +700,16 @@ function buildSeg(){
     {l:'Conducción nocturna',v:decES(A.nightPct)+'%',k:'k-tl',f:`del tiempo de manejo (fatiga)`},
     {l:'Pico horario',v:pico.lbl+'h',k:'k-rd',f:`mayor concentración de alertas`},
   ].map(k=>`<div class="kpi ${k.k}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-foot">${k.f}</div></div>`).join('');
-  const topCfg=(data,col)=>({type:'bar',data:{labels:data.map(x=>x.n),datasets:[{data:data.map(x=>x.r),backgroundColor:col,borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` riesgo ${c.raw}/100`}}},scales:{x:axY({min:0,max:100}),y:axX({ticks:{color:C.txt,font:{size:10}}})}}});
+  const topCfg=(data,col)=>({type:'bar',data:{labels:data.map(x=>x.n),datasets:[{data:data.map(x=>x.r),backgroundColor:col,borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` riesgo ${c.raw}/100`}},datalabels:dlH({color:col,formatter:v=>v})},scales:{x:axY({min:0,max:100}),y:axX({ticks:{color:C.txt,font:{size:10}}})}}});
   chart('cSafe',topCfg(safe,C.gr)); chart('cUnsafe',topCfg(unsafe,C.rd));
-  chart('cAlerts',{type:'doughnut',data:{labels:alerts.map(a=>a[0]),datasets:[{data:alerts.map(a=>a[1]),backgroundColor:alerts.map(a=>a[2]),borderWidth:3,borderColor:C.card}]},options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{position:'right',labels:{color:C.txt,font:{size:11},padding:9,usePointStyle:true}},tooltip:{callbacks:{label:c=>` ${c.label}: ${intES(c.raw)} (${(c.raw/totAlert*100).toFixed(0)}%)`}}}}});
+  chart('cAlerts',{type:'doughnut',data:{labels:alerts.map(a=>a[0]),datasets:[{data:alerts.map(a=>a[1]),backgroundColor:alerts.map(a=>a[2]),borderWidth:3,borderColor:C.card}]},options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{position:'right',labels:{color:C.txt,font:{size:11},padding:9,usePointStyle:true}},tooltip:{callbacks:{label:c=>` ${c.label}: ${intES(c.raw)} (${(c.raw/totAlert*100).toFixed(0)}%)`}},datalabels:dlIn({formatter:(v)=>{const p=v/totAlert*100;return p>=6?Math.round(p)+'%':'';}})}}});
   document.getElementById('subFranja').textContent=`Eventos por horario · pico ${pico.lbl} h`;
-  chart('cFranja',{type:'bar',data:{labels:fr.map(f=>f.lbl+'h'),datasets:[{data:fr.map(f=>f.v),backgroundColor:fr.map(f=>f.v>=fmax*0.85?C.rd:f.v>=fmax*0.55?C.or:C.gr),borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${intES(c.raw)} eventos`}}},scales:{x:axX(),y:axY()}}});
+  chart('cFranja',{type:'bar',data:{labels:fr.map(f=>f.lbl+'h'),datasets:[{data:fr.map(f=>f.v),backgroundColor:fr.map(f=>f.v>=fmax*0.85?C.rd:f.v>=fmax*0.55?C.or:C.gr),borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${intES(c.raw)} eventos`}},datalabels:dlV({formatter:v=>intES(v)})},scales:{x:axX(),y:axY()}}});
   // zonas más inseguras (índice combinado eventos/100km + excesos + vel máx)
   const z=A.byZona; const nrm=(arr,v)=>{const mn=Math.min(...arr),mx=Math.max(...arr);return mx>mn?(v-mn)/(mx-mn):.5;};
   const ev=z.map(x=>x.ev100),ex=z.map(x=>x.viol),vm=z.map(x=>x.maxs);
   const zi=z.map(x=>({...x,idx:Math.round((nrm(ev,x.ev100)+nrm(ex,x.viol)+nrm(vm,x.maxs))/3*100)})).sort((a,b)=>b.idx-a.idx);
-  chart('cZonaInsec',{type:'bar',data:{labels:zi.map(x=>x.zona),datasets:[{data:zi.map(x=>x.idx),backgroundColor:zi.map(x=>x.idx>=66?C.rd:x.idx>=45?C.or:C.gr),borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const x=zi[c.dataIndex];return [` Índice ${x.idx}/100`,` ${decES(x.ev100,2)} eventos/100km · ${x.viol} excesos`,` vel. máx ${x.maxs} km/h`];}}}},scales:{x:axX(),y:axY({min:0,max:100})}}});
+  chart('cZonaInsec',{type:'bar',data:{labels:zi.map(x=>x.zona),datasets:[{data:zi.map(x=>x.idx),backgroundColor:zi.map(x=>x.idx>=66?C.rd:x.idx>=45?C.or:C.gr),borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const x=zi[c.dataIndex];return [` Índice ${x.idx}/100`,` ${decES(x.ev100,2)} eventos/100km · ${x.viol} excesos`,` vel. máx ${x.maxs} km/h`];}}},datalabels:dlV({formatter:v=>v})},scales:{x:axX(),y:axY({min:0,max:100})}}});
 }
 function boardVal(u,k){const p=A.p;switch(k){
   case 'n':return u.n; case 'number':return u.number||''; case 'model':return u.model; case 'zona':return u.zona||'';
@@ -766,16 +770,7 @@ function buildFuel(){
   document.getElementById('bonoNote').innerHTML=`Con base ${base}% y reparto ${p.bonusShare}%, los operadores por debajo de la base reciben en conjunto <b style="color:var(--teal)">${mxn(totalBono)}</b> este periodo; la empresa conserva el resto del ahorro. Cuanto más bajen su ralentí, más ganan.`;
   document.getElementById('wrapBono').style.height=(Math.max(1,bono.length)*26+40)+'px';
   chart('cBono',{type:'bar',data:{labels:bono.map(b=>b.n),datasets:[{data:bono.map(b=>Math.round(b.bono)),backgroundColor:C.teal,borderRadius:5}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${mxn(c.raw)} · ${decES(bono[c.dataIndex].pct)}% ralentí`}}},scales:{x:axY({min:0,ticks:{color:C.txt,font:{size:10},callback:v=>'$'+(v/1000).toFixed(1)+'k'}}),y:axX({ticks:{color:C.txt,font:{size:10}}})}}});
-}
-function buildScore(){
-  const sc=A.UA.filter(u=>u.km>100).map(u=>({...u,sc:scoreOf(u)})).sort((a,b)=>b.sc.total-a.sc.total);
-  const col=u=>u.sc.total>=65?C.gr:u.sc.total>=45?C.or:C.rd;
-  document.getElementById('wrapScore').style.height=(sc.length*22+50)+'px';
-  chart('cScore',{type:'bar',data:{labels:sc.map(u=>u.n),datasets:[{data:sc.map(u=>u.sc.total),backgroundColor:sc.map(col),borderRadius:3}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:axY({min:0,max:100}),y:axX({ticks:{color:C.txt,font:{size:9}}})}}});
-  const cat=t=>t>=65?'<span class="tag tag-baja">Seguro</span>':t>=45?'<span class="tag tag-media">Regular</span>':'<span class="tag tag-alta">Riesgo</span>';
-  document.getElementById('tbScore').innerHTML=sc.map((u,i)=>`<tr><td style="color:var(--t3)">${i+1}</td><td><strong>${u.n}</strong></td><td class="r" style="color:${col(u)};font-weight:700">${u.sc.total}</td><td class="r">${u.sc.seg}</td><td class="r">${u.sc.efi}</td><td class="r">${u.sc.idle}</td><td>${cat(u.sc.total)}</td></tr>`).join('');
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${mxn(c.raw)} · ${decES(bono[c.dataIndex].pct)}% ralentí`}},datalabels:dlH({color:C.teal,formatter:v=>'$'+(v/1000).toFixed(1)+'k'})},scales:{x:axY({min:0,ticks:{color:C.txt,font:{size:10},callback:v=>'$'+(v/1000).toFixed(1)+'k'}}),y:axX({ticks:{color:C.txt,font:{size:10}}})}}});
 }
 function buildMoney(){
   const p=A.p;
@@ -787,7 +782,7 @@ function buildMoney(){
     {l:'Exposición seguridad',v:mxn(tS),k:'k-tl',f:`${intES(A.viol)} excesos × costo evento`},
   ].map(k=>`<div class="kpi ${k.k}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-foot">${k.f}</div></div>`).join('');
   chart('cMoney',{type:'bar',data:{labels:['Ralentí','Ineficiencia','Seguridad','Total'],datasets:[{data:[tR,tE,tS,tR+tE+tS],backgroundColor:[C.or,C.rd,C.teal,C.gr],borderRadius:6}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${mxn(c.raw)}`}}},scales:{x:axX(),y:axY({ticks:{color:C.txt,font:{size:10},callback:v=>fmtK(v)}})}}});
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${mxn(c.raw)}`}},datalabels:dlV({formatter:v=>'$'+(v/1000).toFixed(0)+'k'})},scales:{x:axX(),y:axY({ticks:{color:C.txt,font:{size:10},callback:v=>fmtK(v)}})}}});
 }
 
 // nav highlight + init
