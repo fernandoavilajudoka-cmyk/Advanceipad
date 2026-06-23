@@ -20,6 +20,8 @@ import { writeFileSync } from 'fs';
 const BASE = 'https://portal.smart-connect.com.mx/api/v1';
 const KEY  = process.env.MAPON_KEY || process.env.MAPON_DIST || '';
 const EXTRAER = process.argv.includes('--extraer');
+// --series : genera el listado de unidades con VIN/número de serie para el ERP de FOTON.
+const SERIES = process.argv.includes('--series');
 // --posicion : asigna región por la ÚLTIMA POSICIÓN (lat/lng de unit/list) en vez de por grupos.
 const FORZAR_POSICION = process.argv.includes('--posicion');
 
@@ -82,6 +84,35 @@ async function main() {
   const ul = await api('unit/list.json', { include: 'technical_details' });
   const units = ul.data?.units || [];
   console.log(`\n■ Unidades totales: ${units.length}`);
+
+  // ── LISTADO PARA FOTON: unidades con VIN/número de serie ───────────────────
+  if (SERIES) {
+    const esVin = s => /^[A-HJ-NPR-Z0-9]{17}$/i.test((s || '').replace(/\s/g, ''));
+    const rows = [];
+    let conVin = 0, soloPlaca = 0;
+    for (const u of units) {
+      const vinReal = esVin(u.vin) ? u.vin.replace(/\s/g, '')
+                    : esVin(u.number) ? u.number.replace(/\s/g, '') : '';
+      if (vinReal) conVin++; else soloPlaca++;
+      rows.push({
+        unit_id: u.unit_id,
+        vin: vinReal,
+        placa: u.number || '',
+        make: u.make || '',
+        model: u.model || '',
+        label: u.label || '',
+        anio: u.technical_details?.make_year || '',
+        emision: u.technical_details?.emission_class || '',
+        falta_vin: vinReal ? '' : 'SIN VIN',
+      });
+    }
+    const esc = v => `"${String(v).replace(/"/g, '""')}"`;
+    const head = ['unit_id', 'vin', 'placa', 'make', 'model', 'label', 'anio', 'emision', 'falta_vin'];
+    const csv = [head.join(',')].concat(rows.map(r => head.map(h => esc(r[h])).join(','))).join('\n');
+    writeFileSync('listado-unidades-foton.csv', csv);
+    console.log(`\n✔ listado-unidades-foton.csv · ${rows.length} unidades · con VIN real: ${conVin} · solo placa (SIN VIN): ${soloPlaca}`);
+    return;
+  }
 
   // 2) Grupos
   let groups = [];
