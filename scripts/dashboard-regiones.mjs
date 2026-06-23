@@ -26,6 +26,7 @@ const ESTADO_A_REGION = {
   'nuevo leon': 'Monterrey', 'san luis potosi': 'San Luis Potosí', 'durango': 'Durango',
 };
 const REGIONES = ['Altamira', 'Tula', 'Zacatecas', 'Aguascalientes', 'León', 'Querétaro', 'Monterrey', 'San Luis Potosí', 'Durango'];
+const REGION_A_ESTADO = { 'Altamira': 'Tamaulipas', 'Tula': 'Hidalgo', 'Zacatecas': 'Zacatecas', 'Aguascalientes': 'Aguascalientes', 'León': 'Guanajuato', 'Querétaro': 'Querétaro', 'Monterrey': 'Nuevo León', 'San Luis Potosí': 'San Luis Potosí', 'Durango': 'Durango' };
 const norm = s => (s || '').toString().normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
 async function api(method, params = {}) {
@@ -74,6 +75,49 @@ function limpiarVin(vin, number) {
   return { vin: best, ok: false, motivo };
 }
 
+// ── Generador mínimo de .xlsx (Office Open XML) sin dependencias ──
+const CRC_TABLE = (() => { const t = []; for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(buf) { let c = 0xFFFFFFFF; for (let i = 0; i < buf.length; i++) c = CRC_TABLE[(c ^ buf[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zipStore(files) { // files: [{name, data:Buffer}] → Buffer (ZIP método 0/stored)
+  const chunks = [], central = []; let offset = 0;
+  for (const f of files) {
+    const name = Buffer.from(f.name, 'utf8'), data = f.data, crc = crc32(data);
+    const lh = Buffer.alloc(30); lh.writeUInt32LE(0x04034b50, 0); lh.writeUInt16LE(20, 4); lh.writeUInt16LE(0x0800, 6);
+    lh.writeUInt16LE(0, 8); lh.writeUInt16LE(0, 10); lh.writeUInt16LE(0, 12); lh.writeUInt32LE(crc, 14);
+    lh.writeUInt32LE(data.length, 18); lh.writeUInt32LE(data.length, 22); lh.writeUInt16LE(name.length, 26); lh.writeUInt16LE(0, 28);
+    chunks.push(lh, name, data);
+    const ch = Buffer.alloc(46); ch.writeUInt32LE(0x02014b50, 0); ch.writeUInt16LE(20, 4); ch.writeUInt16LE(20, 6); ch.writeUInt16LE(0x0800, 8);
+    ch.writeUInt16LE(0, 10); ch.writeUInt16LE(0, 12); ch.writeUInt16LE(0, 14); ch.writeUInt32LE(crc, 16);
+    ch.writeUInt32LE(data.length, 20); ch.writeUInt32LE(data.length, 24); ch.writeUInt16LE(name.length, 28);
+    ch.writeUInt32LE(offset, 42); central.push(ch, name);
+    offset += lh.length + name.length + data.length;
+  }
+  const cstart = offset; let csize = 0; for (const c of central) csize += c.length;
+  const eocd = Buffer.alloc(22); eocd.writeUInt32LE(0x06054b50, 0); eocd.writeUInt16LE(files.length, 8); eocd.writeUInt16LE(files.length, 10);
+  eocd.writeUInt32LE(csize, 12); eocd.writeUInt32LE(cstart, 16);
+  return Buffer.concat([...chunks, ...central, eocd]);
+}
+const xesc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+function buildXlsx(headers, rows) { // headers:[str], rows:[[...]] → Buffer .xlsx (1 hoja, inlineStr)
+  const col = i => { let s = '', n = i + 1; while (n > 0) { s = String.fromCharCode(65 + (n - 1) % 26) + s; n = Math.floor((n - 1) / 26); } return s; };
+  const cell = (c, r, v) => `<c r="${col(c)}${r}" t="inlineStr"><is><t xml:space="preserve">${xesc(v)}</t></is></c>`;
+  let sheet = '<row r="1">' + headers.map((h, c) => cell(c, 1, h)).join('') + '</row>';
+  rows.forEach((row, ri) => { const r = ri + 2; sheet += `<row r="${r}">` + row.map((v, c) => cell(c, r, v)).join('') + '</row>'; });
+  const sheetXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${sheet}</sheetData></worksheet>`;
+  const wbXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Unidades" sheetId="1" r:id="rId1"/></sheets></workbook>`;
+  const wbRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>`;
+  const rootRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`;
+  const ct = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>`;
+  const B = s => Buffer.from(s, 'utf8');
+  return zipStore([
+    { name: '[Content_Types].xml', data: B(ct) },
+    { name: '_rels/.rels', data: B(rootRels) },
+    { name: 'xl/workbook.xml', data: B(wbXml) },
+    { name: 'xl/_rels/workbook.xml.rels', data: B(wbRels) },
+    { name: 'xl/worksheets/sheet1.xml', data: B(sheetXml) },
+  ]);
+}
+
 // ── Normaliza modelo para agrupar variantes triviales ("EST- S38" ≈ "EST-S38") ──
 function modeloNorm(m) {
   return (m || '(sin modelo)').toString().toUpperCase()
@@ -92,6 +136,7 @@ async function main() {
 
   // 1) Región por GPS  +  2) limpieza de VIN  +  recolección de modelos/altas
   const filas = [], revisar = [], vistos = new Set(), dup = [];
+  const excelRows = [];              // SOLO unidades dentro de las 9 regiones (para ERP de FOTON)
   const matriz = {};                 // region → { modelo → n }
   const altasReg = {};               // region → { 'YYYY-MM' → n }
   const altasGlob = {};              // 'YYYY-MM' → n
@@ -125,6 +170,13 @@ async function main() {
     } else {
       revisar.push({ ...rec, motivo: v.motivo });
     }
+
+    // Excel para ERP: solo unidades dentro de las 9 regiones de René
+    if (region !== 'Otras') {
+      excelRows.push([region, REGION_A_ESTADO[region], v.vin, u.number || '', make,
+        u.model || '', u.technical_details?.make_year || '', u.technical_details?.emission_class || '',
+        v.ok ? 'OK' : 'REVISAR', v.ok ? '' : v.motivo]);
+    }
   }
 
   // ── CSV: listado limpio para FOTON + listado a revisar ──
@@ -132,7 +184,12 @@ async function main() {
   const csv = (head, rows) => [head.join(',')].concat(rows.map(r => head.map(h => esc(r[h] ?? '')).join(','))).join('\n');
   writeFileSync('listado-unidades-foton.csv', csv(['unit_id', 'vin', 'placa', 'make', 'model', 'region', 'anio', 'emision'], filas));
   writeFileSync('listado-revisar-vin.csv',     csv(['unit_id', 'vin', 'placa', 'make', 'model', 'region', 'motivo'], revisar));
-  console.log(`VIN válidos únicos: ${filas.length} · duplicados: ${dup.length} · a revisar: ${revisar.length}`);
+
+  // EXCEL para el ERP de FOTON: solo las 9 regiones de René
+  const xlsxHead = ['Región', 'Estado', 'VIN', 'Placa', 'Marca', 'Modelo', 'Año', 'Emisión', 'Estatus VIN', 'Observación'];
+  excelRows.sort((a, b) => REGIONES.indexOf(a[0]) - REGIONES.indexOf(b[0]) || String(a[5]).localeCompare(b[5]));
+  writeFileSync('VINs-distribuidores-Rens-2026.xlsx', buildXlsx(xlsxHead, excelRows));
+  console.log(`VIN válidos únicos: ${filas.length} · duplicados: ${dup.length} · a revisar: ${revisar.length} · Excel (9 regiones): ${excelRows.length} filas`);
 
   // 3) Tendencia + proyección de crecimiento por región
   const meses = Object.keys(altasGlob).sort();
@@ -145,7 +202,7 @@ async function main() {
     return ritmo;                                         // altas esperadas por mes
   }
   const crecimiento = {};
-  for (const R of [...REGIONES, 'Otras']) {
+  for (const R of REGIONES) {                               // SOLO las 9 regiones de René
     const actual = Object.values(matriz[R]).reduce((a, b) => a + b, 0);
     const ritmo = proyeccion(altasReg[R]);
     crecimiento[R] = {
@@ -157,34 +214,36 @@ async function main() {
     };
   }
 
-  // ── Datos para el dashboard ──
-  const totalUnidades = units.length;
-  const fotonPct = Math.round(filas.concat(revisar).filter(r => /FOTON/i.test(r.make)).length / totalUnidades * 100);
+  // ── Datos para el dashboard (SOLO las 9 regiones; se excluyen las unidades fuera de región) ──
+  const enRegion = excelRows.length;
+  const fotonPct = enRegion ? Math.round(excelRows.filter(r => /FOTON/i.test(r[4])).length / enRegion * 100) : 0;
   const modelosGlob = {};
-  for (const R of [...REGIONES, 'Otras']) for (const [m, n] of Object.entries(matriz[R])) modelosGlob[m] = (modelosGlob[m] || 0) + 1 * n;
+  for (const R of REGIONES) for (const [m, n] of Object.entries(matriz[R])) modelosGlob[m] = (modelosGlob[m] || 0) + n;
   const topModelos = Object.entries(modelosGlob).sort((a, b) => b[1] - a[1]).slice(0, 15);
   const topModelKeys = topModelos.map(x => x[0]);
+  // Tendencia de altas SOLO de las 9 regiones
+  const altasRegSum = {};
+  for (const R of REGIONES) for (const [m, n] of Object.entries(altasReg[R])) altasRegSum[m] = (altasRegSum[m] || 0) + n;
 
   const DATA = {
     generado: new Date().toISOString().slice(0, 16).replace('T', ' '),
-    totalUnidades, fotonPct,
+    totalUnidades: enRegion, fotonPct,
     modelosDistintos: Object.keys(modelosGlob).length,
-    vinOk: filas.length, vinRevisar: revisar.length,
+    vinOk: excelRows.filter(r => r[8] === 'OK').length, vinRevisar: excelRows.filter(r => r[8] === 'REVISAR').length,
     regiones: REGIONES,
     porRegion: REGIONES.map(R => Object.values(matriz[R]).reduce((a, b) => a + b, 0)),
-    otras: Object.values(matriz['Otras']).reduce((a, b) => a + b, 0),
     topModelos,
     matriz, topModelKeys,
-    meses: ultimos, altasGlob: ultimos.map(m => altasGlob[m] || 0),
+    meses: ultimos, altasGlob: ultimos.map(m => altasRegSum[m] || 0),
     crecimiento,
   };
 
   writeFileSync('dashboard-regiones.html', renderHTML(DATA));
   writeFileSync('distribucion-regiones.json', JSON.stringify(DATA, null, 2));
-  console.log('\n✔ dashboard-regiones.html  ·  listado-unidades-foton.csv  ·  listado-revisar-vin.csv');
+  console.log(`\n✔ dashboard-regiones.html  ·  VINs-distribuidores-Rens-2026.xlsx (${excelRows.length} filas, 9 regiones)`);
   console.log('\nResumen por región:');
   for (const R of REGIONES) { const c = crecimiento[R]; console.log(`  ${R.padEnd(18)} ${String(c.actual).padStart(4)} u  · ritmo ${c.ritmoMes}/mes · 12m→ ${c.proy12} (+${c.pct12}%)`); }
-  console.log(`  ${'Otras'.padEnd(18)} ${String(crecimiento['Otras'].actual).padStart(4)} u`);
+  console.log(`  TOTAL (9 regiones): ${DATA.totalUnidades} unidades`);
 }
 
 // ── HTML del dashboard (tema Advance · Chart.js + datalabels por CDN) ──
@@ -234,7 +293,7 @@ th:first-child,td:first-child{text-align:left}th{color:var(--mut);font-weight:60
  <div class="card full"><h2>Expectativa de crecimiento por región</h2><p>Con la tendencia actual de altas.</p>
   <table><thead><tr><th>Región</th><th>Estado</th><th>Actual</th><th>Ritmo (u/mes)</th><th>Proy. 6 m</th><th>Proy. 12 m</th><th>Crec. 12 m</th></tr></thead><tbody id="tCrec"></tbody></table>
  </div>
- <div class="foot">Nota: la región se infiere de la <b>última posición GPS</b> (dónde está la unidad hoy), no necesariamente su plaza base. Para el censo definitivo por agencia se cruzará el VIN contra el ERP de FOTON. ${D.otras} unidades quedaron fuera de las 9 regiones ("Otras").</div>
+ <div class="foot">Solo se muestran las <b>9 regiones de René</b> (${D.totalUnidades.toLocaleString('es-MX')} unidades); se excluyen las unidades fuera de estas regiones. La región se infiere de la <b>última posición GPS</b> (dónde está la unidad hoy), no necesariamente su plaza base; el censo definitivo por agencia saldrá al cruzar el VIN contra el ERP de FOTON.</div>
 </div>
 <script>
 const D=${J};
