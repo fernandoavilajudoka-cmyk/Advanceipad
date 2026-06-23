@@ -42,7 +42,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
     radial-gradient(620px 600px at 18% 118%, rgba(13,148,136,.12), transparent 62%),
     linear-gradient(155deg, rgba(167,221,134,.10) 0%, transparent 45%);
   background-attachment:fixed;}
-nav{position:fixed;top:0;left:0;bottom:0;width:212px;background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-right:1px solid var(--brd);box-shadow:var(--shadow-sm);z-index:100;overflow-y:auto;padding:20px 0;}
+nav{position:fixed;top:0;left:0;bottom:0;width:236px;background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-right:1px solid var(--brd);box-shadow:var(--shadow-sm);z-index:100;overflow-y:auto;padding:20px 0;}
 .nav-logo{padding:0 16px 16px;border-bottom:1px solid var(--line);margin-bottom:8px;}
 .nav-logo span{font-size:14px;font-weight:800;letter-spacing:1px;background:linear-gradient(135deg,var(--gr),var(--forest));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
 .nav-logo p{font-size:10px;color:var(--t3);margin-top:2px;}
@@ -52,7 +52,17 @@ nav a .num{font-size:10px;font-weight:700;color:var(--t3);min-width:18px;}
 nav a:hover .num,nav a.active .num{color:var(--gr);}
 .nav-print{display:block;margin:0 12px 12px;padding:9px 12px;width:calc(100% - 24px);background:linear-gradient(135deg,var(--gr),#7cb342);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(47,143,78,.30);}
 .nav-print:hover{filter:brightness(1.06);}
-main{margin-left:212px;}
+/* ── Filtros globales en el sidebar (afectan todo el informe desde cualquier sección) ── */
+.nav-filters{position:sticky;top:0;z-index:2;margin:6px 12px 12px;padding:12px 12px 13px;background:var(--glass-strong);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid rgba(22,163,74,.22);border-radius:12px;box-shadow:var(--shadow-sm),var(--glow);}
+.nav-filt-title{font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--gr2);margin-bottom:9px;display:flex;align-items:center;gap:6px;}
+.nav-filt-title::before{content:"";width:7px;height:7px;border-radius:2px;background:linear-gradient(135deg,var(--gr),var(--forest));}
+.nav-filt{margin-bottom:8px;}
+.nav-filt:last-child{margin-bottom:0;}
+.nav-filt label{display:block;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);margin-bottom:3px;}
+.nav-filt select{width:100%;border:1px solid var(--brd2);background:var(--glass);border-radius:8px;padding:7px 9px;font-size:11.5px;font-weight:700;color:var(--t);cursor:pointer;outline:none;transition:border-color .15s,box-shadow .15s;}
+.nav-filt select:hover{border-color:rgba(22,163,74,.4);}
+.nav-filt select:focus{border-color:var(--gr);box-shadow:0 0 0 3px rgba(22,163,74,.15);}
+main{margin-left:236px;}
 section{padding:34px 40px;border-bottom:1px solid var(--line);}
 .sec-head{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
 .sec-num{font-size:11px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--gr),var(--forest));min-width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(22,163,74,.34);}
@@ -134,6 +144,13 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
 <nav id="nav">
   <div class="nav-logo"><span>ADVANCE</span><p>Informe Gerencial de Flota</p></div>
   <button class="nav-print no-print" onclick="window.print()">⬇ Descargar PDF</button>
+  <div class="nav-filters no-print">
+    <div class="nav-filt-title">Filtros del informe</div>
+    <div class="nav-filt"><label>Mes</label><select id="selMonth"></select></div>
+    <div class="nav-filt"><label>Semana</label><select id="selWeek"></select></div>
+    <div class="nav-filt"><label>Día</label><select id="selDay"></select></div>
+    <div class="nav-filt"><label>Zona / sede</label><select id="selZona"></select></div>
+  </div>
   <a href="#s01"><span class="num">01</span> Portada</a>
   <a href="#s02"><span class="num">02</span> Resumen ejecutivo</a>
   <a href="#s03"><span class="num">03</span> Rendimiento por modelo</a>
@@ -171,12 +188,6 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
   <div class="sec-head"><span class="sec-num">02</span>
     <div><div class="sec-title">Resumen ejecutivo</div><div class="sec-sub" id="subS02">Tendencia de rendimiento general de la flota</div></div>
     <span class="sec-badge badge-gr">Tendencia</span>
-  </div>
-  <div class="filters">
-    <div class="filt"><label>Mes</label><select id="selMonth"></select></div>
-    <div class="filt"><label>Semana</label><select id="selWeek"></select></div>
-    <div class="filt"><label>Día</label><select id="selDay"></select></div>
-    <div class="filt"><label>Zona / sede</label><select id="selZona"></select></div>
   </div>
   <div class="kpi-grid" id="kpiGrid" style="grid-template-columns:repeat(3,1fr)"></div>
   <div class="card">
@@ -633,7 +644,7 @@ function buildModel(){
   chart('cModel',{data:{labels:m.map(x=>x.model),datasets:[
     {type:'bar',label:'Fabricante',data:m.map(x=>x.bench),backgroundColor:C.gl,borderRadius:4,categoryPercentage:.6,barPercentage:.9},
     {type:'bar',label:'Real',data:m.map(x=>+x.kml.toFixed(2)),backgroundColor:C.gr,borderRadius:4,categoryPercentage:.6,barPercentage:.55}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',align:'end',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:14}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${decES(c.raw,2)} km/L`}},datalabels:dlV({display:(c)=>c.datasetIndex===1,color:C.gr2,formatter:v=>decES(v,2)})},scales:{x:axX(),y:axY({beginAtZero:true})}}});
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',align:'end',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:14}},tooltip:{callbacks:{label:c=>{if(c.datasetIndex===1){const x=m[c.dataIndex];const d=x.bench?(c.raw/x.bench-1)*100:0;return ` Real: ${d>=0?'+':''}${d.toFixed(0)}% vs ficha`;}return ` ${c.dataset.label}: ${decES(c.raw,2)} km/L`;}}},datalabels:dlV({display:(c)=>c.datasetIndex===1,color:C.gr2,formatter:v=>decES(v,2)})},scales:{x:axX(),y:axY({beginAtZero:true})}}});
   document.getElementById('tbModel').innerHTML=m.map(x=>{const d=(x.kml/x.bench-1)*100,col=d>-12?'var(--gr)':d>-20?'var(--or)':'var(--rd)';return `<tr><td><strong>${x.model}</strong></td><td class="r">${x.n}</td><td class="r" style="font-weight:700">${decES(x.kml,2)}</td><td class="r" style="color:var(--t2)">${decES(x.bench,2)}</td><td class="r" style="color:${col};font-weight:700">${d>=0?'+':''}${d.toFixed(0)}%</td></tr>`;}).join('');
 }
 function buildSede(){
@@ -693,23 +704,23 @@ function buildSeg(){
   const harshTot=ua.reduce((s,u)=>s+(u.harsh||0),0);
   const alerts=[['Excesos de velocidad',Math.round(A.viol),C.gr],['Frenadas bruscas',Math.round(harshTot*0.55),C.teal],['Aceleraciones bruscas',Math.round(harshTot*0.45),C.lime],['Conducción nocturna',Math.round(A.viol*0.25),C.or],['Desconexión GPS',Math.round(A.viol*0.05)+META.sinSenal.length,C.rd]];
   const totAlert=alerts.reduce((s,a)=>s+a[1],0)||1;
-  const fr=FRANJAS.map(([lbl,w])=>({lbl,v:Math.round(w*totAlert)})); const pico=fr.reduce((a,b)=>b.v>a.v?b:a,fr[0]); const fmax=Math.max(...fr.map(f=>f.v));
+  const fr=FRANJAS.map(([lbl,w])=>({lbl,v:Math.round(w*totAlert)})); const pico=fr.reduce((a,b)=>b.v>a.v?b:a,fr[0]); const fmax=Math.max(...fr.map(f=>f.v)); const frTot=fr.reduce((s,f)=>s+f.v,0)||1;
   document.getElementById('kpiSeg').innerHTML=[
     {l:'Total de alertas',v:intES(totAlert),k:'k-rd',f:`${decES(A.exc100,2)} excesos por 100 km`},
     {l:'Riesgo accidente alto',v:altoN,k:'k-or',f:`de ${ua.length} unidades activas`},
     {l:'Conducción nocturna',v:decES(A.nightPct)+'%',k:'k-tl',f:`del tiempo de manejo (fatiga)`},
     {l:'Pico horario',v:pico.lbl+'h',k:'k-rd',f:`mayor concentración de alertas`},
   ].map(k=>`<div class="kpi ${k.k}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-foot">${k.f}</div></div>`).join('');
-  const topCfg=(data,col)=>({type:'bar',data:{labels:data.map(x=>x.n),datasets:[{data:data.map(x=>x.r),backgroundColor:col,borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` riesgo ${c.raw}/100`}},datalabels:dlH({color:col,formatter:v=>v})},scales:{x:axY({min:0,max:100}),y:axX({ticks:{color:C.txt,font:{size:10}}})}}});
+  const topCfg=(data,col)=>({type:'bar',data:{labels:data.map(x=>x.n),datasets:[{data:data.map(x=>x.r),backgroundColor:col,borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` riesgo ${c.raw>=66?'Alto':c.raw>=33?'Medio':'Bajo'}`}},datalabels:dlH({color:col,formatter:v=>v})},scales:{x:axY({min:0,max:100}),y:axX({ticks:{color:C.txt,font:{size:10}}})}}});
   chart('cSafe',topCfg(safe,C.gr)); chart('cUnsafe',topCfg(unsafe,C.rd));
-  chart('cAlerts',{type:'doughnut',data:{labels:alerts.map(a=>a[0]),datasets:[{data:alerts.map(a=>a[1]),backgroundColor:alerts.map(a=>a[2]),borderWidth:3,borderColor:C.card}]},options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{position:'right',labels:{color:C.txt,font:{size:11},padding:9,usePointStyle:true}},tooltip:{callbacks:{label:c=>` ${c.label}: ${intES(c.raw)} (${(c.raw/totAlert*100).toFixed(0)}%)`}},datalabels:dlIn({formatter:(v)=>{const p=v/totAlert*100;return p>=6?Math.round(p)+'%':'';}})}}});
+  chart('cAlerts',{type:'doughnut',data:{labels:alerts.map(a=>a[0]),datasets:[{data:alerts.map(a=>a[1]),backgroundColor:alerts.map(a=>a[2]),borderWidth:3,borderColor:C.card}]},options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{position:'right',labels:{color:C.txt,font:{size:11},padding:9,usePointStyle:true}},tooltip:{callbacks:{label:c=>` ${c.label}: ${intES(c.raw)} eventos`}},datalabels:dlIn({formatter:(v)=>{const p=v/totAlert*100;return p>=6?Math.round(p)+'%':'';}})}}});
   document.getElementById('subFranja').textContent=`Eventos por horario · pico ${pico.lbl} h`;
-  chart('cFranja',{type:'bar',data:{labels:fr.map(f=>f.lbl+'h'),datasets:[{data:fr.map(f=>f.v),backgroundColor:fr.map(f=>f.v>=fmax*0.85?C.rd:f.v>=fmax*0.55?C.or:C.gr),borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${intES(c.raw)} eventos`}},datalabels:dlV({formatter:v=>intES(v)})},scales:{x:axX(),y:axY()}}});
+  chart('cFranja',{type:'bar',data:{labels:fr.map(f=>f.lbl+'h'),datasets:[{data:fr.map(f=>f.v),backgroundColor:fr.map(f=>f.v>=fmax*0.85?C.rd:f.v>=fmax*0.55?C.or:C.gr),borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${(c.raw/frTot*100).toFixed(0)}% de las alertas del periodo`}},datalabels:dlV({formatter:v=>intES(v)})},scales:{x:axX(),y:axY()}}});
   // zonas más inseguras (índice combinado eventos/100km + excesos + vel máx)
   const z=A.byZona; const nrm=(arr,v)=>{const mn=Math.min(...arr),mx=Math.max(...arr);return mx>mn?(v-mn)/(mx-mn):.5;};
   const ev=z.map(x=>x.ev100),ex=z.map(x=>x.viol),vm=z.map(x=>x.maxs);
   const zi=z.map(x=>({...x,idx:Math.round((nrm(ev,x.ev100)+nrm(ex,x.viol)+nrm(vm,x.maxs))/3*100)})).sort((a,b)=>b.idx-a.idx);
-  chart('cZonaInsec',{type:'bar',data:{labels:zi.map(x=>x.zona),datasets:[{data:zi.map(x=>x.idx),backgroundColor:zi.map(x=>x.idx>=66?C.rd:x.idx>=45?C.or:C.gr),borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const x=zi[c.dataIndex];return [` Índice ${x.idx}/100`,` ${decES(x.ev100,2)} eventos/100km · ${x.viol} excesos`,` vel. máx ${x.maxs} km/h`];}}},datalabels:dlV({formatter:v=>v})},scales:{x:axX(),y:axY({min:0,max:100})}}});
+  chart('cZonaInsec',{type:'bar',data:{labels:zi.map(x=>x.zona),datasets:[{data:zi.map(x=>x.idx),backgroundColor:zi.map(x=>x.idx>=66?C.rd:x.idx>=45?C.or:C.gr),borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const x=zi[c.dataIndex];return [` ${decES(x.ev100,2)} eventos/100 km · ${x.viol} excesos`,` vel. máx ${x.maxs} km/h`];}}},datalabels:dlV({formatter:v=>v})},scales:{x:axX(),y:axY({min:0,max:100})}}});
 }
 function boardVal(u,k){const p=A.p;switch(k){
   case 'n':return u.n; case 'number':return u.number||''; case 'model':return u.model; case 'zona':return u.zona||'';
@@ -770,7 +781,7 @@ function buildFuel(){
   document.getElementById('bonoNote').innerHTML=`Con base ${base}% y reparto ${p.bonusShare}%, los operadores por debajo de la base reciben en conjunto <b style="color:var(--teal)">${mxn(totalBono)}</b> este periodo; la empresa conserva el resto del ahorro. Cuanto más bajen su ralentí, más ganan.`;
   document.getElementById('wrapBono').style.height=(Math.max(1,bono.length)*26+40)+'px';
   chart('cBono',{type:'bar',data:{labels:bono.map(b=>b.n),datasets:[{data:bono.map(b=>Math.round(b.bono)),backgroundColor:C.teal,borderRadius:5}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${mxn(c.raw)} · ${decES(bono[c.dataIndex].pct)}% ralentí`}},datalabels:dlH({color:C.teal,formatter:v=>'$'+(v/1000).toFixed(1)+'k'})},scales:{x:axY({min:0,ticks:{color:C.txt,font:{size:10},callback:v=>'$'+(v/1000).toFixed(1)+'k'}}),y:axX({ticks:{color:C.txt,font:{size:10}}})}}});
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${decES(bono[c.dataIndex].pct)}% ralentí · ${intES(bono[c.dataIndex].litros)} L ahorrados`}},datalabels:dlH({color:C.teal,formatter:v=>'$'+(v/1000).toFixed(1)+'k'})},scales:{x:axY({min:0,ticks:{color:C.txt,font:{size:10},callback:v=>'$'+(v/1000).toFixed(1)+'k'}}),y:axX({ticks:{color:C.txt,font:{size:10}}})}}});
 }
 function buildMoney(){
   const p=A.p;
