@@ -1,14 +1,15 @@
-name: Actualizar informe Tepeyac
+name: Generar informes de clientes
 
-# Se ejecuta automáticamente cada día y también de forma manual.
-# Regenera tepeyac.html con datos reales del CAN y hace push → Netlify redespliega.
+# Genera/actualiza el informe de CADA cliente con datos reales del CAN y hace push → Netlify redespliega.
+# Onboarding de un cliente nuevo: solo agrega un secret  MAPON_<CLIENTE>  con su API key.
+# El script descubre solo todos los secrets MAPON_* (vía toJSON(secrets)) — no hay que editar este archivo.
 on:
   schedule:
     - cron: '0 12 * * *'    # diario 12:00 UTC (~06:00–07:00 hora MX)
   workflow_dispatch: {}
 
 permissions:
-  contents: write            # necesario para hacer push del informe actualizado
+  contents: write            # necesario para hacer push de los informes actualizados
 
 jobs:
   build:
@@ -22,21 +23,21 @@ jobs:
         with:
           node-version: 20
 
-      - name: Generar informe con datos reales
+      - name: Generar informes con datos reales
         env:
-          # Secret por cliente → variable genérica que lee el script.
-          # Tolera ambas grafías del nombre del secret (con/sin la "r").
-          MAPON_API_KEY: ${{ secrets.FETILIZANTESTEPEYAC || secrets.FERTILIZANTESTEPEYAC }}
+          # Todos los secrets del repo, serializados. El script toma solo los MAPON_*.
+          # Así, agregar un cliente = agregar un secret (sin tocar este workflow).
+          ALL_SECRETS: ${{ toJSON(secrets) }}
         run: node scripts/build-report.mjs
 
       - name: Publicar cambios (si los hay)
         run: |
           git config user.name "advance-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add tepeyac.html
+          git add clientes
           if git diff --cached --quiet; then
-            echo "Sin cambios en el informe."
+            echo "Sin cambios en los informes."
           else
-            git commit -m "Auto: actualizar informe Tepeyac ($(date -u +%Y-%m-%d))"
+            git commit -m "Auto: actualizar informes de clientes ($(date -u +%Y-%m-%d))"
             git push
           fi

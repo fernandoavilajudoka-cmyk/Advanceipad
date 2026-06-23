@@ -5,41 +5,46 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Informe Gerencial de Flota — Advance</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <style>
 :root{
-  /* ── PALETA VERDE ADVANCE · CRISTAL ── */
-  --bg:#eef5e1;
-  --glass:rgba(255,255,255,.60);
-  --glass-strong:rgba(255,255,255,.78);
-  --blur:blur(18px) saturate(160%);
-  --brd:rgba(255,255,255,.72);
-  --brd2:rgba(40,70,30,.14);
-  --line:rgba(40,70,30,.09);
-  --s3:rgba(244,250,236,.85);
-  --t:#1d3326;--t2:#5c6b5e;--t3:#9aa99a;
-  --gr:#16a34a;--gr2:#15803d;--gr-bg:rgba(22,163,74,.15);
-  --g2:#22c55e;--gl:#bbe9a0;
-  --lime:#65a30d;--lime-bg:rgba(101,163,13,.16);
-  --teal:#0d9488;--teal-bg:rgba(13,148,136,.14);
-  --or:#e1881f;--or-bg:rgba(225,136,31,.13);
+  /* ── PALETA VERDE ADVANCE · PREMIUM GLASS ── */
+  --bg:#e6f1de;
+  --glass:rgba(255,255,255,.46);
+  --glass-strong:rgba(255,255,255,.68);
+  --blur:blur(24px) saturate(175%);
+  --brd:rgba(255,255,255,.60);
+  --brd2:rgba(21,128,61,.16);
+  --line:rgba(21,128,61,.10);
+  --s3:rgba(238,248,231,.66);
+  --t:#10261c;--t2:#4c6053;--t3:#85a08f;
+  /* verdes Advance: bosque · primario · esmeralda · menta */
+  --forest:#0f5132;--gr:#16a34a;--gr2:#15803d;--gr-bg:rgba(22,163,74,.13);
+  --g2:#22c55e;--g3:#34d399;--gl:#a3dd86;--mint:#6ee7b7;
+  --lime:#4f9c2d;--lime-bg:rgba(79,156,45,.15);
+  --teal:#0d9488;--teal-bg:rgba(13,148,136,.13);
+  --or:#d98324;--or-bg:rgba(217,131,36,.13);
   --rd:#d64b34;--rd-bg:rgba(214,75,52,.12);
-  --pu:#6d8f3a;--pu-bg:rgba(109,143,58,.14);
-  --shadow:0 10px 34px rgba(30,60,25,.12);
-  --shadow-sm:0 6px 20px rgba(30,60,25,.09);
-  --r:14px;--r2:10px;
+  --pu:#5b8c34;--pu-bg:rgba(91,140,52,.14);
+  --glow:0 0 22px rgba(22,163,74,.10);
+  --shadow:0 18px 48px rgba(16,70,38,.16);
+  --shadow-sm:0 10px 30px rgba(16,70,38,.10);
+  --r:16px;--r2:11px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;color:var(--t);font-size:13px;line-height:1.55;min-height:100vh;
   background:var(--bg);
   background-image:
-    radial-gradient(680px 520px at 5% -8%, rgba(101,163,13,.17), transparent 60%),
-    radial-gradient(620px 520px at 104% 2%, rgba(22,163,74,.17), transparent 58%),
-    radial-gradient(640px 560px at 50% 120%, rgba(13,148,136,.12), transparent 60%);
+    radial-gradient(720px 560px at 2% -10%, rgba(34,197,94,.22), transparent 58%),
+    radial-gradient(680px 560px at 106% 0%, rgba(22,163,74,.20), transparent 56%),
+    radial-gradient(560px 520px at 80% 108%, rgba(15,81,50,.16), transparent 60%),
+    radial-gradient(620px 600px at 18% 118%, rgba(13,148,136,.12), transparent 62%),
+    linear-gradient(155deg, rgba(167,221,134,.10) 0%, transparent 45%);
   background-attachment:fixed;}
-nav{position:fixed;top:0;left:0;bottom:0;width:212px;background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-right:1px solid var(--brd);box-shadow:var(--shadow-sm);z-index:100;overflow-y:auto;padding:20px 0;}
+nav{position:fixed;top:0;left:0;bottom:0;width:236px;background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-right:1px solid var(--brd);box-shadow:var(--shadow-sm);z-index:100;overflow-y:auto;padding:20px 0;}
 .nav-logo{padding:0 16px 16px;border-bottom:1px solid var(--line);margin-bottom:8px;}
-.nav-logo span{font-size:13px;font-weight:800;color:var(--gr);letter-spacing:.5px;}
+.nav-logo span{font-size:14px;font-weight:800;letter-spacing:1px;background:linear-gradient(135deg,var(--gr),var(--forest));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
 .nav-logo p{font-size:10px;color:var(--t3);margin-top:2px;}
 nav a{display:flex;align-items:center;gap:8px;padding:7px 16px;font-size:12px;color:var(--t2);text-decoration:none;border-radius:8px;margin:1px 8px;transition:.15s;}
 nav a:hover,nav a.active{background:var(--gr-bg);color:var(--gr2);}
@@ -47,10 +52,20 @@ nav a .num{font-size:10px;font-weight:700;color:var(--t3);min-width:18px;}
 nav a:hover .num,nav a.active .num{color:var(--gr);}
 .nav-print{display:block;margin:0 12px 12px;padding:9px 12px;width:calc(100% - 24px);background:linear-gradient(135deg,var(--gr),#7cb342);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(47,143,78,.30);}
 .nav-print:hover{filter:brightness(1.06);}
-main{margin-left:212px;}
+/* ── Filtros globales en el sidebar (afectan todo el informe desde cualquier sección) ── */
+.nav-filters{position:sticky;top:0;z-index:2;margin:6px 12px 12px;padding:12px 12px 13px;background:var(--glass-strong);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid rgba(22,163,74,.22);border-radius:12px;box-shadow:var(--shadow-sm),var(--glow);}
+.nav-filt-title{font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--gr2);margin-bottom:9px;display:flex;align-items:center;gap:6px;}
+.nav-filt-title::before{content:"";width:7px;height:7px;border-radius:2px;background:linear-gradient(135deg,var(--gr),var(--forest));}
+.nav-filt{margin-bottom:8px;}
+.nav-filt:last-child{margin-bottom:0;}
+.nav-filt label{display:block;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);margin-bottom:3px;}
+.nav-filt select{width:100%;border:1px solid var(--brd2);background:var(--glass);border-radius:8px;padding:7px 9px;font-size:11.5px;font-weight:700;color:var(--t);cursor:pointer;outline:none;transition:border-color .15s,box-shadow .15s;}
+.nav-filt select:hover{border-color:rgba(22,163,74,.4);}
+.nav-filt select:focus{border-color:var(--gr);box-shadow:0 0 0 3px rgba(22,163,74,.15);}
+main{margin-left:236px;}
 section{padding:34px 40px;border-bottom:1px solid var(--line);}
 .sec-head{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
-.sec-num{font-size:11px;font-weight:800;color:#33491c;background:var(--lime);min-width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.sec-num{font-size:11px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--gr),var(--forest));min-width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(22,163,74,.34);}
 .sec-title{font-size:20px;font-weight:800;color:var(--t);}
 .sec-sub{font-size:12px;color:var(--t2);margin-top:2px;}
 .sec-badge{padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;}
@@ -65,11 +80,13 @@ section{padding:34px 40px;border-bottom:1px solid var(--line);}
 .portada-title span{color:var(--gr);}
 .portada-meta{font-size:13px;color:var(--t2);margin-bottom:20px;}
 .portada-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
-.pstat,.kpi,.card,.portada-right{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--brd);box-shadow:var(--shadow-sm);transition:transform .2s ease, box-shadow .2s ease;}
-.card:hover,.kpi:hover,.pstat:hover{transform:translateY(-4px);box-shadow:0 18px 44px rgba(20,70,35,.18);}
-canvas{transition:filter .2s ease;}.card:hover canvas{filter:saturate(1.08);}
+.pstat,.kpi,.card,.portada-right{position:relative;background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1px solid var(--brd);box-shadow:var(--shadow-sm);transition:transform .25s cubic-bezier(.2,.7,.3,1), box-shadow .25s ease, border-color .25s ease;}
+.pstat::before,.kpi::before,.card::before,.portada-right::before{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(140deg,rgba(255,255,255,.40),rgba(255,255,255,0) 40%);pointer-events:none;z-index:0;}
+.pstat>*,.kpi>*,.card>*,.portada-right>*{position:relative;z-index:1;}
+.card:hover,.kpi:hover,.pstat:hover{transform:translateY(-5px);box-shadow:0 22px 50px rgba(16,70,38,.20),var(--glow);border-color:rgba(22,163,74,.32);}
+canvas{transition:filter .2s ease;position:relative;}.card:hover canvas{filter:saturate(1.1);}
 .pstat{border-radius:var(--r2);padding:14px 16px;}
-.pstat .v{font-size:22px;font-weight:800;color:var(--gr);line-height:1;}
+.pstat .v{font-size:22px;font-weight:800;line-height:1;background:linear-gradient(135deg,var(--gr),var(--forest));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
 .pstat .l{font-size:11px;color:var(--t2);margin-top:4px;}
 .portada-nodata{background:rgba(214,75,52,.07);border:1px solid rgba(214,75,52,.22);border-radius:var(--r2);padding:12px 16px;font-size:12px;color:var(--rd);margin-top:16px;}
 .portada-right{border-radius:var(--r);padding:24px;}
@@ -112,6 +129,14 @@ th.sortable:hover{color:var(--gr);}
 .nat-box h4{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
 .nat-box ul{list-style:none;font-size:11px;color:var(--t2);line-height:1.7;}
 .nat-box li{display:flex;gap:7px;align-items:flex-start;}
+.bono-pillar-val{font-size:23px;font-weight:800;line-height:1;margin:2px 0 4px;}
+.bono-pillar-lbl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);margin-top:10px;}
+.bono-pillar-meta{font-size:10.5px;color:var(--t3);margin-top:8px;line-height:1.5;}
+.bono-scn{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--t2);margin:9px 0 5px;flex-wrap:wrap;}
+.bono-scn b{color:var(--t);font-weight:800;}
+.bono-arrow{color:var(--gr);font-weight:800;font-size:13px;}
+.bono-save{font-size:11px;color:var(--t2);}
+.bono-save b{color:var(--t);font-weight:800;}
 .empty{background:var(--glass);border:1px dashed var(--brd2);border-radius:var(--r);padding:36px;text-align:center;color:var(--t2);box-shadow:var(--shadow-sm);}
 .param-row{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:11px 0;border-bottom:1px solid var(--line);}
 .param-row:last-child{border-bottom:none;}
@@ -127,6 +152,13 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
 <nav id="nav">
   <div class="nav-logo"><span>ADVANCE</span><p>Informe Gerencial de Flota</p></div>
   <button class="nav-print no-print" onclick="window.print()">⬇ Descargar PDF</button>
+  <div class="nav-filters no-print">
+    <div class="nav-filt-title">Filtros del informe</div>
+    <div class="nav-filt"><label>Mes</label><select id="selMonth"></select></div>
+    <div class="nav-filt"><label>Semana</label><select id="selWeek"></select></div>
+    <div class="nav-filt"><label>Día</label><select id="selDay"></select></div>
+    <div class="nav-filt"><label>Zona / sede</label><select id="selZona"></select></div>
+  </div>
   <a href="#s01"><span class="num">01</span> Portada</a>
   <a href="#s02"><span class="num">02</span> Resumen ejecutivo</a>
   <a href="#s03"><span class="num">03</span> Rendimiento por modelo</a>
@@ -135,9 +167,8 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
   <a href="#s06"><span class="num">06</span> Seguridad vial</a>
   <a href="#s07"><span class="num">07</span> Tablero de unidades</a>
   <a href="#s08"><span class="num">08</span> Combustible y costo</a>
-  <a href="#s09"><span class="num">09</span> Ranking operativo</a>
-  <a href="#s10"><span class="num">10</span> Monetización</a>
-  <a href="#s11"><span class="num">11</span> Metodología</a>
+  <a href="#s09"><span class="num">09</span> Monetización</a>
+  <a href="#s10"><span class="num">10</span> Metodología</a>
 </nav>
 <main>
 
@@ -165,12 +196,6 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
   <div class="sec-head"><span class="sec-num">02</span>
     <div><div class="sec-title">Resumen ejecutivo</div><div class="sec-sub" id="subS02">Tendencia de rendimiento general de la flota</div></div>
     <span class="sec-badge badge-gr">Tendencia</span>
-  </div>
-  <div class="filters">
-    <div class="filt"><label>Mes</label><select id="selMonth"></select></div>
-    <div class="filt"><label>Semana</label><select id="selWeek"></select></div>
-    <div class="filt"><label>Día</label><select id="selDay"></select></div>
-    <div class="filt"><label>Zona / sede</label><select id="selZona"></select></div>
   </div>
   <div class="kpi-grid" id="kpiGrid" style="grid-template-columns:repeat(3,1fr)"></div>
   <div class="card">
@@ -316,42 +341,45 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
     </div>
   </div>
   <div class="card">
-    <div class="card-title">Bono al operador por reducir ralentí</div>
-    <div class="card-sub" id="subBono">Modelo de reparto de ahorro · % ralentí base y % de reparto configurables en Metodología</div>
-    <div class="row2" style="align-items:start;margin-top:4px">
-      <div class="nat-box">
-        <h4 style="color:var(--teal)">Ecuación del bono</h4>
-        <div style="font-size:11.5px;color:var(--t2);line-height:1.9;margin-top:6px">
-          <div><b style="color:var(--gr)">Litros ahorrados</b> = (%ralentí_base − %ralentí_real) ÷ 100 × horas_motor × consumo_ralentí</div>
-          <div><b style="color:var(--gr)">Ahorro</b> = Litros ahorrados × precio_diésel</div>
-          <div><b style="color:var(--teal)">BONO operador</b> = Ahorro × % de reparto</div>
-        </div>
-        <div id="bonoNote" style="font-size:11px;color:var(--t3);margin-top:10px;line-height:1.6"></div>
+    <div class="card-title">Bono al operador — escenario «¿qué pasaría si?» (3 pilares)</div>
+    <div class="card-sub" id="subBono">De las métricas actuales a un objetivo · el operador recibe su parte del ahorro</div>
+    <div class="row3" style="margin-top:8px">
+      <div class="nat-box" style="border-left:3px solid var(--rd)">
+        <h4 style="color:var(--rd)">1 · Seguridad</h4>
+        <div class="bono-scn"><span>Actual <b id="segAct">—</b></span><span class="bono-arrow">→</span><span>Objetivo <b id="segObj">—</b></span></div>
+        <div class="bono-save">Ahorro potencial <b id="segSave">$—</b></div>
+        <div class="bono-pillar-lbl">Le toca al operador</div>
+        <div class="bono-pillar-val" id="bonoSegTot" style="color:var(--rd)">$—</div>
+        <div class="bono-pillar-meta" id="bonoSegMeta"></div>
       </div>
-      <div>
-        <div class="card-title" style="font-size:13px">Bono estimado por operador (MXN)</div>
-        <div class="card-sub">Solo unidades que están por debajo del % de ralentí base</div>
-        <div style="position:relative;" id="wrapBono"><canvas id="cBono"></canvas></div>
+      <div class="nat-box" style="border-left:3px solid var(--or)">
+        <h4 style="color:var(--or)">2 · Ralentí</h4>
+        <div class="bono-scn"><span>Actual <b id="ralAct">—</b></span><span class="bono-arrow">→</span><span>Objetivo <b id="ralObj">—</b></span></div>
+        <div class="bono-save">Ahorro potencial <b id="ralSave">$—</b></div>
+        <div class="bono-pillar-lbl">Le toca al operador</div>
+        <div class="bono-pillar-val" id="bonoRalTot" style="color:var(--or)">$—</div>
+        <div class="bono-pillar-meta" id="bonoRalMeta"></div>
       </div>
+      <div class="nat-box" style="border-left:3px solid var(--gr)">
+        <h4 style="color:var(--gr)">3 · Rendimiento</h4>
+        <div class="bono-scn"><span>Actual <b id="efiAct">—</b></span><span class="bono-arrow">→</span><span>Objetivo <b id="efiObj">—</b></span></div>
+        <div class="bono-save">Ahorro potencial <b id="efiSave">$—</b></div>
+        <div class="bono-pillar-lbl">Le toca al operador</div>
+        <div class="bono-pillar-val" id="bonoEfiTot" style="color:var(--gr)">$—</div>
+        <div class="bono-pillar-meta" id="bonoEfiMeta"></div>
+      </div>
+    </div>
+    <div style="margin-top:18px">
+      <div class="card-title" style="font-size:13px">Bono potencial por operador si alcanza los objetivos (MXN)</div>
+      <div class="card-sub" id="bonoNote">Suma de los tres pilares por operador</div>
+      <div style="position:relative;" id="wrapBono"><canvas id="cBono"></canvas></div>
     </div>
   </div>
 </section>
 
-<!-- S09 RANKING OPERATIVO -->
+<!-- S09 MONETIZACIÓN -->
 <section id="s09">
   <div class="sec-head"><span class="sec-num">09</span>
-    <div><div class="sec-title">Ranking operativo</div><div class="sec-sub">Score integral por unidad: seguridad + eficiencia + ralentí</div></div>
-    <span class="sec-badge badge-gr">Ranking</span>
-  </div>
-  <div class="row2">
-    <div class="card"><div class="card-title">Score compuesto (0–100)</div><div class="card-sub">Seguridad 40 · Eficiencia 30 · Ralentí 30</div><div style="position:relative;" id="wrapScore"><canvas id="cScore"></canvas></div></div>
-    <div class="card"><div class="card-title">Clasificación</div><div class="card-sub">Verde ≥65 · Naranja 45–64 · Rojo &lt;45</div><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Unidad</th><th class="r">Score</th><th class="r">Seg</th><th class="r">Efic</th><th class="r">Ral</th><th>Cat.</th></tr></thead><tbody id="tbScore"></tbody></table></div></div>
-  </div>
-</section>
-
-<!-- S10 MONETIZACIÓN -->
-<section id="s10">
-  <div class="sec-head"><span class="sec-num">10</span>
     <div><div class="sec-title">Monetización del desempeño</div><div class="sec-sub">Costo de ralentí + ineficiencia + seguridad sobre consumo REAL (MXN)</div></div>
     <span class="sec-badge badge-or">$$$</span>
   </div>
@@ -359,9 +387,9 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
   <div class="card"><div class="card-title">Desglose del costo del periodo</div><div class="card-sub">Ralentí + ineficiencia vs benchmark + excesos</div><div style="position:relative;height:280px"><canvas id="cMoney"></canvas></div></div>
 </section>
 
-<!-- S11 METODOLOGÍA -->
-<section id="s11">
-  <div class="sec-head"><span class="sec-num">11</span>
+<!-- S10 METODOLOGÍA -->
+<section id="s10">
+  <div class="sec-head"><span class="sec-num">10</span>
     <div><div class="sec-title">Metodología y parámetros</div><div class="sec-sub">Ajusta los parámetros y presiona "Recalcular"</div></div>
     <span class="sec-badge badge-or">Filtros</span>
   </div>
@@ -375,8 +403,10 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
         <div class="param-row"><div class="param-label">Benchmark km/L<small>referencia general</small></div><input type="number" id="pBench" value="2.50" step="0.05" min="1.5" max="6"></div>
         <div class="param-row"><div class="param-label">Límite de velocidad<small>km/h</small></div><input type="number" id="pLimite" value="90" step="5" min="60" max="120"></div>
         <div class="param-row"><div class="param-label">Costo por exceso<small>MXN/evento</small></div><input type="number" id="pEventCost" value="150" step="50" min="50" max="2000"></div>
-        <div class="param-row"><div class="param-label">% ralentí base (bono)<small>referencia para premiar reducción</small></div><input type="number" id="pIdleBase" value="75" step="1" min="40" max="95"></div>
-        <div class="param-row"><div class="param-label">% de reparto del bono<small>parte del ahorro para el operador</small></div><input type="number" id="pBonusShare" value="30" step="5" min="10" max="60"></div>
+        <div class="param-row"><div class="param-label">Objetivo de ralentí<small>% meta · el ahorro va de actual → objetivo</small></div><input type="number" id="pIdleTarget" value="60" step="1" min="20" max="90"></div>
+        <div class="param-row"><div class="param-label">Objetivo de rendimiento<small>km/L meta a alcanzar</small></div><input type="number" id="pKmlTarget" value="3.0" step="0.1" min="1.5" max="8"></div>
+        <div class="param-row"><div class="param-label">Objetivo de excesos<small>/100 km · meta de seguridad (0 = ninguno)</small></div><input type="number" id="pExcTarget" value="0" step="0.1" min="0" max="5"></div>
+        <div class="param-row"><div class="param-label">% de reparto del bono<small>parte del ahorro para el operador (los 3 pilares)</small></div><input type="number" id="pBonusShare" value="30" step="5" min="10" max="60"></div>
       </div>
       <button class="btn-recalc" onclick="render()">↻ Recalcular todo el informe</button>
     </div>
@@ -479,7 +509,7 @@ const decES=(v,d=1)=>(v||0).toLocaleString('es-MX',{minimumFractionDigits:d,maxi
 const mxn=v=>'$'+Math.round(v||0).toLocaleString('es-MX');
 const fmtK=v=>v==null?'—':(v/1000).toFixed(1)+'k';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-function P(){return{diesel:+document.getElementById('pDiesel').value||25.99,norma:+document.getElementById('pNorma').value||40,idleL:+document.getElementById('pIdleL').value||5,bench:+document.getElementById('pBench').value||2.5,limite:+document.getElementById('pLimite').value||90,eventCost:+document.getElementById('pEventCost').value||150,idleBase:+document.getElementById('pIdleBase').value||75,bonusShare:+document.getElementById('pBonusShare').value||30};}
+function P(){return{diesel:+document.getElementById('pDiesel').value||25.99,norma:+document.getElementById('pNorma').value||40,idleL:+document.getElementById('pIdleL').value||5,bench:+document.getElementById('pBench').value||2.5,limite:+document.getElementById('pLimite').value||90,eventCost:+document.getElementById('pEventCost').value||150,idleTarget:+document.getElementById('pIdleTarget').value||60,kmlTarget:+document.getElementById('pKmlTarget').value||3,excTarget:+document.getElementById('pExcTarget').value||0,bonusShare:+document.getElementById('pBonusShare').value||30};}
 
 // ════════ CALENDARIO (Feb–Jun 2026) ════════
 function dateList(){const a=[];let d=new Date('2026-02-01T00:00:00');const e=new Date('2026-06-17T00:00:00');while(d<=e){a.push(d.toISOString().slice(0,10));d.setDate(d.getDate()+1);}return a;}
@@ -550,6 +580,8 @@ const lvl=(v,a,b)=>v>=b?'<span class="tag tag-alta">Alta</span>':v>=a?'<span cla
 
 // ════════ CHART ════════
 const CH={};
+// ── Etiquetas de datos (números / %) — desactivadas por defecto, se activan por gráfica ──
+if(window.ChartDataLabels){Chart.register(ChartDataLabels);Chart.defaults.set('plugins.datalabels',{display:false});}
 // ── Cristal translúcido: convierte rellenos sólidos en vidrio con borde sólido ──
 function _rgba(c,a){if(typeof c!=='string')return c;if(c.startsWith('rgba'))return c;if(c.startsWith('rgb('))return c.replace('rgb(','rgba(').replace(')',`,${a})`);let h=c.replace('#','');if(h.length===3)h=h.split('').map(x=>x+x).join('');const n=parseInt(h,16);return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
 function glassify(cfg){(cfg.data&&cfg.data.datasets||[]).forEach(ds=>{const t=ds.type||cfg.type;if(t==='line')return;const a=t==='doughnut'?0.74:0.6;
@@ -557,12 +589,18 @@ function glassify(cfg){(cfg.data&&cfg.data.datasets||[]).forEach(ds=>{const t=ds
   else if(typeof ds.backgroundColor==='string'){const s=ds.backgroundColor;ds.backgroundColor=_rgba(s,a);if(ds.borderColor===undefined){ds.borderColor=s;ds.borderWidth=ds.borderWidth??1.4;}ds.hoverBackgroundColor=_rgba(s,Math.min(1,a+0.28));}
   if(t==='doughnut'){ds.hoverOffset=12;ds.hoverBorderWidth=3;}else{ds.hoverBorderWidth=(ds.borderWidth||1.4)+2;}});
   cfg.options=cfg.options||{};cfg.options.interaction=Object.assign({mode:'nearest',intersect:false},cfg.options.interaction);
-  cfg.options.animation=Object.assign({duration:700,easing:'easeOutQuart'},cfg.options.animation);
-  cfg.options.hover=Object.assign({animationDuration:200},cfg.options.hover);
+  cfg.options.animation=Object.assign({duration:900,easing:'easeOutQuart',delay:(c)=>(c.type==='data'&&c.mode==='default'&&typeof c.dataIndex==='number')?c.dataIndex*32:0},cfg.options.animation);
+  cfg.options.animations=Object.assign({numbers:{type:'number',duration:900,easing:'easeOutQuart'}},cfg.options.animations);
+  cfg.options.hover=Object.assign({animationDuration:220},cfg.options.hover);
   return cfg;}
 function chart(id,cfg){glassify(cfg);if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),cfg);}
 const axX=(x={})=>({grid:{display:false},ticks:{color:C.txt,font:{size:10}},...x});
 const axY=(x={})=>({grid:{color:C.grid},ticks:{color:C.txt,font:{size:10}},...x});
+// ── Etiquetas premium sobre barras / segmentos: vertical, horizontal e interior ──
+const _dlC='#10261c';
+const dlV=(o={})=>Object.assign({display:true,anchor:'end',align:'top',offset:2,clamp:true,color:_dlC,font:{weight:'700',size:10}},o);
+const dlH=(o={})=>Object.assign({display:true,anchor:'end',align:'right',offset:4,clamp:true,color:_dlC,font:{weight:'700',size:10}},o);
+const dlIn=(o={})=>Object.assign({display:true,anchor:'center',align:'center',color:'#fff',font:{weight:'800',size:11}},o);
 
 // ════════ FILTROS ════════
 function buildFilters(){
@@ -580,13 +618,13 @@ function populateDays(){const base=baseDays();document.getElementById('selDay').
 // ════════ RENDER ════════
 function render(){
   aggregate();
-  fillPortada(); fillKpis(); buildTrend(); buildModel(); buildSede(); buildProd(); buildSeg(); buildBoard(); buildFuel(); buildScore(); buildMoney();
+  fillPortada(); fillKpis(); buildTrend(); buildModel(); buildSede(); buildProd(); buildSeg(); buildBoard(); buildFuel(); buildMoney();
 }
 function scopeLbl(){const m=MONTHS.find(x=>x.id===STATE.month).label;const w=STATE.week==='all'?'todo el mes':weeksOf(STATE.month).find(x=>x.id===STATE.week)?.label;const d=STATE.day==='all'?null:new Date(STATE.day+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short'});const z=STATE.zona==='all'?'todas las zonas':STATE.zona;return `${m} · ${d?d:w} · ${z}`;}
 
 function fillPortada(){
   document.getElementById('portMeta').innerHTML=`${A.fleetTotal} ${META.tipoUnidad} · ${META.zona}<br>Periodo base: Feb–Jun 2026 &nbsp;·&nbsp; ${META.cliente} · Tier ${META.tier}<br>Analítica potencializada por Advance y Claude`;
-  document.getElementById('portStats').innerHTML=[{v:intES(A.total),l:'Unidades'},{v:A.active,l:'Activas'},{v:A.total-A.active,l:'Sin actividad'},{v:MODELS.length,l:'Modelos'},{v:[...new Set(D.map(u=>u.zona).filter(Boolean))].length,l:'Zonas / sedes'},{v:A.days.length,l:'Días'}].map(s=>`<div class="pstat"><div class="v">${s.v}</div><div class="l">${s.l}</div></div>`).join('');
+  document.getElementById('portStats').innerHTML=[{v:intES(A.total),l:'Unidades'},{v:A.active,l:'Activas'},{v:A.total-A.active,l:'Sin actividad'},{v:MODELS.length,l:'Modelos'},{v:[...new Set(D.map(u=>u.zona).filter(Boolean))].length,l:'Zonas / sedes'},{v:A.days.length,l:'Días con datos',t:'Cantidad de días incluidos en el periodo seleccionado (según los filtros de mes / semana / día del Resumen ejecutivo). Es el rango de tiempo sobre el que se calculan todas las métricas.'}].map(s=>`<div class="pstat"${s.t?` title="${s.t}" style="cursor:help"`:''}><div class="v">${s.v}</div><div class="l">${s.l}${s.t?' <span style="opacity:.45;font-size:9px;vertical-align:super">ⓘ</span>':''}</div></div>`).join('');
   const nd=document.getElementById('portNoData');
   if(META.sinSenal.length){nd.style.display='';nd.innerHTML=`<strong>⚠ ${META.sinSenal.length} unidades sin señal GPS:</strong> `+META.sinSenal.map(s=>`${s.n} (desde ${s.desde})`).join(' · ')+`. Posible robo o desconexión.`;}else nd.style.display='none';
   document.getElementById('portCob').innerHTML=[{v:A.active,l:'unidades activas',c:'var(--gr)'},{v:A.total-A.active,l:'sin actividad',c:'var(--t2)'},{v:MODELS.length,l:'modelos en flota',c:'var(--teal)'},{v:decES(A.pctIdle)+'%',l:'tiempo en ralentí',c:'var(--or)'}].map(r=>`<div style="background:var(--s3);border-radius:8px;padding:12px"><div style="font-size:18px;font-weight:800;color:${r.c}">${r.v}</div><div style="font-size:11px;color:var(--t2)">${r.l}</div></div>`).join('');
@@ -620,7 +658,8 @@ function buildTrend(){
     {type:'bar',label:'Distancia (km)',data:dist,backgroundColor:C.gl,borderRadius:4,yAxisID:'y',order:2},
     {type:'line',label:'Rendimiento (km/L)',data:kml,borderColor:C.gr,backgroundColor:'rgba(47,143,78,.08)',borderWidth:2.5,pointRadius:2,fill:true,tension:.35,yAxisID:'y1',order:1}]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{position:'top',align:'end',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:14}}},
+      plugins:{legend:{position:'top',align:'end',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:14}},
+        datalabels:dlV({color:C.gr,align:'top',offset:6,display:(c)=>c.dataset.type==='line'&&(c.chart.data.labels.length<=14||c.dataIndex%3===0),formatter:v=>v?decES(v,1):''})},
       scales:{x:axX({ticks:{color:C.txt,font:{size:9},callback:(v,i)=>i%step===0?labels[i]:''}}),
         y:{position:'left',grid:{color:C.grid},ticks:{color:C.txt,font:{size:10},callback:v=>(v/1000).toFixed(0)+'k'}},
         y1:{position:'right',grid:{display:false},ticks:{color:C.gr,font:{size:10}},title:{display:true,text:'km/L',color:C.gr,font:{size:10}}}}}});
@@ -630,7 +669,7 @@ function buildModel(){
   chart('cModel',{data:{labels:m.map(x=>x.model),datasets:[
     {type:'bar',label:'Fabricante',data:m.map(x=>x.bench),backgroundColor:C.gl,borderRadius:4,categoryPercentage:.6,barPercentage:.9},
     {type:'bar',label:'Real',data:m.map(x=>+x.kml.toFixed(2)),backgroundColor:C.gr,borderRadius:4,categoryPercentage:.6,barPercentage:.55}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',align:'end',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:14}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${decES(c.raw,2)} km/L`}}},scales:{x:axX(),y:axY({beginAtZero:true})}}});
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',align:'end',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:14}},tooltip:{callbacks:{label:c=>{if(c.datasetIndex===1){const x=m[c.dataIndex];const d=x.bench?(c.raw/x.bench-1)*100:0;return ` Real: ${d>=0?'+':''}${d.toFixed(0)}% vs ficha`;}return ` ${c.dataset.label}: ${decES(c.raw,2)} km/L`;}}},datalabels:dlV({display:(c)=>c.datasetIndex===1,color:C.gr2,formatter:v=>decES(v,2)})},scales:{x:axX(),y:axY({beginAtZero:true})}}});
   document.getElementById('tbModel').innerHTML=m.map(x=>{const d=(x.kml/x.bench-1)*100,col=d>-12?'var(--gr)':d>-20?'var(--or)':'var(--rd)';return `<tr><td><strong>${x.model}</strong></td><td class="r">${x.n}</td><td class="r" style="font-weight:700">${decES(x.kml,2)}</td><td class="r" style="color:var(--t2)">${decES(x.bench,2)}</td><td class="r" style="color:${col};font-weight:700">${d>=0?'+':''}${d.toFixed(0)}%</td></tr>`;}).join('');
 }
 function buildSede(){
@@ -638,7 +677,8 @@ function buildSede(){
   chart('cSede',{data:{labels:z.map(x=>x.zona),datasets:[
     {type:'bar',label:'Distancia (km)',data:z.map(x=>Math.round(x.km)),backgroundColor:C.gl,borderRadius:5,yAxisID:'y'},
     {type:'line',label:'Rendimiento (km/L)',data:z.map(x=>+x.kml.toFixed(2)),borderColor:C.gr,backgroundColor:C.gr,borderWidth:2.5,pointRadius:4,yAxisID:'y1'}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',align:'end',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:14}}},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',align:'end',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:14}},
+      datalabels:dlV({color:C.gr2,align:'top',offset:6,display:(c)=>c.dataset.type==='line',formatter:v=>decES(v,2)})},
       scales:{x:axX(),y:{position:'left',grid:{color:C.grid},ticks:{color:C.txt,font:{size:10},callback:v=>(v/1000).toFixed(0)+'k'}},y1:{position:'right',grid:{display:false},min:0,ticks:{color:C.gr,font:{size:10}}}}}});
 }
 function buildProd(){
@@ -646,7 +686,7 @@ function buildProd(){
   const dsets=z.map(x=>({label:x.zona,data:[{x:Math.round(x.km),y:+x.kml.toFixed(2),r:10+x.idx/8}],backgroundColor:col(x.idx)+'cc',borderColor:col(x.idx)}));
   chart('cProd',{type:'bubble',data:{datasets:dsets},
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${intES(c.raw.x)} km · ${decES(c.raw.y,2)} km/L`}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${intES(c.raw.x)} km · ${decES(c.raw.y,2)} km/L`}},datalabels:dlIn({font:{weight:'800',size:10},formatter:(v)=>Math.round((v.r-10)*8)})},
       scales:{
         x:{grid:{color:C.grid},title:{display:true,text:'distancia recorrida (km) →',color:C.txt,font:{size:10}},ticks:{color:C.txt,font:{size:10},callback:v=>(v/1000).toFixed(0)+'k'}},
         y:{grid:{color:C.grid},title:{display:true,text:'rendimiento km/L →',color:C.txt,font:{size:10}},ticks:{color:C.txt,font:{size:10}}}
@@ -664,11 +704,12 @@ function buildSeg(){
     return {ds,exces,fren,acel,noct,desc,total:exces+fren+acel+noct+desc};});
   const lbls=sdays.map(d=>new Date(d+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short'}));
   const step=lbls.length>20?Math.ceil(lbls.length/14):1;
+  const stepL=Math.max(1,Math.ceil(lbls.length/8));
   chart('cSegTrend',{type:'line',data:{labels:lbls,datasets:[{label:'Eventos de seguridad',data:ser.map(d=>d.total),borderColor:C.gr,backgroundColor:'rgba(22,163,74,.12)',borderWidth:2.5,pointRadius:2.5,fill:true,tension:.35}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${intES(c.raw)} eventos`}}},scales:{x:axX({ticks:{color:C.txt,font:{size:9},callback:(v,i)=>i%step===0?lbls[i]:''}}),y:axY({beginAtZero:true})}}});
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${intES(c.raw)} eventos`}},datalabels:dlV({color:C.gr2,align:'top',offset:6,display:(c)=>c.dataIndex%stepL===0,formatter:v=>intES(v)})},scales:{x:axX({ticks:{color:C.txt,font:{size:9},callback:(v,i)=>i%step===0?lbls[i]:''}}),y:axY({beginAtZero:true})}}});
   const types=[['Excesos','exces',C.gr],['Frenadas','fren',C.teal],['Aceleraciones','acel',C.lime],['Nocturna','noct',C.or],['Desconexión','desc',C.rd]];
-  chart('cSegStack',{type:'bar',data:{labels:lbls,datasets:types.map(([lb,k,co])=>({label:lb,data:ser.map(d=>d[k]),backgroundColor:co,stack:'s',borderRadius:2}))},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:10}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${intES(c.raw)}`}}},scales:{x:axX({stacked:true,ticks:{color:C.txt,font:{size:9},callback:(v,i)=>i%step===0?lbls[i]:''}}),y:axY({stacked:true,beginAtZero:true})}}});
+  chart('cSegStack',{type:'bar',data:{labels:lbls,datasets:types.map(([lb,k,co],ti)=>({label:lb,data:ser.map(d=>d[k]),backgroundColor:co,stack:'s',borderRadius:2,datalabels:ti===types.length-1?dlV({color:_dlC,anchor:'end',align:'top',offset:3,display:(c)=>c.dataIndex%stepL===0,formatter:(v,c)=>intES(ser[c.dataIndex].total)}):{display:false}}))},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:10}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${intES(c.raw)}`,footer:it=>'Total: '+intES(ser[it[0].dataIndex].total)}}},scales:{x:axX({stacked:true,ticks:{color:C.txt,font:{size:9},callback:(v,i)=>i%step===0?lbls[i]:''}}),y:axY({stacked:true,beginAtZero:true})}}});
   // mejora: primera mitad vs segunda mitad del periodo
   const tot=ser.map(d=>d.total), n=tot.length, h=Math.floor(n/2);
   const segImp=document.getElementById('segImprove'), subT=document.getElementById('subSegTrend');
@@ -689,23 +730,23 @@ function buildSeg(){
   const harshTot=ua.reduce((s,u)=>s+(u.harsh||0),0);
   const alerts=[['Excesos de velocidad',Math.round(A.viol),C.gr],['Frenadas bruscas',Math.round(harshTot*0.55),C.teal],['Aceleraciones bruscas',Math.round(harshTot*0.45),C.lime],['Conducción nocturna',Math.round(A.viol*0.25),C.or],['Desconexión GPS',Math.round(A.viol*0.05)+META.sinSenal.length,C.rd]];
   const totAlert=alerts.reduce((s,a)=>s+a[1],0)||1;
-  const fr=FRANJAS.map(([lbl,w])=>({lbl,v:Math.round(w*totAlert)})); const pico=fr.reduce((a,b)=>b.v>a.v?b:a,fr[0]); const fmax=Math.max(...fr.map(f=>f.v));
+  const fr=FRANJAS.map(([lbl,w])=>({lbl,v:Math.round(w*totAlert)})); const pico=fr.reduce((a,b)=>b.v>a.v?b:a,fr[0]); const fmax=Math.max(...fr.map(f=>f.v)); const frTot=fr.reduce((s,f)=>s+f.v,0)||1;
   document.getElementById('kpiSeg').innerHTML=[
     {l:'Total de alertas',v:intES(totAlert),k:'k-rd',f:`${decES(A.exc100,2)} excesos por 100 km`},
     {l:'Riesgo accidente alto',v:altoN,k:'k-or',f:`de ${ua.length} unidades activas`},
     {l:'Conducción nocturna',v:decES(A.nightPct)+'%',k:'k-tl',f:`del tiempo de manejo (fatiga)`},
     {l:'Pico horario',v:pico.lbl+'h',k:'k-rd',f:`mayor concentración de alertas`},
   ].map(k=>`<div class="kpi ${k.k}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-foot">${k.f}</div></div>`).join('');
-  const topCfg=(data,col)=>({type:'bar',data:{labels:data.map(x=>x.n),datasets:[{data:data.map(x=>x.r),backgroundColor:col,borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` riesgo ${c.raw}/100`}}},scales:{x:axY({min:0,max:100}),y:axX({ticks:{color:C.txt,font:{size:10}}})}}});
+  const topCfg=(data,col)=>({type:'bar',data:{labels:data.map(x=>x.n),datasets:[{data:data.map(x=>x.r),backgroundColor:col,borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` riesgo ${c.raw>=66?'Alto':c.raw>=33?'Medio':'Bajo'}`}},datalabels:dlH({color:col,formatter:v=>v})},scales:{x:axY({min:0,max:100}),y:axX({ticks:{color:C.txt,font:{size:10}}})}}});
   chart('cSafe',topCfg(safe,C.gr)); chart('cUnsafe',topCfg(unsafe,C.rd));
-  chart('cAlerts',{type:'doughnut',data:{labels:alerts.map(a=>a[0]),datasets:[{data:alerts.map(a=>a[1]),backgroundColor:alerts.map(a=>a[2]),borderWidth:3,borderColor:C.card}]},options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{position:'right',labels:{color:C.txt,font:{size:11},padding:9,usePointStyle:true}},tooltip:{callbacks:{label:c=>` ${c.label}: ${intES(c.raw)} (${(c.raw/totAlert*100).toFixed(0)}%)`}}}}});
+  chart('cAlerts',{type:'doughnut',data:{labels:alerts.map(a=>a[0]),datasets:[{data:alerts.map(a=>a[1]),backgroundColor:alerts.map(a=>a[2]),borderWidth:3,borderColor:C.card}]},options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{position:'right',labels:{color:C.txt,font:{size:11},padding:9,usePointStyle:true}},tooltip:{callbacks:{label:c=>` ${c.label}: ${intES(c.raw)} eventos`}},datalabels:dlIn({formatter:(v)=>{const p=v/totAlert*100;return p>=6?Math.round(p)+'%':'';}})}}});
   document.getElementById('subFranja').textContent=`Eventos por horario · pico ${pico.lbl} h`;
-  chart('cFranja',{type:'bar',data:{labels:fr.map(f=>f.lbl+'h'),datasets:[{data:fr.map(f=>f.v),backgroundColor:fr.map(f=>f.v>=fmax*0.85?C.rd:f.v>=fmax*0.55?C.or:C.gr),borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${intES(c.raw)} eventos`}}},scales:{x:axX(),y:axY()}}});
+  chart('cFranja',{type:'bar',data:{labels:fr.map(f=>f.lbl+'h'),datasets:[{data:fr.map(f=>f.v),backgroundColor:fr.map(f=>f.v>=fmax*0.85?C.rd:f.v>=fmax*0.55?C.or:C.gr),borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${(c.raw/frTot*100).toFixed(0)}% de las alertas del periodo`}},datalabels:dlV({formatter:v=>intES(v)})},scales:{x:axX(),y:axY()}}});
   // zonas más inseguras (índice combinado eventos/100km + excesos + vel máx)
   const z=A.byZona; const nrm=(arr,v)=>{const mn=Math.min(...arr),mx=Math.max(...arr);return mx>mn?(v-mn)/(mx-mn):.5;};
   const ev=z.map(x=>x.ev100),ex=z.map(x=>x.viol),vm=z.map(x=>x.maxs);
   const zi=z.map(x=>({...x,idx:Math.round((nrm(ev,x.ev100)+nrm(ex,x.viol)+nrm(vm,x.maxs))/3*100)})).sort((a,b)=>b.idx-a.idx);
-  chart('cZonaInsec',{type:'bar',data:{labels:zi.map(x=>x.zona),datasets:[{data:zi.map(x=>x.idx),backgroundColor:zi.map(x=>x.idx>=66?C.rd:x.idx>=45?C.or:C.gr),borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const x=zi[c.dataIndex];return [` Índice ${x.idx}/100`,` ${decES(x.ev100,2)} eventos/100km · ${x.viol} excesos`,` vel. máx ${x.maxs} km/h`];}}}},scales:{x:axX(),y:axY({min:0,max:100})}}});
+  chart('cZonaInsec',{type:'bar',data:{labels:zi.map(x=>x.zona),datasets:[{data:zi.map(x=>x.idx),backgroundColor:zi.map(x=>x.idx>=66?C.rd:x.idx>=45?C.or:C.gr),borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const x=zi[c.dataIndex];return [` ${decES(x.ev100,2)} eventos/100 km · ${x.viol} excesos`,` vel. máx ${x.maxs} km/h`];}}},datalabels:dlV({formatter:v=>v})},scales:{x:axX(),y:axY({min:0,max:100})}}});
 }
 function boardVal(u,k){const p=A.p;switch(k){
   case 'n':return u.n; case 'number':return u.number||''; case 'model':return u.model; case 'zona':return u.zona||'';
@@ -744,10 +785,11 @@ function buildFuel(){
   ].map(k=>`<div class="kpi ${k.k}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}${k.u?`<small>${k.u}</small>`:''}</div><div class="kpi-foot">${k.f}</div></div>`).join('');
   // gasto por zona apilado (conducción · ralentí · robo)
   const gz=A.byZona.map(z=>{const idL=z.stopH*p.idleL,robL=z.drainL,condL=Math.max(0,z.realL-idL);return {zona:z.zona,cond:condL*p.diesel,ral:idL*p.diesel,robo:robL*p.diesel};});
+  const gtot=gz.map(z=>z.cond+z.ral+z.robo);
   chart('cGastoZona',{type:'bar',data:{labels:gz.map(z=>z.zona),datasets:[
     {label:'Conducción',data:gz.map(z=>Math.round(z.cond)),backgroundColor:C.gr,stack:'g',borderRadius:3},
     {label:'Ralentí',data:gz.map(z=>Math.round(z.ral)),backgroundColor:C.or,stack:'g',borderRadius:3},
-    {label:'Robo de diésel',data:gz.map(z=>Math.round(z.robo)),backgroundColor:C.rd,stack:'g',borderRadius:3}]},
+    {label:'Robo de diésel',data:gz.map(z=>Math.round(z.robo)),backgroundColor:C.rd,stack:'g',borderRadius:3,datalabels:dlV({color:_dlC,anchor:'end',align:'top',offset:3,formatter:(v,c)=>'$'+(gtot[c.dataIndex]/1000).toFixed(0)+'k'})}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${mxn(c.raw)}`}}},
       scales:{x:axX({stacked:true}),y:axY({stacked:true,ticks:{color:C.txt,font:{size:10},callback:v=>'$'+(v/1000).toFixed(0)+'k'}})}}});
   // descargas
@@ -758,24 +800,42 @@ function buildFuel(){
     {l:'Diésel descargado',v:intES(robL)+' L',f:'≈ '+mxn(roboCost)+' en pérdida',c:'var(--rd)'},
     {l:'Costo por km de robo',v:'$'+decES(roboKm,2),f:'/km de la flota',c:'var(--or)'},
   ].map(d=>`<div style="background:var(--s3);border-radius:8px;padding:12px"><div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">${d.l}</div><div style="font-size:22px;font-weight:800;color:${d.c};margin-top:4px">${d.v}</div><div style="font-size:10px;color:var(--t2);margin-top:2px">${d.f}</div></div>`).join('');
-  // bono al operador por reducir ralentí
-  const base=p.idleBase;
-  const bono=A.UA.filter(u=>u.km>0).map(u=>{const motorH=u.drive+u.stop;const litros=Math.max(0,(base-u.pctIdle)/100*motorH*p.idleL);return {n:u.n,pct:u.pctIdle,litros,bono:litros*p.diesel*p.bonusShare/100};}).filter(b=>b.bono>0).sort((a,b)=>b.bono-a.bono).slice(0,12);
-  const totalBono=bono.reduce((s,b)=>s+b.bono,0);
-  document.getElementById('subBono').textContent=`Reparto ${p.bonusShare}% del ahorro · base ${base}% ralentí · ${bono.length} operadores califican`;
-  document.getElementById('bonoNote').innerHTML=`Con base ${base}% y reparto ${p.bonusShare}%, los operadores por debajo de la base reciben en conjunto <b style="color:var(--teal)">${mxn(totalBono)}</b> este periodo; la empresa conserva el resto del ahorro. Cuanto más bajen su ralentí, más ganan.`;
-  document.getElementById('wrapBono').style.height=(Math.max(1,bono.length)*26+40)+'px';
-  chart('cBono',{type:'bar',data:{labels:bono.map(b=>b.n),datasets:[{data:bono.map(b=>Math.round(b.bono)),backgroundColor:C.teal,borderRadius:5}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${mxn(c.raw)} · ${decES(bono[c.dataIndex].pct)}% ralentí`}}},scales:{x:axY({min:0,ticks:{color:C.txt,font:{size:10},callback:v=>'$'+(v/1000).toFixed(1)+'k'}}),y:axX({ticks:{color:C.txt,font:{size:10}}})}}});
-}
-function buildScore(){
-  const sc=A.UA.filter(u=>u.km>100).map(u=>({...u,sc:scoreOf(u)})).sort((a,b)=>b.sc.total-a.sc.total);
-  const col=u=>u.sc.total>=65?C.gr:u.sc.total>=45?C.or:C.rd;
-  document.getElementById('wrapScore').style.height=(sc.length*22+50)+'px';
-  chart('cScore',{type:'bar',data:{labels:sc.map(u=>u.n),datasets:[{data:sc.map(u=>u.sc.total),backgroundColor:sc.map(col),borderRadius:3}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:axY({min:0,max:100}),y:axX({ticks:{color:C.txt,font:{size:9}}})}}});
-  const cat=t=>t>=65?'<span class="tag tag-baja">Seguro</span>':t>=45?'<span class="tag tag-media">Regular</span>':'<span class="tag tag-alta">Riesgo</span>';
-  document.getElementById('tbScore').innerHTML=sc.map((u,i)=>`<tr><td style="color:var(--t3)">${i+1}</td><td><strong>${u.n}</strong></td><td class="r" style="color:${col(u)};font-weight:700">${u.sc.total}</td><td class="r">${u.sc.seg}</td><td class="r">${u.sc.efi}</td><td class="r">${u.sc.idle}</td><td>${cat(u.sc.total)}</td></tr>`).join('');
+  // ── Bono al operador · escenario "¿qué pasaría si?": de las métricas actuales al objetivo ──
+  const idleT=p.idleTarget, kmlT=p.kmlTarget, excT=p.excTarget, share=p.bonusShare/100;
+  const calcBono=u=>{
+    const motorH=u.drive+u.stop;
+    // Ralentí: bajar de %actual a %objetivo
+    const litrosRal=Math.max(0,(u.pctIdle-idleT)/100*motorH*p.idleL), saveRal=litrosRal*p.diesel, ral=saveRal*share;
+    // Rendimiento: subir de km/L actual a objetivo (litros que se dejarían de gastar)
+    const litrosEfi=(u.kml>0&&kmlT>u.kml)?Math.max(0,u.real_l-u.km/kmlT):0, saveEfi=litrosEfi*p.diesel, efi=saveEfi*share;
+    // Seguridad: bajar excesos/100km al objetivo → costo de los eventos evitados
+    const excEvit=Math.max(0,(u.exc100-excT)/100*u.km), saveSeg=excEvit*p.eventCost, seg=saveSeg*share;
+    return {n:u.n,saveRal,saveEfi,saveSeg,ral,efi,seg,total:seg+ral+efi};
+  };
+  const allB=A.UA.filter(u=>u.km>0).map(calcBono);
+  const sumB=k=>allB.reduce((s,b)=>s+b[k],0);
+  const tSeg=sumB('seg'),tRal=sumB('ral'),tEfi=sumB('efi'),tAll=tSeg+tRal+tEfi;
+  const sSeg=sumB('saveSeg'),sRal=sumB('saveRal'),sEfi=sumB('saveEfi'),sAll=sSeg+sRal+sEfi;
+  const bono=[...allB].filter(b=>b.total>0).sort((a,b)=>b.total-a.total).slice(0,12);
+  const setTxt=(id,t)=>{const e=document.getElementById(id);if(e)e.textContent=t;};
+  // pilar Seguridad
+  setTxt('segAct',`${decES(A.exc100,2)} exc/100km`); setTxt('segObj',`${decES(excT,2)} exc/100km`);
+  setTxt('segSave',mxn(sSeg)); setTxt('bonoSegTot',mxn(tSeg));
+  setTxt('bonoSegMeta',`${allB.filter(b=>b.seg>0).length} operadores con margen · reparto ${p.bonusShare}%`);
+  // pilar Ralentí
+  setTxt('ralAct',`${decES(A.pctIdle)}%`); setTxt('ralObj',`${decES(idleT)}%`);
+  setTxt('ralSave',mxn(sRal)); setTxt('bonoRalTot',mxn(tRal));
+  setTxt('bonoRalMeta',`${allB.filter(b=>b.ral>0).length} operadores con margen · reparto ${p.bonusShare}%`);
+  // pilar Rendimiento
+  setTxt('efiAct',`${decES(A.kml,2)} km/L`); setTxt('efiObj',`${decES(kmlT,2)} km/L`);
+  setTxt('efiSave',mxn(sEfi)); setTxt('bonoEfiTot',mxn(tEfi));
+  setTxt('bonoEfiMeta',`${allB.filter(b=>b.efi>0).length} operadores con margen · reparto ${p.bonusShare}%`);
+  setTxt('subBono',`Escenario "¿qué pasaría si?" · de las métricas actuales al objetivo · el operador recibe el ${p.bonusShare}% del ahorro`);
+  document.getElementById('bonoNote').innerHTML=`Si la flota alcanza los objetivos, el ahorro potencial es <b style="color:var(--gr)">${mxn(sAll)}</b> y a los operadores les tocaría <b style="color:var(--gr2)">${mxn(tAll)}</b> (${p.bonusShare}% del ahorro). Cada barra es un operador; colores = pilar, etiqueta = total.`;
+  document.getElementById('wrapBono').style.height=(Math.max(1,bono.length)*30+54)+'px';
+  const pil=[['Seguridad','seg',C.rd],['Ralentí','ral',C.or],['Rendimiento','efi',C.gr]];
+  chart('cBono',{type:'bar',data:{labels:bono.map(b=>b.n),datasets:pil.map(([lb,k,co],di)=>({label:lb,data:bono.map(b=>Math.round(b[k])),backgroundColor:co,stack:'b',borderRadius:di===2?5:2,datalabels:di===2?dlH({color:_dlC,formatter:(v,c)=>'$'+intES(bono[c.dataIndex].total)}):{display:false}}))},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',align:'end',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${mxn(c.raw)}`,footer:it=>'Total: '+mxn(bono[it[0].dataIndex].total)}}},scales:{x:axY({stacked:true,min:0,ticks:{color:C.txt,font:{size:10},callback:v=>'$'+(v/1000).toFixed(1)+'k'}}),y:axX({stacked:true,ticks:{color:C.txt,font:{size:10}}})}}});
 }
 function buildMoney(){
   const p=A.p;
@@ -787,7 +847,7 @@ function buildMoney(){
     {l:'Exposición seguridad',v:mxn(tS),k:'k-tl',f:`${intES(A.viol)} excesos × costo evento`},
   ].map(k=>`<div class="kpi ${k.k}"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-foot">${k.f}</div></div>`).join('');
   chart('cMoney',{type:'bar',data:{labels:['Ralentí','Ineficiencia','Seguridad','Total'],datasets:[{data:[tR,tE,tS,tR+tE+tS],backgroundColor:[C.or,C.rd,C.teal,C.gr],borderRadius:6}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${mxn(c.raw)}`}}},scales:{x:axX(),y:axY({ticks:{color:C.txt,font:{size:10},callback:v=>fmtK(v)}})}}});
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${mxn(c.raw)}`}},datalabels:dlV({formatter:v=>'$'+(v/1000).toFixed(0)+'k'})},scales:{x:axX(),y:axY({ticks:{color:C.txt,font:{size:10},callback:v=>fmtK(v)}})}}});
 }
 
 // nav highlight + init

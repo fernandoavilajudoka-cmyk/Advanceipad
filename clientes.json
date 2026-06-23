@@ -1,0 +1,8 @@
+{
+  "_comentario": "Config OPCIONAL por cliente. La clave es el slug = lo que va despues de MAPON_ en el secret (MAPON_TEPEYAC -> tepeyac). Si un cliente no aparece aqui, el informe corre igual con valores por defecto. 'bench' = km/L de ficha del fabricante por modelo; 'tank' = capacidad de tanque en litros por modelo.",
+  "tepeyac": {
+    "nombre": "Fertilizantes Tepeyac",
+    "bench": { "S3": 8.0, "S3-E6 AMT": 8.5, "EST-A X13": 2.6, "TUNLAND E5": 9.5 },
+    "tank":  { "S3": 100, "S3-E6 AMT": 100, "EST-A X13": 400, "TUNLAND E5": 80 }
+  }
+}
