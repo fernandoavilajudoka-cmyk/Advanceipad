@@ -191,7 +191,7 @@ async function main() {
 function renderHTML(D) {
   const J = JSON.stringify(D);
   return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Distribución de Modelos por Región — Advance</title>
+<title>Tablero de análisis distribuidores Reńs productions 2026</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
@@ -212,8 +212,8 @@ th:first-child,td:first-child{text-align:left}th{color:var(--mut);font-weight:60
 .heat{font-variant-numeric:tabular-nums}.tag{display:inline-block;padding:2px 8px;border-radius:999px;background:#e7f6ec;color:var(--forest);font-size:11px;font-weight:600}
 .foot{color:var(--mut);font-size:12px;margin-top:24px}.up{color:var(--p);font-weight:700}
 </style></head><body>
-<header><h1>Distribución de Modelos por Región <span class="tag">Advance · Telemetría</span></h1>
-<div class="sub">Parque vehicular por agencia/estado · base para priorizar certificación Cummins · datos reales Mapon · generado ${D.generado}</div></header>
+<header><h1>Tablero de análisis distribuidores Reńs productions 2026 <span class="tag">Advance · Telemetría</span></h1>
+<div class="sub">Distribución de modelos por región · parque vehicular por agencia/estado · base para priorizar certificación Cummins · datos reales Mapon · generado ${D.generado}</div></header>
 <div class="wrap">
  <div class="kpis">
   <div class="kpi"><b id="k1"></b><span>Unidades totales</span></div>
