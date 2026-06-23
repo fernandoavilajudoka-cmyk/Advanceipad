@@ -29,19 +29,21 @@ Un mismo análisis sirve para **cualquier cliente**: solo cambian los datos, que
 
 Cada informe contiene, en este orden:
 
-1. **Resumen ejecutivo** — KPIs: rendimiento general, distancia, ralentí, excesos, probabilidad de accidente/robo.
-2. **Rendimiento real por modelo vs fabricante** — km/L medido contra ficha del fabricante.
-3. **Rendimiento por sede vs distancia** — comparativa por zona/sede.
-4. **Sede más vs menos productiva** — índice = distancia × rendimiento.
-5. **Seguridad vial** — tendencia (mejora/empeora), top 10 más seguras/inseguras, concentrado de alertas,
+1. **Portada** — identidad del cliente, estado de la flota y resumen del periodo.
+2. **Resumen ejecutivo** — KPIs: rendimiento general, distancia, ralentí, excesos, probabilidad de accidente/robo.
+3. **Rendimiento real por modelo vs fabricante** — km/L medido contra ficha del fabricante.
+4. **Rendimiento por sede vs distancia** — comparativa por zona/sede.
+5. **Sede más vs menos productiva** — índice = distancia × rendimiento.
+6. **Seguridad vial** — tendencia (mejora/empeora), top 10 más seguras/inseguras, concentrado de alertas,
    franja horaria, zonas más inseguras.
-6. **Tablero de unidades** — 15 unidades con mayor distancia, encabezados ordenables (clic = mayor→menor; otro clic invierte).
-7. **Combustible y costo** — costo, costo/km, ralentí, descargas de diésel, bono al operador, gasto por zona.
-8. **Ranking operativo** — score por unidad.
+7. **Tablero de unidades** — 15 unidades con mayor distancia, encabezados ordenables (clic = mayor→menor; otro clic invierte).
+8. **Combustible y costo** — costo, costo/km, ralentí, descargas de diésel, gasto por zona y
+   **bono al operador** (modelo de 3 pilares —Seguridad + Ralentí + Rendimiento— en escenario *«¿qué pasaría si?»*: de la métrica actual a un objetivo, con el ahorro y la parte que le toca al operador).
 9. **Monetización del desempeño** — ahorro potencial.
-10. **Metodología y parámetros** — supuestos económicos editables (precio diésel, norma L/100, bono, etc.).
+10. **Metodología y parámetros** — supuestos económicos y objetivos editables (precio diésel, norma L/100, objetivos del bono, etc.).
 
-Filtros globales: **Mes · Semana · Día · Zona**. Botón **Descargar PDF**. Gráficos con diseño de cristal translúcido (Chart.js por CDN).
+Filtros globales en la **barra lateral** (**Mes · Semana · Día · Zona**): se filtra desde cualquier sección.
+Botón **Descargar PDF**. Todas las gráficas muestran **etiquetas numéricas / porcentaje** y tienen diseño de cristal translúcido (Chart.js por CDN).
 
 ---
 
