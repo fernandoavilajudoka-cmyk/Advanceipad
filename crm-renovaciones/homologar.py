@@ -79,6 +79,17 @@ def norm_vin(v):
 def is_vin(s):
     return bool(s) and 11 <= len(s) <= 20 and re.fullmatch(r"[A-Z0-9]+", s) is not None
 
+def norm_dispositivo(s):
+    """De 'CAN006/GV350CEU' o 'ESENCIAL/GV58LAU' saca el modelo GPS (GV350CEU…)."""
+    if not s:
+        return ""
+    u = str(s).upper()
+    m = re.search(r"GV\d{2,3}[A-Z]*", u) or re.search(r"FM[A-Z]?\d{3,4}", u) or re.search(r"AT\d{2,3}", u)
+    if m:
+        return m.group(0)
+    tok = u.split("/")[-1].strip()
+    return tok if re.search(r"[A-Z]", tok) and len(tok) <= 14 else ""
+
 def clean(v):
     if v is None:
         return ""
@@ -142,6 +153,10 @@ def classify(h):
         return "unidades"
     if "clasificacion" in h0 or "tipo de cliente" in h0 or h0 == "segmento":
         return "clasificacion"
+    if "modelo gps" in h0:
+        return "modelo_gps"
+    if h0 == "dispositivo":          # hoja mensual: "ESENCIAL/GV58LAU", "CAN006/GV350CEU"
+        return "dispositivo"
     if "estatus" in h0:
         return "estatus"
     if h0 == "vigencia":
@@ -453,9 +468,11 @@ def recolectar():
                 renov = parse_date(g("fecha_renov"))
                 alta = parse_date(g("fecha_alta"))
                 cont = clean(g("contacto_nombre")) or clean(g("contacto_alt"))
+                disp = norm_dispositivo(clean(g("modelo_gps"))) or norm_dispositivo(clean(g("dispositivo")))
                 registros.append({
                     "vin": vin,
                     "empresa": clean(g("empresa")),
+                    "dispositivo": disp,
                     "fecha_renov": renov,
                     "fecha_alta": alta,
                     "contacto": cont,
@@ -595,6 +612,7 @@ def consolidar(registros, dim, tel=None, crm=None):
             correo_c = correo_c or mc["correo"]
 
         estatus = next((r["estatus"] for r in regs if r["estatus"]), "")
+        dispositivo = next((r["dispositivo"] for r in regs if r.get("dispositivo")), "")
         t = tel.get(vin, {})
         vigencia = t.get("vigencia") or next((r["vigencia"] for r in regs if r["vigencia"]), "")
         uconx = t.get("ultima_conexion")
@@ -679,6 +697,7 @@ def consolidar(registros, dim, tel=None, crm=None):
             "correo": correo_c,
             "numero_unidades": n_units or "",
             "tipo_cliente": tipo,
+            "dispositivo": dispositivo,
             "estatus_renovacion": estatus,
             "vigencia": vigencia,
             "ultima_conexion": uconx.isoformat() if uconx else "",
@@ -707,6 +726,7 @@ COLS_UNIDADES = [
     ("correo", "CORREO"),
     ("numero_unidades", "NÚMERO DE UNIDADES"),
     ("tipo_cliente", "TIPO DE CLIENTE"),
+    ("dispositivo", "TIPO DE DISPOSITIVO"),
     ("estatus_renovacion", "ESTATUS RENOVACIÓN"),
     ("vigencia", "VIGENCIA"),
     ("ultima_conexion", "ÚLTIMA CONEXIÓN"),
