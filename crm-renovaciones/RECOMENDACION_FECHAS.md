@@ -47,23 +47,38 @@ Sobre la base homologada (10,259 VINs):
 4. `Estado` Online/Offline.
 5. Fecha de creación de la empresa — último recurso si no hay alta.
 
-## Resultado al aplicar el modelo
+## Resultado al aplicar el modelo (con CRM en vivo integrado)
+
+Confirmaste **+90 días** para las que no traen fecha real → ya aplicado.
 
 | Origen de la PRÓXIMA RENOVACIÓN | Unidades |
 |---|---|
-| Fecha real de archivos (1,461 ya futuras + 1,661 rodadas a próximo aniversario) | **3,122** |
-| Estimada por aniversario de alta (unidades activas) | **4,132** |
-| Estimada por última conexión / creación de empresa | **12** |
-| No proyectada por unidad inactiva (→ recuperación) | **2,863** |
-| Sin dato suficiente | **130** |
+| Fecha real (archivos + CRM): 1,461 ya futuras + 1,661 rodadas a próximo aniversario | **3,122** |
+| Estimada = aniversario de alta **+ 90 días** (unidades activas) | **4,521** |
+| Estimada por última conexión / creación de empresa +90d | **10** |
+| No proyectada por unidad inactiva (→ recuperación) | **2,478** |
+| Sin dato suficiente | **128** |
 
-→ **7,266 unidades con fecha de renovación accionable** (≥ hoy), y 2,863 inactivas
-correctamente separadas para recuperación en vez de meterlas al calendario.
+→ **7,653 unidades (74%) con fecha de renovación accionable** (≥ hoy), y 2,478
+inactivas separadas para recuperación en vez de meterlas al calendario.
 
-## Decisión pendiente contigo
-- ¿Confirmas **90 días** de prórroga, o prefieres otro número (p. ej. 60)?
-- ¿Para las **inactivas** quieres (a) dejarlas sin fecha como ahora, o (b)
-  proyectarlas igual marcándolas "tentativas" para cobranza agresiva?
+## Lo que aportó el CRM en vivo
+- **Fecha de alta autoritativa** (`cars.createDateTime`) para **4,792 VINs** —
+  reemplaza la de archivos donde existe, subiendo la precisión de toda la estimación.
+- **Identidad de empresa** (companyId/nombre) y **conteo de unidades en vivo** → AAA/AA/A más exacto.
+- **Última recepción** fresca para decidir activa/inactiva.
 
-Ambas son un cambio de una línea en `homologar.py` (`grace=90` y la regla de
-unidad inactiva). Dime y lo ajusto.
+## ⚠️ Sobre las "Notas de Referencia" del CRM
+Donde los analistas escribían "Próxima Renovación: dd/mm/aaaa" es un campo a
+nivel **dispositivo**, y **este CRM API (PartnerAPI) NO lo expone** (ni en
+`/cars/{id}.notes`, que regresa "/", ni en `/devices/{id}`, que no trae notas;
+`/companies/{id}/notes` da 403). Verifiqué el dispositivo de tu captura
+(IMEI 862524061126955) y coincide, pero la nota no viene en la API.
+**La buena noticia:** esas fechas **ya estaban capturadas en tus archivos de
+Operaciones** (p. ej. el TR-34 de tu captura, 26/02/2027, salió de los archivos).
+Si quieres recuperar el 100% de esas notas habría que usar la **API principal de
+Mapon** (api.mapon.com, `unit.notes`) o un export del campo — dime y lo conecto.
+
+## Decisión pendiente
+- Para las **inactivas**: ¿(a) dejarlas sin fecha como ahora (recomendado), o
+  (b) proyectarlas igual marcadas "tentativas" para cobranza agresiva?

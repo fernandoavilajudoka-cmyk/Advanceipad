@@ -28,14 +28,18 @@ ACTIVA · # FUENTES`
 
 ```bash
 pip install openpyxl
-# 1) coloca los Excel de origen en ./fuentes  (ver lista abajo)
-python3 homologar.py                       # genera ./salida
+# 1) (opcional) jala el CRM en vivo a ./salida/_crm_raw  (requiere token)
+export MAPON_TOKEN='eyJ...'                 # JWT del CRM (NO se commitea, vida ~7h)
+python3 reconciliar_crm.py --probe         # diagnóstico de 1 llamada + headers
+python3 reconciliar_crm.py                  # dump companies.json + cars.json
 
-# 2) reconciliar contra el CRM en vivo (requiere token)
-export MAPON_TOKEN='eyJ...'                 # JWT del CRM (NO se commitea)
-python3 reconciliar_crm.py --probe         # diagnóstico de 1 llamada
-python3 reconciliar_crm.py                  # diff completo base ⇄ CRM
+# 2) coloca los Excel de origen en ./fuentes  (ver lista abajo) y homologa
+python3 homologar.py                        # toma ./fuentes + ./salida/_crm_raw → ./salida
 ```
+
+`homologar.py` corre con o sin CRM. Si existe `./salida/_crm_raw`, usa el CRM como
+fuente autoritativa (alta = `cars.createDateTime`, identidad de empresa, conteo de
+unidades en vivo, última recepción) y la "Próxima Renovación" de las notas como P0.
 
 ### Archivos de origen esperados en `./fuentes`
 - `RENOVACIONES_ACTUALIZADO_Operaciones.xlsx` — hojas mensuales de Operaciones (P1).
@@ -99,6 +103,13 @@ Referencia: `mapon-crm-openapi.json` (espec OpenAPI). Endpoints útiles:
 > **Importante:** Mapon **no** tiene un campo nativo de "fecha de renovación" por
 > unidad. Por eso esta base es la fuente de verdad de renovaciones y, si se
 > quiere reflejar en Mapon, se escribe como **campo personalizado**.
+>
+> **"Notas de Referencia":** el campo del UI donde los analistas anotaban la
+> próxima renovación es a nivel **dispositivo** y **el CRM PartnerAPI no lo
+> expone** (`cars.notes` regresa "/", `/devices/{id}` no trae notas,
+> `/companies/{id}/notes` → 403). Esas fechas, sin embargo, **ya están en los
+> archivos de Operaciones**. Para recuperarlas al 100% habría que usar la API
+> principal de Mapon (`api.mapon.com`, `unit.notes`).
 
 ## Seguridad
 

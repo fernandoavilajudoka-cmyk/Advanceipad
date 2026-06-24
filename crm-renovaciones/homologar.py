@@ -273,6 +273,80 @@ def cargar_dimension_empresa():
     wb.close()
     return vin2cid, cid_info, cid_cont, name2cid
 
+def _fecha_en_texto(seg):
+    """Primera fecha dd/mm/yyyy, dd.mm.yyyy o yyyy-mm-dd dentro de un texto."""
+    m = re.search(r"(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})", seg)
+    if m:
+        y, mo, da = m.groups()
+    else:
+        m = re.search(r"(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})", seg)
+        if not m:
+            return None
+        da, mo, y = m.groups()
+        if len(y) == 2:
+            y = "20" + y
+    try:
+        d = dt.date(int(y), int(mo), int(da))
+        return d if 2019 <= d.year <= 2035 else None
+    except ValueError:
+        return None
+
+def parse_notes(notes):
+    """De las 'Notas de Referencia' del CRM saca (renovacion, activacion).
+    Ej.: 'Activación: 26.02.2026 / Próxima Renovación: 26/02/2027'."""
+    if not notes:
+        return None, None
+    renov = activacion = None
+    for linea in re.split(r"[\n\r;]+", str(notes)):
+        l = fold(linea)
+        if "renov" in l:
+            renov = renov or _fecha_en_texto(linea)
+        if "activ" in l or "alta" in l:
+            activacion = activacion or _fecha_en_texto(linea)
+    # si no hubo etiqueta de renovación pero hay UNA sola fecha futura, no asumimos
+    return renov, activacion
+
+def cargar_crm(crm_dir):
+    """Lee el dump del CRM en vivo (companies.json, cars.json).
+    Devuelve:
+      crm_vin:  VIN -> {alta, notes_renov, companyId, last_data, make, model, notes}
+      crm_comp: companyId -> {name, statusTill, creado, manager, email, segment}
+      crm_units: companyId -> nº de cars en el CRM
+    """
+    import json
+    crm_vin, crm_comp, crm_units = {}, {}, defaultdict(int)
+    cp = os.path.join(crm_dir, "companies.json")
+    cr = os.path.join(crm_dir, "cars.json")
+    if not (os.path.exists(cp) and os.path.exists(cr)):
+        return crm_vin, crm_comp, crm_units
+    for c in json.load(open(cp, encoding="utf-8")):
+        cid = str(c.get("id"))
+        crm_comp[cid] = {
+            "name": clean(c.get("name")),
+            "statusTill": clean(c.get("statusTill")),
+            "creado": parse_date((c.get("createdAt") or {}).get("raw") if isinstance(c.get("createdAt"), dict) else c.get("createdAt")),
+            "manager": clean(((c.get("manager") or {}).get("name", "") + " " + (c.get("manager") or {}).get("surname", "")).strip()),
+            "email": clean(c.get("email")),
+            "segment": clean((c.get("segment") or {}).get("name") if isinstance(c.get("segment"), dict) else ""),
+        }
+    for car in json.load(open(cr, encoding="utf-8")):
+        vin = norm_vin(car.get("vinNumber"))
+        cid = str(car.get("companyId"))
+        if cid:
+            crm_units[cid] += 1
+        if not is_vin(vin):
+            continue
+        renov, activ = parse_notes(car.get("notes"))
+        crm_vin[vin] = {
+            "alta": parse_date(car.get("createDateTime")) or activ,
+            "notes_renov": renov,
+            "companyId": cid,
+            "last_data": parse_date(car.get("lastDataReceived")),
+            "make": clean(car.get("make")), "model": clean(car.get("model")),
+            "notes": clean(car.get("notes")),
+        }
+    return crm_vin, crm_comp, crm_units
+
 def cargar_telemetria():
     """VIN -> {ultima_conexion: date, estado: 'Online'/'Offline', vigencia: str}
     desde el export de Mapon (BASE DE DATOS). Sirve para decidir si una unidad
@@ -412,9 +486,10 @@ def tipo_cliente(n):
         return "A"
     return ""
 
-def consolidar(registros, dim, tel=None):
+def consolidar(registros, dim, tel=None, crm=None):
     vin2cid, cid_info, cid_cont, name2cid = dim
     tel = tel or {}
+    crm_vin, crm_comp, crm_units = crm or ({}, {}, {})
     hoy = dt.date.today()
     por_vin = defaultdict(list)
     for x in registros:
@@ -436,10 +511,15 @@ def consolidar(registros, dim, tel=None):
     unidades = []   # filas finales por VIN
     conflictos = []
     for vin, regs in sorted(por_vin.items()):
-        cid = vin2cid.get(vin)
+        cv = crm_vin.get(vin)               # datos vivos del CRM para este VIN
+        cid = (cv["companyId"] if cv and cv.get("companyId") else None) or vin2cid.get(vin)
 
         # ---- FECHA DE RENOVACIÓN: por prioridad, luego marcamos conflicto ----
+        # P0 = "Próxima Renovación" escrita por los analistas en las Notas del CRM (verdad final).
         con_fecha = [r for r in regs if r["fecha_renov"] and r["prioridad"] is not None]
+        if cv and cv.get("notes_renov"):
+            con_fecha.insert(0, {"fecha_renov": cv["notes_renov"], "prioridad": 0,
+                                 "archivo": "CRM en vivo", "hoja": "Notas de Referencia"})
         elegida = None
         elegida_src = ""
         if con_fecha:
@@ -473,16 +553,23 @@ def consolidar(registros, dim, tel=None):
         if altas:
             altas.sort(key=alta_pri)
             alta = altas[0]["fecha_alta"]
+        # El CRM (cars.createDateTime) es la fecha de alta AUTORITATIVA.
+        if cv and cv.get("alta"):
+            alta = cv["alta"]
 
-        # ---- EMPRESA ----
-        if cid and cid in cid_info and cid_info[cid]["nombre"]:
+        # ---- EMPRESA (el CRM en vivo manda; luego export; luego archivos) ----
+        if cv and cid in crm_comp and crm_comp[cid].get("name"):
+            empresa = crm_comp[cid]["name"]
+        elif cid and cid in cid_info and cid_info[cid]["nombre"]:
             empresa = cid_info[cid]["nombre"]
         else:
             empresa = next((r["empresa"] for r in regs if r["empresa"]), "")
 
         # ---- UNIDADES + TIPO ----
         n_units = None
-        if cid and cid in cid_info and cid_info[cid].get("total_unidades"):
+        if cid and cid in crm_units and crm_units[cid]:
+            n_units = crm_units[cid]            # conteo vivo de vehículos en el CRM
+        elif cid and cid in cid_info and cid_info[cid].get("total_unidades"):
             try:
                 n_units = int(float(cid_info[cid]["total_unidades"]))
             except ValueError:
@@ -512,6 +599,11 @@ def consolidar(registros, dim, tel=None):
         vigencia = t.get("vigencia") or next((r["vigencia"] for r in regs if r["vigencia"]), "")
         uconx = t.get("ultima_conexion")
         estado = t.get("estado", "")
+        # El CRM trae la última recepción más fresca: manda si es más reciente.
+        if cv and cv.get("last_data") and (uconx is None or cv["last_data"] > uconx):
+            uconx = cv["last_data"]
+            if not estado:
+                estado = "Online" if (hoy - cv["last_data"]).days <= 30 else "Offline"
 
         # ---- ¿unidad activa? (para decidir si proyectamos renovación) ----
         activa = None  # True/False/None(desconocido)
@@ -538,6 +630,10 @@ def consolidar(registros, dim, tel=None):
             ancla, base = None, "sin dato suficiente"
 
         prox = proxima_renovacion(ancla, hoy) if ancla else None
+        # Regla del cliente: a las unidades SIN fecha real se les dan 90 días
+        # adicionales (12 meses de servicio + prórroga por incertidumbre de datos).
+        if prox and base.startswith("estimada"):
+            prox = prox + dt.timedelta(days=90)
         proxima = prox.isoformat() if prox else ""
         # Si la unidad NO está activa, no inventamos renovación: es recuperación, no renovación.
         if base != "archivo" and activa is False:
@@ -545,12 +641,13 @@ def consolidar(registros, dim, tel=None):
             proxima = ""
         elif base == "archivo" and prox and elegida and prox != elegida:
             origen = "archivo (rodada a próximo aniversario)"
+        elif base.startswith("estimada"):
+            origen = base + " +90d"
         else:
             origen = base
         estimada = proxima if base.startswith("estimada") else ""
         final = proxima
-        # Ventana de gracia / prórroga: 90 días DESPUÉS del vencimiento (no se
-        # suma a la fecha; es la fecha límite de cobranza antes de dar de baja).
+        # Fecha límite de cobranza: 90 días después del vencimiento.
         limite_gracia = ""
         if prox:
             limite_gracia = (prox + dt.timedelta(days=90)).isoformat()
@@ -681,12 +778,19 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--fuentes", default=os.path.join(os.path.dirname(__file__), "fuentes"))
     ap.add_argument("--salida", default=os.path.join(os.path.dirname(__file__), "salida"))
+    ap.add_argument("--crm", default=os.path.join(os.path.dirname(__file__), "salida", "_crm_raw"),
+                    help="carpeta con el dump del CRM (companies.json, cars.json)")
     args = ap.parse_args()
     SRC = args.fuentes
 
     print("· Cargando dimensión de empresa (export Mapon)…")
     dim = cargar_dimension_empresa()
     print(f"  VIN→IDcliente: {len(dim[0])}  ·  empresas: {len(dim[1])}  ·  empresas c/contacto: {len(dim[2])}")
+
+    print("· Cargando CRM en vivo (si hay dump)…")
+    crm = cargar_crm(args.crm)
+    crm_renov = sum(1 for v in crm[0].values() if v.get("notes_renov"))
+    print(f"  VINs en CRM: {len(crm[0])}  ·  empresas CRM: {len(crm[1])}  ·  renovación en notas: {crm_renov}")
 
     print("· Cargando telemetría por VIN (última conexión / estado)…")
     tel = cargar_telemetria()
@@ -697,7 +801,7 @@ def main():
     print(f"  registros crudos: {len(registros)}")
 
     print("· Consolidando por VIN…")
-    unidades, conflictos, _ = consolidar(registros, dim, tel)
+    unidades, conflictos, _ = consolidar(registros, dim, tel, crm)
     empresas = construir_empresas(unidades)
 
     # Estadísticas / metodología

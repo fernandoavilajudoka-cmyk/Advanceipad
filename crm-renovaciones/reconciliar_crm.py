@@ -132,83 +132,43 @@ def probe(api):
         print(f"  {k}: {show}")
 
 
-def cargar_base(path):
-    if not os.path.exists(path):
-        sys.exit(f"No existe {path}. Corre primero homologar.py")
-    with open(path, encoding="utf-8-sig") as fh:
-        return {r["VIN"]: r for r in csv.DictReader(fh)}
+CAR_FIELDS = ("id", "vinNumber", "companyId", "createDateTime", "lastDataReceived",
+              "notes", "make", "model", "carNumber", "vehicleType", "registrationDate")
 
-
-def reconciliar(api, base_csv, salida_dir):
-    base = cargar_base(base_csv)
-    print(f"· Base homologada: {len(base)} VINs")
+def dump(api, salida_dir):
+    """Descarga TODO el CRM (empresas + vehículos con notas) a salida/_crm_raw/.
+    Luego homologar.py lo consume con --crm. Se guarda incrementalmente."""
+    raw = os.path.join(salida_dir, "_crm_raw")
+    os.makedirs(raw, exist_ok=True)
 
     print("· Descargando empresas del CRM…")
-    empresas = {}
-    for c in api.paginate("/companies", {"extended": 1}):
-        empresas[c.get("id")] = c
-    print(f"  empresas: {len(empresas)}")
+    comps = list(api.paginate("/companies", {"extended": 1}))
+    json.dump(comps, open(os.path.join(raw, "companies.json"), "w"), ensure_ascii=False)
+    print(f"  empresas: {len(comps)}  (llamadas {api.calls})")
 
-    print("· Descargando vehículos por empresa (createDateTime = fecha de alta)…")
-    cars_by_vin = {}
-    for i, cid in enumerate(empresas, 1):
+    print("· Descargando vehículos por empresa (notas + createDateTime)…")
+    cars, errs = [], 0
+    for i, c in enumerate(comps, 1):
         try:
-            for car in api.paginate("/cars", {"companyId": cid, "extended": 1}):
-                vin = (car.get("vinNumber") or "").strip().upper()
-                if vin:
-                    cars_by_vin[vin] = {"companyId": cid, "createDateTime": car.get("createDateTime"),
-                                        "lastDataReceived": car.get("lastDataReceived"),
-                                        "make": car.get("make"), "model": car.get("model"),
-                                        "carNumber": car.get("carNumber")}
+            for car in api.paginate("/cars", {"companyId": c["id"], "extended": 1}):
+                cars.append({k: car.get(k) for k in CAR_FIELDS})
         except Exception as e:
-            print(f"  ! empresa {cid}: {e}")
-        if i % 100 == 0:
-            print(f"    {i}/{len(empresas)} empresas · {len(cars_by_vin)} VINs · {api.calls} llamadas")
-    print(f"  vehículos en CRM: {len(cars_by_vin)}")
+            errs += 1
+            print(f"  ! empresa {c['id']}: {str(e)[:90]}")
+        if i % 50 == 0:
+            print(f"    {i}/{len(comps)} · {len(cars)} cars · {api.calls} llamadas")
+            json.dump(cars, open(os.path.join(raw, "cars.json"), "w"), ensure_ascii=False)
+    json.dump(cars, open(os.path.join(raw, "cars.json"), "w"), ensure_ascii=False)
 
-    # Diff
-    in_crm = set(cars_by_vin)
-    in_base = set(base)
-    rows = []
-    for vin in sorted(in_base | in_crm):
-        b = base.get(vin, {})
-        c = cars_by_vin.get(vin)
-        alta_crm = (c["createDateTime"] or "")[:10] if c else ""
-        alta_base = b.get("FECHA DE ALTA", "")
-        rows.append({
-            "VIN": vin,
-            "EN_BASE": "sí" if vin in in_base else "no",
-            "EN_CRM": "sí" if vin in in_crm else "no",
-            "ALTA_BASE": alta_base,
-            "ALTA_CRM": alta_crm,
-            "ALTA_DIFIERE": "sí" if (alta_crm and alta_base and alta_crm != alta_base) else "",
-            "EMPRESA_BASE": b.get("NOMBRE EMPRESA", ""),
-            "EMPRESA_CRM": (empresas.get(c["companyId"], {}).get("name") if c else ""),
-            "PROXIMA_RENOVACION": b.get("PRÓXIMA RENOVACIÓN", ""),
-            "TIPO_CLIENTE": b.get("TIPO DE CLIENTE", ""),
-        })
-
-    os.makedirs(salida_dir, exist_ok=True)
-    out = os.path.join(salida_dir, "reconciliacion_crm.csv")
-    with open(out, "w", newline="", encoding="utf-8-sig") as fh:
-        w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()))
-        w.writeheader()
-        w.writerows(rows)
-
-    solo_crm = sum(1 for r in rows if r["EN_CRM"] == "sí" and r["EN_BASE"] == "no")
-    solo_base = sum(1 for r in rows if r["EN_BASE"] == "sí" and r["EN_CRM"] == "no")
-    difiere = sum(1 for r in rows if r["ALTA_DIFIERE"] == "sí")
-    print(f"\n✓ {out}")
-    print(f"  Sólo en CRM (alta nueva no homologada): {solo_crm}")
-    print(f"  Sólo en base (no aparece en CRM / baja): {solo_base}")
-    print(f"  Fecha de alta difiere CRM vs base: {difiere}")
-    print(f"  Llamadas API: {api.calls}")
+    con_notas = sum(1 for c in cars if (c.get("notes") or "").strip())
+    print(f"\n✓ {raw}/companies.json  ·  {raw}/cars.json")
+    print(f"  vehículos: {len(cars)}  ·  con notas: {con_notas}  ·  errores: {errs}  ·  llamadas: {api.calls}")
+    print("  Ahora corre:  python3 homologar.py   (toma el CRM automáticamente)")
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--probe", action="store_true", help="diagnostica 1 llamada y muestra headers")
-    ap.add_argument("--base", default=os.path.join(os.path.dirname(__file__), "salida", "clientes_unidades.csv"))
     ap.add_argument("--salida", default=os.path.join(os.path.dirname(__file__), "salida"))
     args = ap.parse_args()
 
@@ -219,7 +179,7 @@ def main():
     if args.probe:
         probe(api)
     else:
-        reconciliar(api, args.base, args.salida)
+        dump(api, args.salida)
 
 
 if __name__ == "__main__":
