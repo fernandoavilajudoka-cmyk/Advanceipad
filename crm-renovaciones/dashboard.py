@@ -131,6 +131,22 @@ select:hover{border-color:var(--green);box-shadow:0 0 0 3px rgba(22,163,74,.12)}
   padding:8px 14px;border-radius:999px;font-weight:700;border:1px solid rgba(22,163,74,.18)}
 /* KPIs */
 .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin:16px 0}
+.kpis4{grid-template-columns:repeat(4,1fr)}
+/* tarjetas tipo de cliente (clic = filtro) */
+.ct-row{margin:4px 0 16px}
+.ct-title{font-size:13px;font-weight:800;color:var(--forest);margin:0 2px 8px;text-transform:uppercase;letter-spacing:.5px}
+.ct-help{font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0}
+.ct-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.ctc{display:flex;gap:0;cursor:pointer;overflow:hidden;transition:transform .18s,box-shadow .18s;animation:rise .6s both}
+.ctc:hover{transform:translateY(-3px);box-shadow:0 16px 36px rgba(16,40,30,.16)}
+.ctc-bar{width:7px;flex:0 0 7px}
+.ctc-body{padding:14px 16px;flex:1}
+.ctc-tag{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.ctc-v{font-size:30px;font-weight:800;letter-spacing:-1px;line-height:1.05}
+.ctc-l{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
+.ctc-d{font-size:11px;color:#8a978f;margin-top:6px}
+.ctc.active{outline:2.5px solid var(--green);outline-offset:-1px;box-shadow:0 16px 36px rgba(22,163,74,.22)}
+.ctc.dim{opacity:.5}
 .kpi{padding:16px 16px 14px;animation:rise .6s both}
 .kpi .k-top{display:flex;align-items:center;justify-content:space-between}
 .kpi .dot{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:#fff;font-size:16px;box-shadow:var(--shadow)}
@@ -185,13 +201,21 @@ select:hover{border-color:var(--green);box-shadow:0 0 0 3px rgba(22,163,74,.12)}
     <div class="pill" id="periodPill">Periodo: Todos</div>
   </div>
 
-  <section class="kpis">
+  <section class="kpis kpis4">
     <div class="kpi glass"><div class="k-top"><div class="l">Unidades a renovar</div><div class="dot" style="background:linear-gradient(135deg,#16a34a,#0f5132)">⟳</div></div><div class="v" id="kUnits">0</div><div class="sp" id="kUnitsSp">en el periodo</div></div>
     <div class="kpi glass"><div class="k-top"><div class="l">Clientes a renovar</div><div class="dot" style="background:linear-gradient(135deg,#1d4ed8,#1e3a8a)">★</div></div><div class="v" id="kClients">0</div><div class="sp" id="kClientsSp">empresas distintas</div></div>
-    <div class="kpi glass"><div class="k-top"><div class="l">AAA / AA / A</div><div class="dot" style="background:linear-gradient(135deg,#f59e0b,#b45309)">▦</div></div><div class="v" id="kMix" style="font-size:20px">0 / 0 / 0</div><div class="sp">por tipo de cliente</div></div>
     <div class="kpi glass"><div class="k-top"><div class="l">Dispositivo top</div><div class="dot" style="background:linear-gradient(135deg,#0ea5e9,#0369a1)">▣</div></div><div class="v" id="kDev" style="font-size:19px">—</div><div class="sp" id="kDevSp">más renovaciones</div></div>
     <div class="kpi glass"><div class="k-top"><div class="l">Cuentas nuevas CRM</div><div class="dot" style="background:linear-gradient(135deg,#34d399,#059669)">＋</div></div><div class="v" id="kNew">0</div><div class="sp">altas en el periodo</div></div>
   </section>
+
+  <div class="ct-row">
+    <div class="ct-title">Tipo de cliente <span class="ct-help">— clic en un cuadro para filtrar</span></div>
+    <div class="ct-cards">
+      <div class="ctc glass" data-ct="AAA"><div class="ctc-bar" style="background:#1d4ed8"></div><div class="ctc-body"><div class="ctc-tag" style="color:#1d4ed8">AAA</div><div class="ctc-v" id="ctAAA">0</div><div class="ctc-l">unidades · <span id="ctAAAc">0</span> clientes</div><div class="ctc-d">Prioridad alta · 20+ unidades</div></div></div>
+      <div class="ctc glass" data-ct="AA"><div class="ctc-bar" style="background:#16a34a"></div><div class="ctc-body"><div class="ctc-tag" style="color:#16a34a">AA</div><div class="ctc-v" id="ctAA">0</div><div class="ctc-l">unidades · <span id="ctAAc">0</span> clientes</div><div class="ctc-d">Prioridad media · 10–19 unidades</div></div></div>
+      <div class="ctc glass" data-ct="A"><div class="ctc-bar" style="background:#f59e0b"></div><div class="ctc-body"><div class="ctc-tag" style="color:#f59e0b">A</div><div class="ctc-v" id="ctA">0</div><div class="ctc-l">unidades · <span id="ctAc">0</span> clientes</div><div class="ctc-d">Prioridad estándar · 1–9 unidades</div></div></div>
+    </div>
+  </div>
 
   <div class="grid g2" style="margin-bottom:16px">
     <div class="card glass"><h3>Distribución por tipo de cliente</h3><div class="hint">Unidades a renovar en el periodo</div><div class="cv sm"><canvas id="pieClient"></canvas></div></div>
@@ -245,7 +269,7 @@ DATA.newacc.forEach(a=>{const d=new Date(a.f+"T00:00:00");a.y=d.getFullYear();a.
 
 // dispositivos top (global) -> resto "Otros"
 const devCount={};DATA.units.forEach(u=>devCount[u.d]=(devCount[u.d]||0)+1);
-const topDevs=Object.entries(devCount).sort((a,b)=>b[1]-a[1]).slice(0,7).map(x=>x[0]);
+const topDevs=Object.entries(devCount).sort((a,b)=>b[1]-a[1]).slice(0,6).map(x=>x[0]);
 const devName=d=>topDevs.includes(d)?d:"Otros";
 const DEVS=[...topDevs,"Otros"];
 const devColor={};DEVS.forEach((d,i)=>devColor[d]=DEV_PALETTE[i%DEV_PALETTE.length]);
@@ -263,11 +287,13 @@ function rebuildWeeks(){fWeek.innerHTML="";opt(fWeek,"all","Todas");
   [...new Set(pool.map(u=>u.w))].sort((a,b)=>a-b).forEach(w=>opt(fWeek,w,"Sem "+w));}
 rebuildMonths();rebuildWeeks();
 
-function fu(){return DATA.units.filter(u=>
+let selClient=null;  // null | 'AAA' | 'AA' | 'A'
+function fuBase(){return DATA.units.filter(u=>
   (fYear.value==="all"||u.y==+fYear.value)&&
   (fMonth.value==="all"||u.m==+fMonth.value)&&
   (fWeek.value==="all"||u.w==+fWeek.value)&&
   (fDev.value==="all"||devName(u.d)===fDev.value));}
+function fu(){return fuBase().filter(u=>!selClient||u.t===selClient);}
 function fa(){return DATA.newacc.filter(a=>
   (fYear.value==="all"||a.y==+fYear.value)&&
   (fMonth.value==="all"||a.m==+fMonth.value)&&
@@ -278,12 +304,15 @@ const dl={color:"#0b1f17",font:{weight:"700",size:11}};
 let pieC,pieD,barM,barW;
 function makePie(id,labels,data,colors){
   return new Chart(document.getElementById(id),{type:"doughnut",
-    data:{labels,datasets:[{data,backgroundColor:colors,borderColor:"#fff",borderWidth:3,hoverOffset:10}]},
-    options:{cutout:"55%",animation:{animateRotate:true,duration:900},
-      plugins:{legend:{position:"bottom",labels:{usePointStyle:true,padding:14,font:{size:12,weight:"600"}}},
-        datalabels:{color:"#fff",font:{weight:"800",size:13},
-          formatter:(v,c)=>{const t=c.dataset.data.reduce((a,b)=>a+b,0);return v?Math.round(v/t*100)+"%":"";}},
-        tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw} u`}}}}});
+    data:{labels,datasets:[{data,backgroundColor:colors,borderColor:"#fff",borderWidth:3,hoverOffset:14}]},
+    options:{cutout:"58%",radius:"92%",layout:{padding:10},animation:{animateRotate:true,duration:900},
+      plugins:{legend:{position:"right",align:"center",labels:{usePointStyle:true,boxWidth:9,padding:12,font:{size:12,weight:"600"},
+          generateLabels:ch=>{const ds=ch.data.datasets[0];const t=ds.data.reduce((a,b)=>a+b,0)||1;
+            return ch.data.labels.map((l,i)=>({text:`${l}  ${ds.data[i]} · ${Math.round(ds.data[i]/t*100)}%`,
+              fillStyle:ds.backgroundColor[i],strokeStyle:"#fff",pointStyle:"circle",index:i}));}}},
+        datalabels:{color:"#fff",font:{weight:"800",size:12},
+          formatter:(v,c)=>{const t=c.dataset.data.reduce((a,b)=>a+b,0);const p=v/t*100;return p>=6?Math.round(p)+"%":"";}},
+        tooltip:{callbacks:{label:c=>{const t=c.dataset.data.reduce((a,b)=>a+b,0);return ` ${c.label}: ${c.raw} u (${Math.round(c.raw/t*100)}%)`;}}}}}});
 }
 function makeBar(id){
   return new Chart(document.getElementById(id),{type:"bar",
@@ -299,25 +328,41 @@ function animateNum(el,to){const from=+(el.dataset.v||0);const t0=performance.no
     el.textContent=val.toLocaleString("es-MX");if(p<1)requestAnimationFrame(step);else el.dataset.v=to;}requestAnimationFrame(step);}
 
 function render(){
-  const U=fu(),A=fa();
+  const B=fuBase();                 // sin filtro de tipo de cliente (para las tarjetas)
+  const U=fu(),A=fa();              // U respeta el tipo de cliente seleccionado
   // KPIs
   animateNum(document.getElementById("kUnits"),U.length);
   animateNum(document.getElementById("kClients"),new Set(U.map(u=>u.e)).size);
-  const mix={AAA:0,AA:0,A:0};U.forEach(u=>mix[u.t]=(mix[u.t]||0)+1);
-  document.getElementById("kMix").textContent=`${mix.AAA} / ${mix.AA} / ${mix.A}`;
   const dc={};U.forEach(u=>{const n=devName(u.d);dc[n]=(dc[n]||0)+1;});
   const top=Object.entries(dc).sort((a,b)=>b[1]-a[1])[0];
   document.getElementById("kDev").textContent=top?top[0]:"—";
   document.getElementById("kDevSp").textContent=top?top[1]+" unidades":"—";
   animateNum(document.getElementById("kNew"),A.length);
+
+  // Tarjetas por tipo de cliente (cuentan sobre B, para poder cambiar de filtro)
+  const mix={AAA:0,AA:0,A:0},mc={AAA:new Set(),AA:new Set(),A:new Set()};
+  B.forEach(u=>{mix[u.t]=(mix[u.t]||0)+1;mc[u.t]&&mc[u.t].add(u.e);});
+  ["AAA","AA","A"].forEach(t=>{
+    animateNum(document.getElementById("ct"+t),mix[t]||0);
+    document.getElementById("ct"+t+"c").textContent=mc[t].size;
+  });
+  document.querySelectorAll(".ctc").forEach(c=>{
+    const t=c.dataset.ct;
+    c.classList.toggle("active",selClient===t);
+    c.classList.toggle("dim",selClient&&selClient!==t);
+  });
+
   // periodo pill
   const p=[];if(fYear.value!=="all")p.push(fYear.value);if(fMonth.value!=="all")p.push(MES[+fMonth.value-1]);
   if(fWeek.value!=="all")p.push("Sem "+fWeek.value);if(fDev.value!=="all")p.push(fDev.value);
+  if(selClient)p.push("Cliente "+selClient);
   document.getElementById("periodPill").textContent="Periodo: "+(p.length?p.join(" · "):"Todos");
 
-  // Pie cliente
+  // Pie cliente (siempre los tres tipos; el seleccionado se resalta)
   const cl=["AAA","AA","A"],cld=cl.map(t=>mix[t]||0);
-  if(pieC){pieC.data.datasets[0].data=cld;pieC.update();}else pieC=makePie("pieClient",cl,cld,cl.map(t=>C_CLIENT[t]));
+  const clColors=cl.map(t=>!selClient||selClient===t?C_CLIENT[t]:"#d8e0db");
+  if(pieC){pieC.data.datasets[0].data=cld;pieC.data.datasets[0].backgroundColor=clColors;pieC.update();}
+  else pieC=makePie("pieClient",cl,cld,clColors);
   // Pie dispositivo
   const dl2=DEVS.filter(d=>dc[d]);const dd=dl2.map(d=>dc[d]);
   if(pieD){pieD.data.labels=dl2;pieD.data.datasets[0].data=dd;pieD.data.datasets[0].backgroundColor=dl2.map(d=>devColor[d]);pieD.update();}
@@ -360,6 +405,8 @@ barM=makeBar("barMonth");barW=makeBar("barWeek");
   if(e.target===fYear){rebuildMonths();rebuildWeeks();}
   if(e.target===fMonth){rebuildWeeks();}
   render();}));
+document.querySelectorAll(".ctc").forEach(c=>c.addEventListener("click",()=>{
+  const t=c.dataset.ct; selClient=(selClient===t)?null:t; render();}));
 document.getElementById("foot").textContent="Generado "+DATA.generated+" · "+DATA.units.length.toLocaleString("es-MX")+" unidades activas con renovación · "+DATA.newacc.length+" empresas en el CRM";
 render();
 </script>
