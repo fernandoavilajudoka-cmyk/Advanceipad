@@ -39,7 +39,14 @@ def main():
                 "d": r.get("TIPO DE DISPOSITIVO", "").strip() or "Sin dato",
                 "f": f,
                 "id": r.get("ID CLIENTE (MAPON)", "").strip(),
+                "c": r.get("NOMBRE CONTACTO", "").strip(),
             })
+
+    # mapa empresa(id) -> nombre de contacto (de la base homologada)
+    id2contact = {}
+    for u in units:
+        if u["id"] and u["c"] and u["id"] not in id2contact:
+            id2contact[u["id"]] = u["c"]
 
     # --- Cuentas nuevas en el CRM (createdAt) + tipo por nº de unidades ---
     newacc = []
@@ -62,6 +69,7 @@ def main():
                 "f": str(raw)[:10],
                 "t": tipo_por_unidades(n),
                 "u": n,
+                "c": id2contact.get(str(c.get("id")), ""),
             })
 
     data = {"units": units, "newacc": newacc,
@@ -103,8 +111,8 @@ body{
 /* blobs animados de fondo */
 .blob{position:fixed;border-radius:50%;filter:blur(60px);opacity:.35;z-index:0;animation:float 18s ease-in-out infinite}
 .blob.b1{width:380px;height:380px;background:#34d399;top:-80px;left:-60px}
-.blob.b2{width:320px;height:320px;background:#60a5fa;top:40%;right:-80px;animation-delay:-6s}
-.blob.b3{width:300px;height:300px;background:#fbbf24;bottom:-90px;left:30%;animation-delay:-11s}
+.blob.b2{width:320px;height:320px;background:#0d9488;top:40%;right:-80px;animation-delay:-6s}
+.blob.b3{width:300px;height:300px;background:#84cc16;bottom:-90px;left:30%;animation-delay:-11s}
 @keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(20px,-30px) scale(1.08)}}
 .wrap{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:26px 20px 60px}
 header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
@@ -160,8 +168,8 @@ select:hover{border-color:var(--green);box-shadow:0 0 0 3px rgba(22,163,74,.12)}
 .card{padding:16px 18px;animation:rise .7s both}
 .card h3{margin:0 0 4px;font-size:15px}
 .card .hint{font-size:12px;color:var(--muted);margin-bottom:8px}
-.cv{position:relative;height:300px}
-.cv.sm{height:270px}
+.cv{position:relative;height:320px}
+.cv.sm{height:420px}
 /* listas */
 .tbl{width:100%;border-collapse:collapse;font-size:13px}
 .tbl th{text-align:left;color:var(--muted);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.4px;
@@ -170,7 +178,7 @@ select:hover{border-color:var(--green);box-shadow:0 0 0 3px rgba(22,163,74,.12)}
 .tbl tr:hover td{background:rgba(22,163,74,.06)}
 .scroll{max-height:320px;overflow:auto;border-radius:12px}
 .badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:800;color:#fff}
-.b-AAA{background:var(--aaa)} .b-AA{background:var(--aa)} .b-A{background:var(--a)}
+.b-AAA{background:#0f5132} .b-AA{background:#16a34a} .b-A{background:#34d399}
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
 .chip{font-size:12px;font-weight:700;padding:6px 11px;border-radius:999px;border:1px solid rgba(15,81,50,.14);
   background:rgba(255,255,255,.7)}
@@ -203,17 +211,17 @@ select:hover{border-color:var(--green);box-shadow:0 0 0 3px rgba(22,163,74,.12)}
 
   <section class="kpis kpis4">
     <div class="kpi glass"><div class="k-top"><div class="l">Unidades a renovar</div><div class="dot" style="background:linear-gradient(135deg,#16a34a,#0f5132)">⟳</div></div><div class="v" id="kUnits">0</div><div class="sp" id="kUnitsSp">en el periodo</div></div>
-    <div class="kpi glass"><div class="k-top"><div class="l">Clientes a renovar</div><div class="dot" style="background:linear-gradient(135deg,#1d4ed8,#1e3a8a)">★</div></div><div class="v" id="kClients">0</div><div class="sp" id="kClientsSp">empresas distintas</div></div>
-    <div class="kpi glass"><div class="k-top"><div class="l">Dispositivo top</div><div class="dot" style="background:linear-gradient(135deg,#0ea5e9,#0369a1)">▣</div></div><div class="v" id="kDev" style="font-size:19px">—</div><div class="sp" id="kDevSp">más renovaciones</div></div>
+    <div class="kpi glass"><div class="k-top"><div class="l">Clientes a renovar</div><div class="dot" style="background:linear-gradient(135deg,#0f5132,#16a34a)">★</div></div><div class="v" id="kClients">0</div><div class="sp" id="kClientsSp">empresas distintas</div></div>
+    <div class="kpi glass"><div class="k-top"><div class="l">Dispositivo top</div><div class="dot" style="background:linear-gradient(135deg,#0d9488,#0f5132)">▣</div></div><div class="v" id="kDev" style="font-size:19px">—</div><div class="sp" id="kDevSp">más renovaciones</div></div>
     <div class="kpi glass"><div class="k-top"><div class="l">Cuentas nuevas CRM</div><div class="dot" style="background:linear-gradient(135deg,#34d399,#059669)">＋</div></div><div class="v" id="kNew">0</div><div class="sp">altas en el periodo</div></div>
   </section>
 
   <div class="ct-row">
     <div class="ct-title">Tipo de cliente <span class="ct-help">— clic en un cuadro para filtrar</span></div>
     <div class="ct-cards">
-      <div class="ctc glass" data-ct="AAA"><div class="ctc-bar" style="background:#1d4ed8"></div><div class="ctc-body"><div class="ctc-tag" style="color:#1d4ed8">AAA</div><div class="ctc-v" id="ctAAA">0</div><div class="ctc-l">unidades · <span id="ctAAAc">0</span> clientes</div><div class="ctc-d">Prioridad alta · 20+ unidades</div></div></div>
+      <div class="ctc glass" data-ct="AAA"><div class="ctc-bar" style="background:#0f5132"></div><div class="ctc-body"><div class="ctc-tag" style="color:#0f5132">AAA</div><div class="ctc-v" id="ctAAA">0</div><div class="ctc-l">unidades · <span id="ctAAAc">0</span> clientes</div><div class="ctc-d">Prioridad alta · 20+ unidades</div></div></div>
       <div class="ctc glass" data-ct="AA"><div class="ctc-bar" style="background:#16a34a"></div><div class="ctc-body"><div class="ctc-tag" style="color:#16a34a">AA</div><div class="ctc-v" id="ctAA">0</div><div class="ctc-l">unidades · <span id="ctAAc">0</span> clientes</div><div class="ctc-d">Prioridad media · 10–19 unidades</div></div></div>
-      <div class="ctc glass" data-ct="A"><div class="ctc-bar" style="background:#f59e0b"></div><div class="ctc-body"><div class="ctc-tag" style="color:#f59e0b">A</div><div class="ctc-v" id="ctA">0</div><div class="ctc-l">unidades · <span id="ctAc">0</span> clientes</div><div class="ctc-d">Prioridad estándar · 1–9 unidades</div></div></div>
+      <div class="ctc glass" data-ct="A"><div class="ctc-bar" style="background:#34d399"></div><div class="ctc-body"><div class="ctc-tag" style="color:#0d9488">A</div><div class="ctc-v" id="ctA">0</div><div class="ctc-l">unidades · <span id="ctAc">0</span> clientes</div><div class="ctc-d">Prioridad estándar · 1–9 unidades</div></div></div>
     </div>
   </div>
 
@@ -238,11 +246,11 @@ select:hover{border-color:var(--green);box-shadow:0 0 0 3px rgba(22,163,74,.12)}
     <div class="card glass"><h3>Dispositivos a renovar en el periodo</h3>
       <div class="hint" id="devBoxHint">Resumen por modelo</div>
       <div class="chips" id="devChips"></div>
-      <div class="scroll" style="margin-top:10px"><table class="tbl"><thead><tr><th>VIN / Empresa</th><th>Cliente</th><th>Dispositivo</th><th>Renovación</th></tr></thead><tbody id="devRows"></tbody></table></div>
+      <div class="scroll" style="margin-top:10px"><table class="tbl"><thead><tr><th>Empresa</th><th>Contacto</th><th>Cliente</th><th>Dispositivo</th><th>Renovación</th></tr></thead><tbody id="devRows"></tbody></table></div>
     </div>
     <div class="card glass"><h3>Cuentas nuevas en el CRM</h3>
       <div class="hint" id="newBoxHint">Altas de empresas en el periodo</div>
-      <div class="scroll"><table class="tbl"><thead><tr><th>Empresa</th><th>Tipo</th><th>Unidades</th><th>Alta CRM</th></tr></thead><tbody id="newRows"></tbody></table></div>
+      <div class="scroll"><table class="tbl"><thead><tr><th>Empresa</th><th>Contacto</th><th>Tipo</th><th>Unidades</th><th>Alta CRM</th></tr></thead><tbody id="newRows"></tbody></table></div>
     </div>
   </div>
 
@@ -256,8 +264,9 @@ Chart.defaults.font.family="'Segoe UI',system-ui,sans-serif";
 Chart.defaults.color="#5b6b63";
 
 const MES=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-const C_CLIENT={AAA:"#1d4ed8",AA:"#16a34a",A:"#f59e0b"};
-const DEV_PALETTE=["#16a34a","#1d4ed8","#f59e0b","#0ea5e9","#a855f7","#ef4444","#14b8a6","#64748b"];
+// Paleta Advance (verde premium): forest -> verde -> menta, con acentos teal/lima/oliva
+const C_CLIENT={AAA:"#0f5132",AA:"#16a34a",A:"#34d399"};
+const DEV_PALETTE=["#16a34a","#0f5132","#34d399","#0d9488","#84cc16","#15803d","#047857","#a7c4b5"];
 
 // ---- preparación ----
 function isoWeek(d){const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
@@ -390,14 +399,14 @@ function render(){
   document.getElementById("devBoxHint").textContent=`${U.length} unidades · ${chips.length} modelos`;
   const rowsU=U.slice().sort((a,b)=>a._d-b._d).slice(0,250);
   document.getElementById("devRows").innerHTML=rowsU.map(u=>
-    `<tr><td>${u.e}</td><td><span class="badge b-${u.t}">${u.t}</span></td><td>${u.d}</td><td>${u.f}</td></tr>`).join("")
-    || `<tr><td colspan="4" style="color:#9aa">Sin datos en el periodo</td></tr>`;
+    `<tr><td>${u.e}</td><td>${u.c||"—"}</td><td><span class="badge b-${u.t}">${u.t}</span></td><td>${u.d}</td><td>${u.f}</td></tr>`).join("")
+    || `<tr><td colspan="5" style="color:#9aa">Sin datos en el periodo</td></tr>`;
   // Box cuentas nuevas
   document.getElementById("newBoxHint").textContent=`${A.length} altas en el periodo`;
   const rowsA=A.slice().sort((a,b)=>b.f.localeCompare(a.f)).slice(0,250);
   document.getElementById("newRows").innerHTML=rowsA.map(a=>
-    `<tr><td>${a.n}</td><td><span class="badge b-${a.t||'A'}">${a.t||'A'}</span></td><td>${a.u}</td><td>${a.f}</td></tr>`).join("")
-    || `<tr><td colspan="4" style="color:#9aa">Sin altas en el periodo</td></tr>`;
+    `<tr><td>${a.n}</td><td>${a.c||"—"}</td><td><span class="badge b-${a.t||'A'}">${a.t||'A'}</span></td><td>${a.u}</td><td>${a.f}</td></tr>`).join("")
+    || `<tr><td colspan="5" style="color:#9aa">Sin altas en el periodo</td></tr>`;
 }
 
 barM=makeBar("barMonth");barW=makeBar("barWeek");
