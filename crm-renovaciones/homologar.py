@@ -616,6 +616,17 @@ def consolidar(registros, dim, tel=None, crm=None):
         elif fold(estado) == "offline":
             activa = False
 
+        # ---- SITUACIÓN: Activa / Baja / Pendiente de revisión ----
+        # Una unidad dada de baja PERO que sigue reportando GPS no es una baja
+        # limpia: queda "Pendiente de revisión" para que Operaciones decida.
+        reporta = (fold(estado) == "online") or (uconx is not None and (hoy - uconx).days <= 30)
+        if activa is False and reporta:
+            situacion = "Pendiente de revisión"
+        elif activa is False:
+            situacion = "Baja"
+        else:
+            situacion = "Activa"
+
         # ---- PRÓXIMA RENOVACIÓN (accionable, siempre >= hoy) ----
         # Ancla por orden de confianza: fecha real > alta > última conexión > creación empresa.
         if elegida:
@@ -637,7 +648,7 @@ def consolidar(registros, dim, tel=None, crm=None):
         proxima = prox.isoformat() if prox else ""
         # Si la unidad NO está activa, no inventamos renovación: es recuperación, no renovación.
         if base != "archivo" and activa is False:
-            origen = "no proyectada (unidad inactiva)"
+            origen = "no proyectada (" + situacion.lower() + ")"
             proxima = ""
         elif base == "archivo" and prox and elegida and prox != elegida:
             origen = "archivo (rodada a próximo aniversario)"
@@ -673,6 +684,7 @@ def consolidar(registros, dim, tel=None, crm=None):
             "ultima_conexion": uconx.isoformat() if uconx else "",
             "estado": estado,
             "activa": {True: "Sí", False: "No", None: "?"}[activa],
+            "situacion": situacion,
             "fuentes_vistas": len(regs),
         })
     return unidades, conflictos, (vins_por_cid, vins_por_nombre)
@@ -700,6 +712,7 @@ COLS_UNIDADES = [
     ("ultima_conexion", "ÚLTIMA CONEXIÓN"),
     ("estado", "ESTADO"),
     ("activa", "ACTIVA"),
+    ("situacion", "SITUACIÓN"),
     ("fuentes_vistas", "# FUENTES"),
 ]
 
@@ -815,6 +828,9 @@ def main():
     por_origen = defaultdict(int)
     for u in unidades:
         por_origen[u["origen_fecha"]] += 1
+    por_situacion = defaultdict(int)
+    for u in unidades:
+        por_situacion[u["situacion"]] += 1
     por_tipo = defaultdict(int)
     for e in empresas:
         por_tipo[e["tipo_cliente"] or "(sin clasificar)"] += 1
@@ -845,6 +861,9 @@ def main():
         f"  Con teléfono o correo: {con_contacto}",
         f"  Empresas distintas: {len(empresas)}",
         f"  Conflictos de fecha (> {TOLERANCIA_DIAS} días): {len(conflictos)}",
+        "",
+        "Situación de las unidades:",
+    ] + [f"  {k}: {v}" for k, v in sorted(por_situacion.items(), key=lambda x: -x[1])] + [
         "",
         "Origen de la fecha de renovación:",
     ] + [f"  {k}: {v}" for k, v in sorted(por_origen.items(), key=lambda x: -x[1])] + [

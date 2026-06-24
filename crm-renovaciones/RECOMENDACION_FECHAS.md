@@ -79,6 +79,16 @@ Operaciones** (p. ej. el TR-34 de tu captura, 26/02/2027, salió de los archivos
 Si quieres recuperar el 100% de esas notas habría que usar la **API principal de
 Mapon** (api.mapon.com, `unit.notes`) o un export del campo — dime y lo conecto.
 
-## Decisión pendiente
-- Para las **inactivas**: ¿(a) dejarlas sin fecha como ahora (recomendado), o
-  (b) proyectarlas igual marcadas "tentativas" para cobranza agresiva?
+## Situación de la unidad (columna SITUACIÓN)
+Cada unidad queda etiquetada en tres estados:
+
+| Situación | Unidades | Definición | Próxima renovación |
+|---|---|---|---|
+| **Activa** | 7,201 | En servicio | Sí (real o estimada +90d) |
+| **Baja** | 2,634 | Vigencia=BAJA / No renovó / sin señal +120d | No (recuperación) |
+| **Pendiente de revisión** | 424 | Marcada BAJA en el export **pero sigue reportando** al CRM (357 conectaron hoy) | No — revisar caso por caso |
+
+Las "Pendiente de revisión" son la señal de que el flag *BAJA* de la base está
+**desactualizado**: el CRM en vivo muestra que esas unidades siguen transmitiendo
+(ej. unidades de JetVan dadas de baja en el archivo pero conectadas hoy).
+"Sigue reportando" = última recepción en los últimos 30 días según el CRM.

@@ -22,7 +22,10 @@ de Mapon** (PartnerAPI), con foco en el **control de renovaciones de servicio**.
 · LÍMITE PRÓRROGA (+90d) · ORIGEN PRÓXIMA RENOVACIÓN · NOMBRE EMPRESA · ID
 CLIENTE (MAPON) · NOMBRE CONTACTO · TELÉFONO · CORREO · NÚMERO DE UNIDADES ·
 TIPO DE CLIENTE · ESTATUS RENOVACIÓN · VIGENCIA · ÚLTIMA CONEXIÓN · ESTADO ·
-ACTIVA · # FUENTES`
+ACTIVA · SITUACIÓN · # FUENTES`
+
+**SITUACIÓN** = `Activa` (con próxima renovación) · `Baja` (fuera del calendario)
+· `Pendiente de revisión` (marcada BAJA en el export pero sigue reportando al CRM).
 
 ## Cómo correrlo
 
