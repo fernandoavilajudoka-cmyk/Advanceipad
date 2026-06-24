@@ -1,0 +1,11 @@
+# Datos de clientes (PII) — NO versionar ni publicar.
+# Este repo se despliega en Netlify con publish=".".
+fuentes/
+salida/
+
+# Por si alguien deja un token o env por error
+*.token
+.env
+
+__pycache__/
+*.pyc

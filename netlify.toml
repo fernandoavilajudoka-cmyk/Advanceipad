@@ -26,3 +26,11 @@
   from = "/plantilla"
   to = "/index.html"
   status = 200
+
+# Bloqueo de la base de clientes/renovaciones (contiene PII).
+# force=true intercepta aunque exista el archivo: nunca se sirve públicamente.
+[[redirects]]
+  from = "/crm-renovaciones/*"
+  to = "/index.html"
+  status = 404
+  force = true
