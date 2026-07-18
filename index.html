@@ -427,7 +427,7 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
           <li><span class="dot" style="background:var(--t3);margin-top:5px"></span>Drenajes: a validar en sitio</li>
         </ul></div>
       </div>
-      <div style="font-size:11px;color:var(--t3);margin-top:14px;line-height:1.6">Analítica potencializada por Advance y Claude. La zona corresponde a la clasificación asignada por el cliente; si una unidad no tiene zona asignada, el campo se muestra vacío.</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:14px;line-height:1.6">Analítica potencializada por Advance. La zona corresponde a la clasificación asignada por el cliente; si una unidad no tiene zona asignada, el campo se muestra vacío.</div>
     </div>
   </div>
   <div class="card" style="margin-top:20px">
@@ -623,7 +623,7 @@ function render(){
 function scopeLbl(){const m=MONTHS.find(x=>x.id===STATE.month).label;const w=STATE.week==='all'?'todo el mes':weeksOf(STATE.month).find(x=>x.id===STATE.week)?.label;const d=STATE.day==='all'?null:new Date(STATE.day+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short'});const z=STATE.zona==='all'?'todas las zonas':STATE.zona;return `${m} · ${d?d:w} · ${z}`;}
 
 function fillPortada(){
-  document.getElementById('portMeta').innerHTML=`${A.fleetTotal} ${META.tipoUnidad} · ${META.zona}<br>Periodo base: Feb–Jun 2026 &nbsp;·&nbsp; ${META.cliente} · Tier ${META.tier}<br>Analítica potencializada por Advance y Claude`;
+  document.getElementById('portMeta').innerHTML=`${A.fleetTotal} ${META.tipoUnidad} · ${META.zona}<br>Periodo base: Feb–Jun 2026 &nbsp;·&nbsp; ${META.cliente} · Tier ${META.tier}<br>Analítica potencializada por Advance`;
   document.getElementById('portStats').innerHTML=[{v:intES(A.total),l:'Unidades'},{v:A.active,l:'Activas'},{v:A.total-A.active,l:'Sin actividad'},{v:MODELS.length,l:'Modelos'},{v:[...new Set(D.map(u=>u.zona).filter(Boolean))].length,l:'Zonas / sedes'},{v:A.days.length,l:'Días con datos',t:'Cantidad de días incluidos en el periodo seleccionado (según los filtros de mes / semana / día del Resumen ejecutivo). Es el rango de tiempo sobre el que se calculan todas las métricas.'}].map(s=>`<div class="pstat"${s.t?` title="${s.t}" style="cursor:help"`:''}><div class="v">${s.v}</div><div class="l">${s.l}${s.t?' <span style="opacity:.45;font-size:9px;vertical-align:super">ⓘ</span>':''}</div></div>`).join('');
   const nd=document.getElementById('portNoData');
   if(META.sinSenal.length){nd.style.display='';nd.innerHTML=`<strong>⚠ ${META.sinSenal.length} unidades sin señal GPS:</strong> `+META.sinSenal.map(s=>`${s.n} (desde ${s.desde})`).join(' · ')+`. Posible robo o desconexión.`;}else nd.style.display='none';
