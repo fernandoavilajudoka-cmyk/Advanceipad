@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<title>Carta Oferta · Dirección Comercial — Advance</title>
+<style>
+/* ─────────── ADVANCE · IDENTIDAD INSTITUCIONAL ─────────── */
+:root{
+  --bg:#e6f1de;
+  --glass:rgba(255,255,255,.62);
+  --glass-strong:rgba(255,255,255,.80);
+  --brd:rgba(255,255,255,.72);
+  --line:rgba(21,128,61,.14);
+  --t:#10261c;--t2:#4c6053;--t3:#85a08f;
+  --forest:#0f5132;--gr:#16a34a;--gr2:#15803d;--gr-bg:rgba(22,163,74,.13);
+  --lime:#4f9c2d;--teal:#0d9488;--teal-bg:rgba(13,148,136,.12);
+  --or:#d98324;
+  --shadow:0 18px 48px rgba(16,70,38,.16);
+  --shadow-sm:0 10px 30px rgba(16,70,38,.10);
+  --r:16px;--r2:11px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  color:var(--t);background:var(--bg);
+  font-size:11pt;line-height:1.62;
+  display:flex;flex-direction:column;align-items:center;gap:22px;padding:22px 12px;
+}
+
+/* ─── Hoja carta ─── */
+.hoja{
+  width:21.59cm;min-height:27.94cm;position:relative;overflow:hidden;
+  background:#fff;box-shadow:var(--shadow);border-radius:6px;
+  padding:0 0 2.0cm;display:flex;flex-direction:column;
+}
+.hoja::after{ /* halo institucional de fondo */
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(560px 460px at 108% -6%, rgba(22,163,74,.13), transparent 58%),
+    radial-gradient(520px 480px at -10% 104%, rgba(15,81,50,.10), transparent 62%);
+}
+.hoja>*{position:relative;z-index:1;}
+
+/* ─── Membrete ─── */
+.membrete{
+  padding:1.5cm 2.0cm 0.9cm;display:flex;justify-content:space-between;
+  align-items:flex-start;gap:24px;border-bottom:1px solid var(--line);
+  margin:0 0 1.0cm;
+}
+.marca{display:flex;align-items:center;gap:13px;}
+.logo{
+  width:50px;height:50px;flex:none;border-radius:14px;
+  background:linear-gradient(135deg,var(--gr),#7cb342);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 20px rgba(22,163,74,.30);
+}
+.logo svg{fill:none;stroke:#fff;stroke-width:2;stroke-linejoin:round;}
+.marca .wm{
+  font-size:20px;font-weight:800;letter-spacing:2.6px;line-height:1;
+  background:linear-gradient(135deg,var(--gr),var(--forest));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.marca .sub{font-size:8.5pt;color:var(--t3);letter-spacing:.4px;margin-top:4px;font-weight:600;}
+.doc-tag{text-align:right;flex:none;}
+.doc-tag .tipo{
+  display:inline-block;padding:5px 13px;border-radius:100px;
+  background:var(--gr-bg);color:var(--gr2);
+  font-size:8.5pt;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;
+}
+.doc-tag .meta{font-size:8.5pt;color:var(--t2);margin-top:9px;line-height:1.65;}
+.doc-tag .meta b{color:var(--t);font-weight:700;}
+
+/* ─── Cuerpo ─── */
+.cuerpo{padding:0 2.0cm;flex:1;}
+.lugar-fecha{font-size:9.5pt;color:var(--t2);text-align:right;margin-bottom:22px;}
+
+.destinataria{margin-bottom:20px;}
+.destinataria .nom{font-size:14.5pt;font-weight:800;line-height:1.25;}
+.destinataria .car{font-size:10pt;color:var(--gr2);font-weight:700;margin-top:2px;}
+.destinataria .via{font-size:9pt;color:var(--t3);margin-top:5px;}
+
+p{margin-bottom:12px;text-align:justify;}
+.lead{font-size:11.5pt;}
+strong{font-weight:700;}
+.hl{color:var(--gr2);font-weight:700;}
+
+/* Campo por completar */
+.campo{
+  display:inline-block;min-width:105px;padding:0 6px 1px;
+  border-bottom:1.6px dotted var(--gr);color:var(--gr2);
+  font-weight:700;text-align:center;
+}
+
+/* ─── Encabezado de sección (mismo lenguaje que el informe) ─── */
+.sec{margin:22px 0 12px;display:flex;align-items:center;gap:11px;}
+.sec .n{
+  font-size:9pt;font-weight:800;color:#fff;min-width:26px;height:26px;border-radius:8px;
+  background:linear-gradient(135deg,var(--gr),var(--forest));
+  display:flex;align-items:center;justify-content:center;flex:none;
+  box-shadow:0 4px 12px rgba(22,163,74,.32);
+}
+.sec .tt{font-size:12pt;font-weight:800;letter-spacing:-.1px;}
+.sec::after{content:"";flex:1;height:1px;background:var(--line);}
+
+/* ─── Tarjetas glass ─── */
+.card{
+  position:relative;background:var(--glass);border:1px solid var(--brd);
+  border-radius:var(--r2);box-shadow:var(--shadow-sm);padding:15px 17px;
+}
+.card::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(140deg,rgba(255,255,255,.55),rgba(255,255,255,0) 42%);
+}
+.card>*{position:relative;}
+
+.ficha{display:grid;grid-template-columns:1fr 1fr;gap:0 26px;}
+.ficha .row{padding:7px 0;border-bottom:1px dashed var(--line);}
+.ficha .row:nth-last-child(-n+2){border-bottom:none;}
+.ficha .k{font-size:7.8pt;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--t3);}
+.ficha .v{font-size:10pt;font-weight:700;color:var(--t);margin-top:1px;line-height:1.4;}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin:14px 0 4px;}
+.stat{
+  background:var(--glass-strong);border:1px solid var(--brd);border-radius:var(--r2);
+  box-shadow:var(--shadow-sm);padding:13px 15px;text-align:center;
+}
+.stat .v{
+  font-size:15pt;font-weight:800;line-height:1.15;
+  background:linear-gradient(135deg,var(--gr),var(--forest));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.stat .v .campo{border-bottom-width:2px;min-width:88px;-webkit-text-fill-color:var(--gr2);}
+.stat .l{font-size:8pt;color:var(--t2);margin-top:5px;line-height:1.4;}
+
+/* ─── Listas ─── */
+ul{list-style:none;margin:4px 0 12px;}
+ul li{position:relative;padding-left:19px;margin-bottom:6px;text-align:justify;}
+ul li::before{
+  content:"";position:absolute;left:0;top:.62em;width:7px;height:7px;border-radius:2px;
+  background:linear-gradient(135deg,var(--gr),var(--forest));
+}
+ul.chk li::before{
+  content:"";width:8px;height:8px;border-radius:50%;
+  background:none;border:2px solid var(--gr);top:.55em;
+}
+
+.nota{
+  background:var(--teal-bg);border-left:3px solid var(--teal);
+  border-radius:0 var(--r2) var(--r2) 0;padding:11px 15px;margin:12px 0;
+  font-size:9.5pt;color:var(--t2);text-align:justify;
+}
+.nota b{color:var(--teal);}
+
+/* ─── Firmas ─── */
+.firmas{display:grid;grid-template-columns:1fr 1fr;gap:34px;margin-top:34px;}
+.firma{text-align:center;}
+.firma .ln{border-top:1.6px solid var(--forest);margin-bottom:7px;padding-top:9px;}
+.firma .nm{font-size:10pt;font-weight:800;}
+.firma .cg{font-size:8.5pt;color:var(--t2);line-height:1.45;margin-top:2px;}
+
+.acuse{
+  margin-top:26px;border:1.6px solid rgba(22,163,74,.28);border-radius:var(--r);
+  background:linear-gradient(160deg,rgba(22,163,74,.07),rgba(255,255,255,0) 62%);
+  padding:18px 20px 20px;
+}
+.acuse .tt{
+  font-size:8.5pt;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;
+  color:var(--gr2);margin-bottom:9px;display:flex;align-items:center;gap:7px;
+}
+.acuse .tt::before{content:"";width:8px;height:8px;border-radius:2px;background:linear-gradient(135deg,var(--gr),var(--forest));}
+.acuse p{font-size:9.5pt;margin-bottom:0;}
+.acuse-firma{display:grid;grid-template-columns:1.3fr 1fr;gap:30px;margin-top:30px;}
+
+/* ─── Pie ─── */
+.pie{
+  position:absolute;left:0;right:0;bottom:0;padding:9px 2.0cm 11px;
+  border-top:1px solid var(--line);
+  display:flex;justify-content:space-between;align-items:center;gap:16px;
+  font-size:7.4pt;color:var(--t3);line-height:1.5;
+}
+.pie .conf{font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--gr2);}
+.pie .fol{white-space:nowrap;}
+
+@page{size:letter;margin:0;}
+@media print{
+  body{background:#fff;padding:0;gap:0;display:block;}
+  .hoja{box-shadow:none;border-radius:0;margin:0;width:auto;min-height:auto;height:100vh;page-break-after:always;}
+  .hoja:last-child{page-break-after:auto;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ HOJA 1 ══════════════════ -->
+<div class="hoja">
+
+  <header class="membrete">
+    <div class="marca">
+      <div class="logo">
+        <svg width="27" height="27" viewBox="0 0 24 24">
+          <rect x="1" y="3" width="15" height="13" rx="1"/>
+          <path d="M16 8h4l3 4v4h-7V8z"/>
+          <circle cx="5.5" cy="18.5" r="2.5"/>
+          <circle cx="18.5" cy="18.5" r="2.5"/>
+        </svg>
+      </div>
+      <div>
+        <div class="wm">ADVANCE</div>
+        <div class="sub">Telematics Advance · LDR Solutions</div>
+      </div>
+    </div>
+    <div class="doc-tag">
+      <span class="tipo">Carta Oferta</span>
+      <div class="meta">
+        Folio <b>ADV-RH-2026-<span class="campo" style="min-width:44px">&nbsp;</span></b><br>
+        Dirección Comercial · Advance<br>
+        Confidencial
+      </div>
+    </div>
+  </header>
+
+  <div class="cuerpo">
+
+    <div class="lugar-fecha">Ciudad de México, a <span class="campo" style="min-width:34px">&nbsp;</span> de <span class="campo" style="min-width:78px">&nbsp;</span> de 2026.</div>
+
+    <div class="destinataria">
+      <div class="nom">Joana Orozco Hinostroza</div>
+      <div class="car">Directora Comercial — Advance</div>
+      <div class="via">P r e s e n t e.</div>
+    </div>
+
+    <p class="lead">Estimada Joana:</p>
+
+    <p>Es un gusto para nosotros comunicarte que, una vez concluido tu proceso de evaluación y entrevistas
+    —incluida la valoración por parte de nuestra Dirección General y del Presidente del Consejo—, hemos
+    decidido extenderte formalmente la presente <strong>oferta de incorporación</strong> para asumir la
+    <strong class="hl">Dirección Comercial de la marca Advance</strong>.</p>
+
+    <p>Tu trayectoria de más de veinte años en desarrollo comercial dentro de los sectores de transporte,
+    logística integral, almacenamiento y comercio internacional, así como tu historial demostrado en la
+    apertura y consolidación de cuentas estratégicas, corresponden con precisión al perfil que esta posición
+    requiere para la siguiente etapa de crecimiento de Advance.</p>
+
+    <div class="sec"><span class="n">01</span><span class="tt">Posición y adscripción</span></div>
+
+    <div class="card">
+      <div class="ficha">
+        <div class="row"><div class="k">Puesto</div><div class="v">Directora Comercial</div></div>
+        <div class="row"><div class="k">Unidad de negocio</div><div class="v">Telematics Advance</div></div>
+        <div class="row"><div class="k">Reporta a</div><div class="v">Fernando Ávila Sánchez<br><span style="font-weight:600;color:var(--t2);font-size:9pt">Dirección General — Advance</span></div></div>
+        <div class="row"><div class="k">Nivel</div><div class="v">Directivo</div></div>
+        <div class="row"><div class="k">Centro de trabajo</div><div class="v">Lomas Altas, C.P. 11950<br><span style="font-weight:600;color:var(--t2);font-size:9pt">Ciudad de México</span></div></div>
+        <div class="row"><div class="k">Fecha de ingreso</div><div class="v"><span class="campo" style="min-width:150px">&nbsp;</span></div></div>
+      </div>
+    </div>
+
+    <div class="sec"><span class="n">02</span><span class="tt">Alcance de la posición</span></div>
+
+    <p>Como Directora Comercial serás responsable de la estrategia, la ejecución y el resultado del negocio
+    de la marca. De manera enunciativa, tus responsabilidades comprenden:</p>
+
+    <ul>
+      <li><strong>Estrategia comercial de la marca:</strong> diseñar y ejecutar el plan de crecimiento anual de Advance, con objetivos de ingreso, margen y participación de mercado.</li>
+      <li><strong>Desarrollo de nuevos negocios B2B:</strong> apertura y cierre de cuentas corporativas de flota en los sectores de transporte, logística, distribución, construcción y arrendamiento.</li>
+      <li><strong>Canal y alianzas estratégicas:</strong> desarrollo del negocio a través de distribuidores y socios OEM, así como consolidación de las alianzas ya existentes del grupo.</li>
+      <li><strong>Dirección del equipo comercial:</strong> integración, desarrollo y gestión del desempeño del equipo de ventas y de la fuerza de prospección.</li>
+      <li><strong>Gestión del embudo y del pronóstico:</strong> disciplina de <em>pipeline</em>, <em>forecast</em>, cuota y ciclo de venta, con reporte periódico a la Dirección General.</li>
+      <li><strong>Política de precios y rentabilidad:</strong> definición de precios, márgenes, esquemas de membresía y estrategia de renovación de la base instalada.</li>
+      <li><strong>Coordinación transversal:</strong> alineación con Marketing B2B, Operaciones, Soporte Técnico y Centro de Atención para asegurar la experiencia del cliente de principio a fin.</li>
+    </ul>
+
+    <div class="sec"><span class="n">03</span><span class="tt">Paquete de compensación</span></div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="v">$<span class="campo">&nbsp;</span></div>
+        <div class="l">Sueldo mensual bruto</div>
+      </div>
+      <div class="stat">
+        <div class="v">$<span class="campo">&nbsp;</span></div>
+        <div class="l">Variable objetivo mensual<br>por cumplimiento de cuota</div>
+      </div>
+      <div class="stat">
+        <div class="v">$<span class="campo">&nbsp;</span></div>
+        <div class="l">Compensación total objetivo<br>(anualizada)</div>
+      </div>
+    </div>
+
+    <ul>
+      <li><strong>Sueldo base:</strong> pagadero de forma quincenal mediante depósito a cuenta bancaria, sujeto a las retenciones de ley.</li>
+      <li><strong>Compensación variable:</strong> ligada al cumplimiento de los objetivos comerciales que se establezcan en el plan de compensación anual, el cual se te entregará firmado a tu ingreso y se revisará al cierre de cada ejercicio.</li>
+      <li><strong>Revisión salarial:</strong> conforme a la política institucional de revisión anual, con base en desempeño y resultados del negocio.</li>
+    </ul>
+
+  </div>
+
+  <footer class="pie">
+    <span class="conf">Documento confidencial</span>
+    <span>Telematics Advance · LDR Solutions · telematicsadvance.com.mx</span>
+    <span class="fol">Página 1 de 2</span>
+  </footer>
+</div>
+
+
+<!-- ══════════════════ HOJA 2 ══════════════════ -->
+<div class="hoja">
+
+  <header class="membrete">
+    <div class="marca">
+      <div class="logo">
+        <svg width="27" height="27" viewBox="0 0 24 24">
+          <rect x="1" y="3" width="15" height="13" rx="1"/>
+          <path d="M16 8h4l3 4v4h-7V8z"/>
+          <circle cx="5.5" cy="18.5" r="2.5"/>
+          <circle cx="18.5" cy="18.5" r="2.5"/>
+        </svg>
+      </div>
+      <div>
+        <div class="wm">ADVANCE</div>
+        <div class="sub">Telematics Advance · LDR Solutions</div>
+      </div>
+    </div>
+    <div class="doc-tag">
+      <span class="tipo">Carta Oferta</span>
+      <div class="meta">
+        Joana Orozco Hinostroza<br>
+        Dirección Comercial · Advance<br>
+        Confidencial
+      </div>
+    </div>
+  </header>
+
+  <div class="cuerpo">
+
+    <div class="sec" style="margin-top:0"><span class="n">04</span><span class="tt">Prestaciones</span></div>
+
+    <p>Desde tu fecha de ingreso quedarás inscrita ante el Instituto Mexicano del Seguro Social y gozarás de
+    la totalidad de las prestaciones que establece la Ley Federal del Trabajo:</p>
+
+    <ul>
+      <li><strong>Seguridad social:</strong> alta ante el IMSS, INFONAVIT y SAR desde el primer día.</li>
+      <li><strong>Aguinaldo:</strong> 15 días de salario, pagaderos antes del 20 de diciembre y proporcionales al tiempo laborado.</li>
+      <li><strong>Vacaciones:</strong> 12 días hábiles al cumplir el primer año de servicio, con incremento progresivo conforme a la Ley.</li>
+      <li><strong>Prima vacacional:</strong> 25% sobre los días de vacaciones que te correspondan.</li>
+      <li><strong>Participación de utilidades (PTU):</strong> conforme a la Ley y a los resultados del ejercicio fiscal.</li>
+      <li><strong>Prestaciones superiores:</strong> <span class="campo" style="min-width:230px">&nbsp;</span></li>
+    </ul>
+
+    <div class="nota">
+      <b>Nota.</b> Las prestaciones superiores a la ley que en su caso apliquen a nivel directivo —seguro de gastos
+      médicos mayores, seguro de vida, fondo de ahorro y vales de despensa— se confirmarán por escrito por parte
+      de Recursos Humanos junto con el detalle de coberturas y periodos de espera.
+    </div>
+
+    <div class="sec"><span class="n">05</span><span class="tt">Condiciones generales</span></div>
+
+    <ul>
+      <li><strong>Jornada:</strong> de lunes a viernes, de 9:00 a 18:00 horas, bajo el esquema híbrido vigente en la organización, con la flexibilidad propia de una posición directiva.</li>
+      <li><strong>Viajes:</strong> la posición requiere disponibilidad para viajar dentro del territorio nacional para la atención de clientes, distribuidores y eventos de la industria.</li>
+      <li><strong>Herramientas de trabajo:</strong> equipo de cómputo portátil, línea telefónica corporativa, tarjetas de presentación y acceso a las plataformas comerciales y de telemetría de la empresa.</li>
+      <li><strong>Relación laboral:</strong> contrato individual de trabajo por tiempo indeterminado, sujeto a las disposiciones de la Ley Federal del Trabajo.</li>
+      <li><strong>Confidencialidad:</strong> a tu ingreso firmarás el convenio de confidencialidad y protección de datos, así como el código de ética de la organización.</li>
+      <li><strong>Exclusividad:</strong> la posición es de dedicación exclusiva y no podrá desempeñarse simultáneamente con actividades que representen conflicto de interés con el giro de la empresa.</li>
+    </ul>
+
+    <div class="sec"><span class="n">06</span><span class="tt">Documentación para el alta</span></div>
+
+    <p>Para formalizar tu contratación, Recursos Humanos te solicitará la siguiente documentación:</p>
+
+    <ul class="chk">
+      <li>Acta de nacimiento e identificación oficial vigente (INE o pasaporte).</li>
+      <li>CURP, RFC con homoclave y número de seguridad social (NSS).</li>
+      <li>Comprobante de domicilio con antigüedad no mayor a tres meses.</li>
+      <li>Comprobante del último grado de estudios.</li>
+      <li>Estado de cuenta bancario para depósito de nómina (CLABE).</li>
+      <li>Dos referencias laborales verificables y carta de no antecedentes penales, en su caso.</li>
+    </ul>
+
+    <div class="sec"><span class="n">07</span><span class="tt">Vigencia de la oferta</span></div>
+
+    <p>La presente oferta tiene una vigencia de <span class="campo" style="min-width:52px">&nbsp;</span> días naturales
+    contados a partir de su fecha de emisión y está sujeta a la validación satisfactoria de tus referencias
+    laborales y de la documentación señalada en el numeral 06. Este documento no constituye un contrato
+    individual de trabajo; sus términos se formalizarán en el contrato correspondiente a tu ingreso.</p>
+
+    <p>Joana, confiamos plenamente en que tu liderazgo y tu experiencia serán determinantes para consolidar
+    a Advance como el referente de telemetría e IoT vehicular en México. Será un gusto darte la bienvenida
+    al equipo.</p>
+
+    <div class="firmas">
+      <div class="firma">
+        <div class="ln"></div>
+        <div class="nm">Fernando Ávila Sánchez</div>
+        <div class="cg">Dirección General<br>Telematics Advance</div>
+      </div>
+      <div class="firma">
+        <div class="ln"></div>
+        <div class="nm">Teresa Hernández</div>
+        <div class="cg">Recursos Humanos<br>LDR Solutions</div>
+      </div>
+    </div>
+
+    <div class="acuse">
+      <div class="tt">Acuse de conformidad</div>
+      <p>Manifiesto haber leído y comprendido en su totalidad los términos descritos en la presente carta oferta
+      y expreso mi <strong>aceptación</strong> a los mismos, comprometiéndome a presentarme a laborar en la fecha
+      de ingreso convenida.</p>
+      <div class="acuse-firma">
+        <div class="firma">
+          <div class="ln"></div>
+          <div class="nm">Joana Orozco Hinostroza</div>
+          <div class="cg">Nombre y firma de aceptación</div>
+        </div>
+        <div class="firma">
+          <div class="ln"></div>
+          <div class="nm">Fecha de aceptación</div>
+          <div class="cg">Día / mes / año</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="pie">
+    <span class="conf">Documento confidencial</span>
+    <span>Telematics Advance · LDR Solutions · telematicsadvance.com.mx</span>
+    <span class="fol">Página 2 de 2</span>
+  </footer>
+</div>
+
+</body>
+</html>
