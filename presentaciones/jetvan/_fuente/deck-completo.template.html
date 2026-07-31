@@ -1,5 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="__IMG_FAVICON__">
 <title>Advance 3.0 × JET VAN — Propuesta</title>
 <style>
 :root{
@@ -17,6 +18,7 @@
   --paper:#E9F4EC; --paper2:#B6CFC0; --muted:#7E9A8B; --faint:#55705F;
   /* ── Semántica ── */
   --warn:#E8A33D; --crit:#E4614A; --ok:#37D399;
+  --logo:url("__IMG_LOGO__");
   --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Liberation Sans',sans-serif;
   --mono:ui-monospace,'DejaVu Sans Mono','Liberation Mono',Menlo,monospace;
 }
@@ -100,6 +102,13 @@ table.t td.b{color:var(--paper)}
 .shot-wrap{position:relative;overflow:hidden;border-radius:11px;background:#e6f1de}
 .shot-wrap.crop{height:100%}
 .shot-wrap.crop img{width:100%;height:100%;object-fit:cover;object-position:top left;display:block}
+
+/* ══ Marca Advance ══ */
+.brand{display:block;width:158px;height:58px;background:var(--logo) no-repeat left center/contain}
+.brand-sm{display:inline-block;width:112px;height:41px;background:var(--logo) no-repeat right center/contain}
+.iso{display:inline-block;width:15px;height:15px;flex:0 0 auto;opacity:.55;
+  background:var(--logo) no-repeat left center;background-size:auto 15px}
+.footmark{display:flex;align-items:center;gap:9px}
 
 /* ══ Portada ══ */
 #cover{padding:0;justify-content:center}
@@ -185,7 +194,7 @@ table.t td.b{color:var(--paper)}
   <canvas id="trace"></canvas>
   <div class="cover-in">
     <div class="lockup">
-      <span class="mk">Telematics Advance</span><span class="x">×</span><span class="jvm">Jet Van</span>
+      <i class="brand" role="img" aria-label="Telematics Advance"></i><span class="x">×</span><span class="jvm">Jet Van</span>
     </div>
     <h1>La flota que rentas,<br>bajo control<span class="hly">.</span></h1>
     <p class="lede" style="margin-top:22px;font-size:17px">
@@ -240,7 +249,7 @@ table.t td.b{color:var(--paper)}
       </div>
     </div>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>Contexto</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>Contexto</span></div>
 </section>
 
 <!-- 03 ── EL MOMENTO ──────────────────────────────────────────── -->
@@ -282,7 +291,7 @@ table.t td.b{color:var(--paper)}
     Cada punto porcentual de mantenimiento, prima o siniestralidad sobre miles de unidades y 48 meses es dinero
     que ya está comprometido en el precio que ofertaron.</p>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>Fuentes públicas · ver lámina final</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>Fuentes públicas · ver lámina final</span></div>
 </section>
 
 <!-- 04 ── LOS 5 RIESGOS ───────────────────────────────────────── -->
@@ -326,7 +335,7 @@ table.t td.b{color:var(--paper)}
       en decisiones, cobro y evidencia.</div>
     </div>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>El problema</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>El problema</span></div>
 </section>
 
 <!-- 05 ── GPS VS ADVANCE ──────────────────────────────────────── -->
@@ -357,7 +366,7 @@ table.t td.b{color:var(--paper)}
       </tbody>
     </table>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>La diferencia</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>La diferencia</span></div>
 </section>
 
 <!-- 06 ── LOS PILARES ─────────────────────────────────────────── -->
@@ -395,7 +404,7 @@ table.t td.b{color:var(--paper)}
         leídos por IA, usuarios ilimitados por rol —incluido el <b>cliente externo</b>.</div></div>
     </div>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>Cifras publicadas por Telematics Advance</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>Cifras publicadas por Telematics Advance</span></div>
 </section>
 
 <!-- 07 ── SEGURIDAD PATRIMONIAL ───────────────────────────────── -->
@@ -433,7 +442,7 @@ table.t td.b{color:var(--paper)}
       </div>
     </div>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>Pilar 01 · Seguridad patrimonial</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>Pilar 01 · Seguridad patrimonial</span></div>
 </section>
 
 <!-- 08 ── MANTENIMIENTO ───────────────────────────────────────── -->
@@ -470,7 +479,7 @@ table.t td.b{color:var(--paper)}
         mejor en la reventa.</div></div>
     </div>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>Pilar 02 · Mantenimiento</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>Pilar 02 · Mantenimiento</span></div>
 </section>
 
 <!-- 09 ── COMBUSTIBLE ─────────────────────────────────────────── -->
@@ -505,7 +514,7 @@ table.t td.b{color:var(--paper)}
       </div>
     </div>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>Pilar 03 · Combustible</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>Pilar 03 · Combustible</span></div>
 </section>
 
 <!-- 10 ── SEGURIDAD VIAL ──────────────────────────────────────── -->
@@ -545,7 +554,7 @@ table.t td.b{color:var(--paper)}
       </div>
     </div>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>Pilar 04 · Seguridad vial</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>Pilar 04 · Seguridad vial</span></div>
 </section>
 
 <!-- 11 ── MODELOS PA/PR ───────────────────────────────────────── -->
@@ -580,7 +589,7 @@ table.t td.b{color:var(--paper)}
       contrato a 48 meses juega a favor.</div>
     </div>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>Pilar 05 · Modelos PA / PR</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>Pilar 05 · Modelos PA / PR</span></div>
 </section>
 
 <!-- 12 ── DATALAB ─────────────────────────────────────────────── -->
@@ -609,7 +618,7 @@ table.t td.b{color:var(--paper)}
       </div>
     </div>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>Pilar 06 · DataLab 3.0</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>Pilar 06 · DataLab 3.0</span></div>
 </section>
 
 <!-- 13 ── EL INFORME REAL ─────────────────────────────────────── -->
@@ -639,7 +648,7 @@ table.t td.b{color:var(--paper)}
       </div>
     </div>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>Datos de demostración</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>Datos de demostración</span></div>
 </section>
 
 <!-- 14 ── NABI ────────────────────────────────────────────────── -->
@@ -671,7 +680,7 @@ table.t td.b{color:var(--paper)}
         interpreta un tablero y genera un informe de DataLab con una instrucción en español.</div></div>
     </div>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>Pilar 07 · Nabi</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>Pilar 07 · Nabi</span></div>
 </section>
 
 <!-- 15 ── APPS ────────────────────────────────────────────────── -->
@@ -713,7 +722,7 @@ table.t td.b{color:var(--paper)}
       </div>
     </div>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>Copiloto · Advance GO</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>Copiloto · Advance GO</span></div>
 </section>
 
 <!-- 16 ── EVIDENCIA AUDITABLE ─────────────────────────────────── -->
@@ -751,7 +760,7 @@ table.t td.b{color:var(--paper)}
       </div>
     </div>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>El blindaje</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>El blindaje</span></div>
 </section>
 
 <!-- 17 ── NUEVA LÍNEA DE INGRESO ──────────────────────────────── -->
@@ -783,7 +792,7 @@ table.t td.b{color:var(--paper)}
       </div>
     </div>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>La oportunidad</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>La oportunidad</span></div>
 </section>
 
 <!-- 18 ── EL NÚMERO ───────────────────────────────────────────── -->
@@ -844,7 +853,7 @@ table.t td.b{color:var(--paper)}
       </div>
     </div>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>Modelo indicativo · no constituye oferta</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>Modelo indicativo · no constituye oferta</span></div>
 </section>
 
 <!-- 19 ── HARDWARE ────────────────────────────────────────────── -->
@@ -883,7 +892,7 @@ table.t td.b{color:var(--paper)}
       República, quién instala y quién responde importa tanto como el equipo.</div>
     </div>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>Hardware</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>Hardware</span></div>
 </section>
 
 <!-- 20 ── PLAN ────────────────────────────────────────────────── -->
@@ -922,7 +931,7 @@ table.t td.b{color:var(--paper)}
       no hay despliegue.</b></div>
     </div>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>Implementación</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>Implementación</span></div>
 </section>
 
 <!-- 21 ── POR QUÉ ADVANCE ─────────────────────────────────────── -->
@@ -957,7 +966,7 @@ table.t td.b{color:var(--paper)}
     <div class="txt s">También operan con Advance: Alcosa, Dongfeng, Fulongma y el gobierno de Nuevo León,
     en carga, transporte de personal, distribución y servicio municipal.</div>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>Credenciales</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>Credenciales</span></div>
 </section>
 
 <!-- 22 ── SIGUIENTE PASO ──────────────────────────────────────── -->
@@ -989,7 +998,7 @@ table.t td.b{color:var(--paper)}
           <b>¿cuánto vale saber exactamente cómo se está usando cada unidad — todos los días, desde el motor?</b></div>
         </div>
         <div style="min-width:250px;text-align:right">
-          <div class="kicker">Telematics Advance · LDR Solutions</div>
+          <div style="display:flex;justify-content:flex-end;margin-bottom:7px"><i class="brand-sm" role="img" aria-label="Telematics Advance"></i></div><div class="kicker">LDR Solutions</div>
           <div class="txt num" style="margin-top:8px;font-size:14px;color:var(--paper)">56 1053 7582</div>
           <div class="txt s" style="margin-top:3px">atenciontelematics@telematicsadvance.com.mx</div>
           <div class="txt s">telematicsadvance.com.mx</div>
@@ -997,7 +1006,7 @@ table.t td.b{color:var(--paper)}
       </div>
     </div>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>31 · 07 · 2026</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>31 · 07 · 2026</span></div>
 </section>
 
 <!-- 23 ── FUENTES ─────────────────────────────────────────────── -->
@@ -1040,7 +1049,7 @@ table.t td.b{color:var(--paper)}
       </div>
     </div>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>Anexo · fuentes</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>Anexo · fuentes</span></div>
 </section>
 
 </div>

@@ -8,8 +8,13 @@ import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
-const IMGS = { PORTADA:'portada', EJECUTIVO:'ejecutivo', SEGURIDAD:'seguridad',
-               COMBUSTIBLE:'combustible', MONETIZACION:'monetizacion' };
+/* token en la plantilla  →  archivo en img/  (capturas del informe en JPG,
+   marca de Advance en PNG por la transparencia)                              */
+const IMGS = { PORTADA:'portada.jpg', EJECUTIVO:'ejecutivo.jpg', SEGURIDAD:'seguridad.jpg',
+               COMBUSTIBLE:'combustible.jpg', MONETIZACION:'monetizacion.jpg',
+               LOGO:'advance.png', FAVICON:'favicon.png' };
+
+const MIME = { jpg:'image/jpeg', png:'image/png' };
 
 const DECKS = [
   { src:'deck.template.html',          out:'index.html',    title:'Advance 3.0 × JET VAN — Propuesta' },
@@ -17,8 +22,8 @@ const DECKS = [
   { src:'deck-completo.template.html', out:'completa.html', title:'Advance 3.0 × JET VAN — Versión completa' },
 ];
 
-const dataUri = f => 'data:image/jpeg;base64,' +
-  readFileSync(join(here, 'img', f + '.jpg')).toString('base64');
+const dataUri = f => `data:${MIME[f.split('.').pop()]};base64,` +
+  readFileSync(join(here, 'img', f)).toString('base64');
 
 for (const deck of DECKS) {
   let html = readFileSync(join(here, deck.src), 'utf8');

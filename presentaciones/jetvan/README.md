@@ -35,6 +35,16 @@ En la versión ampliada, la lámina del **modelo de impacto** es interactiva: lo
 del cliente y el resultado se recalcula. El interruptor *escenario conservador* viene activado a propósito —
 deja el retorno en la mitad del beneficio publicado, que es como conviene abrir la conversación.
 
+## Marca
+
+El logotipo de Advance viene del sitio oficial (`telematicsadvance.com.mx/logos/logo-advance.png`) y va
+incrustado en el HTML, así que no depende de internet. Aparece en la portada, en el bloque de contacto y como
+isotipo discreto en el pie de cada lámina; el favicon usa el isotipo del sitio.
+
+El logotipo de **JET VAN** no se incluyó: su versión oficial trae el texto en gris oscuro y se pierde sobre el
+fondo del deck. Si se quiere en la portada, hay que pedirle a JET VAN el logotipo en versión blanca o negativa
+y agregarlo como `_fuente/img/jetvan.png` con un token nuevo en `build.mjs`.
+
 ## Regenerar
 
 Las capturas de las versiones ampliada y completa salen de la plantilla de informe de este mismo repositorio

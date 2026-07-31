@@ -1,5 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="__IMG_FAVICON__">
 <title>Advance 3.0 × JET VAN — Propuesta</title>
 <style>
 :root{
@@ -17,6 +18,7 @@
   --paper:#E9F4EC; --paper2:#B6CFC0; --muted:#7E9A8B; --faint:#55705F;
   /* ── Semántica ── */
   --warn:#E8A33D; --crit:#E4614A; --ok:#37D399;
+  --logo:url("__IMG_LOGO__");
   --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Liberation Sans',sans-serif;
   --mono:ui-monospace,'DejaVu Sans Mono','Liberation Mono',Menlo,monospace;
 }
@@ -100,6 +102,13 @@ table.t td.b{color:var(--paper)}
 .shot-wrap{position:relative;overflow:hidden;border-radius:11px;background:#e6f1de}
 .shot-wrap.crop{height:100%}
 .shot-wrap.crop img{width:100%;height:100%;object-fit:cover;object-position:top left;display:block}
+
+/* ══ Marca Advance ══ */
+.brand{display:block;width:158px;height:58px;background:var(--logo) no-repeat left center/contain}
+.brand-sm{display:inline-block;width:112px;height:41px;background:var(--logo) no-repeat right center/contain}
+.iso{display:inline-block;width:15px;height:15px;flex:0 0 auto;opacity:.55;
+  background:var(--logo) no-repeat left center;background-size:auto 15px}
+.footmark{display:flex;align-items:center;gap:9px}
 
 /* ══ Portada ══ */
 #cover{padding:0;justify-content:center}
@@ -185,7 +194,7 @@ table.t td.b{color:var(--paper)}
   <canvas id="trace"></canvas>
   <div class="cover-in">
     <div class="lockup">
-      <span class="mk">Telematics Advance</span><span class="x">×</span><span class="jvm">Jet Van</span>
+      <i class="brand" role="img" aria-label="Telematics Advance"></i><span class="x">×</span><span class="jvm">Jet Van</span>
     </div>
     <h1>La flota que rentas,<br>bajo control<span class="hly">.</span></h1>
     <p class="lede" style="margin-top:22px;font-size:17px">
@@ -246,7 +255,7 @@ table.t td.b{color:var(--paper)}
         unidad y operador — antes de autorizar el viaje.</div></div>
     </div>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>Cifras publicadas por Telematics Advance</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>Cifras publicadas por Telematics Advance</span></div>
 </section>
 
 <!-- 03 ── CÓMO FUNCIONA LA GESTIÓN DE FLOTA ───────────────────── -->
@@ -301,7 +310,7 @@ table.t td.b{color:var(--paper)}
       </div>
     </div>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>Operación</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>Operación</span></div>
 </section>
 
 <!-- 04 ── WALK AROUND ─────────────────────────────────────────── -->
@@ -389,7 +398,7 @@ table.t td.b{color:var(--paper)}
               resueltas con evidencia fechada, kilometraje comprobado con la foto del tablero <em>y</em> con el
               odómetro leído del motor. <b>Deja de ser palabra contra palabra.</b></div></div>
             <div style="min-width:215px;text-align:right">
-              <div class="kicker">Telematics Advance · LDR Solutions</div>
+              <div style="display:flex;justify-content:flex-end;margin-bottom:7px"><i class="brand-sm" role="img" aria-label="Telematics Advance"></i></div><div class="kicker">LDR Solutions</div>
               <div class="txt num" style="margin-top:6px;font-size:13.5px;color:var(--paper)">56 1053 7582</div>
               <div class="txt s">telematicsadvance.com.mx</div>
             </div>
@@ -398,7 +407,7 @@ table.t td.b{color:var(--paper)}
       </div>
     </div>
   </div>
-  <div class="foot"><span>Advance 3.0 × JET VAN</span><span>App Copiloto · entrega y devolución</span></div>
+  <div class="foot"><span class="footmark"><i class="iso"></i>Advance 3.0 × JET VAN</span><span>App Copiloto · entrega y devolución</span></div>
 </section>
 
 </div>
