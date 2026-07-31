@@ -4,336 +4,296 @@
 <meta charset="utf-8">
 <title>Carta Oferta · Dirección Comercial — Advance</title>
 <style>
-/* ─────────── ADVANCE · IDENTIDAD INSTITUCIONAL ─────────── */
+/* ══════════ ADVANCE · SISTEMA DE IDENTIDAD ══════════
+   Tokens tomados del sitio institucional telematicsadvance.com.mx  */
 :root{
-  --bg:#e6f1de;
-  --glass:rgba(255,255,255,.62);
-  --glass-strong:rgba(255,255,255,.80);
-  --brd:rgba(255,255,255,.72);
-  --line:rgba(21,128,61,.14);
-  --t:#10261c;--t2:#4c6053;--t3:#85a08f;
-  --forest:#0f5132;--gr:#16a34a;--gr2:#15803d;--gr-bg:rgba(22,163,74,.13);
-  --lime:#4f9c2d;--teal:#0d9488;--teal-bg:rgba(13,148,136,.12);
-  --or:#d98324;
-  --shadow:0 18px 48px rgba(16,70,38,.16);
-  --shadow-sm:0 10px 30px rgba(16,70,38,.10);
-  --r:16px;--r2:11px;
+  --lime:#c4d600; --lime-deep:#7a9400; --lime-ink:#8aa600; --lime-txt:#9db800;
+  --accent:#8c9b00;
+  --txt:#191b15; --dim:#5f6556;
+  --bg:#f4f5ef; --bg2:#eceee3;
+  --line:#191b151a;
+  --sans:-apple-system,"SF Pro Display","Segoe UI",Roboto,"Helvetica Neue",sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 body{
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
-  color:var(--t);background:var(--bg);
-  font-size:11pt;line-height:1.62;
-  display:flex;flex-direction:column;align-items:center;gap:22px;padding:22px 12px;
+  font-family:var(--sans);color:var(--txt);background:var(--bg2);
+  font-size:10.0pt;line-height:1.5;letter-spacing:-.005em;
+  display:flex;flex-direction:column;align-items:center;gap:24px;padding:24px 12px;
 }
 
-/* ─── Hoja carta ─── */
+/* ─────────── Hoja carta ─────────── */
 .hoja{
-  width:21.59cm;min-height:27.94cm;position:relative;overflow:hidden;
-  background:#fff;box-shadow:var(--shadow);border-radius:6px;
-  padding:0 0 2.0cm;display:flex;flex-direction:column;
+  width:21.59cm;height:27.94cm;position:relative;overflow:hidden;
+  background:#fff;box-shadow:0 24px 70px #1e23142e;
+  display:flex;flex-direction:column;
 }
-.hoja::after{ /* halo institucional de fondo */
+.hoja::before{ /* hero glow institucional */
   content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
   background:
-    radial-gradient(560px 460px at 108% -6%, rgba(22,163,74,.13), transparent 58%),
-    radial-gradient(520px 480px at -10% 104%, rgba(15,81,50,.10), transparent 62%);
+    radial-gradient(900px 420px at 82% 4%, #c4d60038, #0000 62%),
+    radial-gradient(620px 340px at 4% 104%, #c4d6001f, #0000 60%);
 }
 .hoja>*{position:relative;z-index:1;}
 
-/* ─── Membrete ─── */
-.membrete{
-  padding:1.5cm 2.0cm 0.9cm;display:flex;justify-content:space-between;
-  align-items:flex-start;gap:24px;border-bottom:1px solid var(--line);
-  margin:0 0 1.0cm;
+/* ─────────── Banda de marca (tinta) ─────────── */
+.banda{
+  background:var(--txt);padding:20px 1.9cm 19px;
+  display:flex;align-items:center;justify-content:space-between;gap:22px;flex:none;
 }
-.marca{display:flex;align-items:center;gap:13px;}
-.logo{
-  width:50px;height:50px;flex:none;border-radius:14px;
-  background:linear-gradient(135deg,var(--gr),#7cb342);
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 8px 20px rgba(22,163,74,.30);
+.banda .marca{display:flex;align-items:center;gap:15px;}
+.banda .marca img{height:30px;width:auto;display:block;}
+.banda .marca .div{width:1px;height:30px;background:#ffffff2e;}
+.banda .marca .ue{
+  font-size:8pt;font-weight:600;color:#ffffffb0;line-height:1.45;letter-spacing:.02em;
 }
-.logo svg{fill:none;stroke:#fff;stroke-width:2;stroke-linejoin:round;}
-.marca .wm{
-  font-size:20px;font-weight:800;letter-spacing:2.6px;line-height:1;
-  background:linear-gradient(135deg,var(--gr),var(--forest));
-  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+.banda .marca .ue b{color:var(--lime);font-weight:700;}
+.banda .tipo{
+  flex:none;background:var(--lime);color:var(--txt);
+  border-radius:999px;padding:7px 17px;
+  font-size:9pt;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  box-shadow:0 10px 26px #8c9b004d;
 }
-.marca .sub{font-size:8.5pt;color:var(--t3);letter-spacing:.4px;margin-top:4px;font-weight:600;}
-.doc-tag{text-align:right;flex:none;}
-.doc-tag .tipo{
-  display:inline-block;padding:5px 13px;border-radius:100px;
-  background:var(--gr-bg);color:var(--gr2);
-  font-size:8.5pt;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;
-}
-.doc-tag .meta{font-size:8.5pt;color:var(--t2);margin-top:9px;line-height:1.65;}
-.doc-tag .meta b{color:var(--t);font-weight:700;}
+/* filete lima bajo la banda */
+.filete{height:3px;background:linear-gradient(90deg,var(--lime),#c4d60000);flex:none;}
 
-/* ─── Cuerpo ─── */
-.cuerpo{padding:0 2.0cm;flex:1;}
-.lugar-fecha{font-size:9.5pt;color:var(--t2);text-align:right;margin-bottom:22px;}
+/* ─────────── Cuerpo ─────────── */
+.cuerpo{padding:0.85cm 1.9cm 0;flex:1;min-height:0;}
 
-.destinataria{margin-bottom:20px;}
-.destinataria .nom{font-size:14.5pt;font-weight:800;line-height:1.25;}
-.destinataria .car{font-size:10pt;color:var(--gr2);font-weight:700;margin-top:2px;}
-.destinataria .via{font-size:9pt;color:var(--t3);margin-top:5px;}
+.encabezado{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  gap:24px;padding-bottom:13px;border-bottom:1px solid var(--line);margin-bottom:14px;
+}
+.destinataria .eyebrow{
+  display:inline-block;margin-bottom:7px;
+  font-size:8pt;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--lime-deep);background:#c4d60024;border:1px solid #8c9b0080;
+  border-radius:99px;padding:3px 11px;
+}
+.destinataria .nom{font-size:17pt;font-weight:800;letter-spacing:-.03em;line-height:1.14;}
+.destinataria .car{font-size:9.6pt;color:var(--dim);font-weight:600;margin-top:3px;}
+.folio{text-align:right;flex:none;font-size:8.2pt;color:var(--dim);line-height:1.75;}
+.folio b{color:var(--txt);font-weight:700;}
 
-p{margin-bottom:12px;text-align:justify;}
-.lead{font-size:11.5pt;}
+p{margin-bottom:7px;text-align:justify;}
+.lead{font-size:10.6pt;font-weight:600;margin-bottom:9px;}
 strong{font-weight:700;}
-.hl{color:var(--gr2);font-weight:700;}
+.hl{color:var(--lime-deep);font-weight:800;}
 
 /* Campo por completar */
 .campo{
-  display:inline-block;min-width:105px;padding:0 6px 1px;
-  border-bottom:1.6px dotted var(--gr);color:var(--gr2);
-  font-weight:700;text-align:center;
+  display:inline-block;min-width:100px;padding:0 7px 1px;
+  border-bottom:1.6px dotted var(--accent);
+  color:var(--lime-deep);font-weight:700;text-align:center;
 }
 
-/* ─── Encabezado de sección (mismo lenguaje que el informe) ─── */
-.sec{margin:22px 0 12px;display:flex;align-items:center;gap:11px;}
+/* ─────────── Encabezado de sección ─────────── */
+.sec{margin:14px 0 8px;display:flex;align-items:center;gap:11px;}
 .sec .n{
-  font-size:9pt;font-weight:800;color:#fff;min-width:26px;height:26px;border-radius:8px;
-  background:linear-gradient(135deg,var(--gr),var(--forest));
-  display:flex;align-items:center;justify-content:center;flex:none;
-  box-shadow:0 4px 12px rgba(22,163,74,.32);
+  flex:none;width:29px;height:29px;border-radius:10px;
+  background:linear-gradient(140deg,#c4d6006b,#c4d60024);border:1px solid #8c9b0066;
+  color:var(--lime-deep);font-size:9pt;font-weight:800;letter-spacing:-.02em;
+  display:flex;align-items:center;justify-content:center;
 }
-.sec .tt{font-size:12pt;font-weight:800;letter-spacing:-.1px;}
+.sec .tt{font-size:12pt;font-weight:800;letter-spacing:-.03em;}
 .sec::after{content:"";flex:1;height:1px;background:var(--line);}
 
-/* ─── Tarjetas glass ─── */
-.card{
-  position:relative;background:var(--glass);border:1px solid var(--brd);
-  border-radius:var(--r2);box-shadow:var(--shadow-sm);padding:15px 17px;
+/* ─────────── Tarjetas ─────────── */
+.glass{
+  background:linear-gradient(155deg,#ffffffd9,#ffffff8c);
+  border:1px solid #191b1514;border-radius:16px;
+  box-shadow:inset 0 1px #fff, 0 14px 34px #1e23141a;
+  padding:13px 17px;
 }
-.card::before{
-  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-  background:linear-gradient(140deg,rgba(255,255,255,.55),rgba(255,255,255,0) 42%);
-}
-.card>*{position:relative;}
-
 .ficha{display:grid;grid-template-columns:1fr 1fr;gap:0 26px;}
-.ficha .row{padding:7px 0;border-bottom:1px dashed var(--line);}
-.ficha .row:nth-last-child(-n+2){border-bottom:none;}
-.ficha .k{font-size:7.8pt;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--t3);}
-.ficha .v{font-size:10pt;font-weight:700;color:var(--t);margin-top:1px;line-height:1.4;}
-
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin:14px 0 4px;}
-.stat{
-  background:var(--glass-strong);border:1px solid var(--brd);border-radius:var(--r2);
-  box-shadow:var(--shadow-sm);padding:13px 15px;text-align:center;
+.ficha .row{padding:6px 0;border-bottom:1px solid var(--line);}
+.ficha .row:nth-last-child(-n+2){border-bottom:none;padding-bottom:0;}
+.ficha .k{
+  font-size:7.6pt;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--lime-deep);
 }
-.stat .v{
-  font-size:15pt;font-weight:800;line-height:1.15;
-  background:linear-gradient(135deg,var(--gr),var(--forest));
-  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-}
-.stat .v .campo{border-bottom-width:2px;min-width:88px;-webkit-text-fill-color:var(--gr2);}
-.stat .l{font-size:8pt;color:var(--t2);margin-top:5px;line-height:1.4;}
+.ficha .v{font-size:10pt;font-weight:700;letter-spacing:-.015em;margin-top:2px;line-height:1.35;}
+.ficha .v small{display:block;font-size:8.6pt;font-weight:500;color:var(--dim);letter-spacing:0;}
 
-/* ─── Listas ─── */
-ul{list-style:none;margin:4px 0 12px;}
-ul li{position:relative;padding-left:19px;margin-bottom:6px;text-align:justify;}
+/* Cifras de compensación */
+.cifras{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin:10px 0 9px;}
+.cifra{
+  background:linear-gradient(160deg,#c4d60057,#c4d6001a);border:1px solid #8c9b0099;
+  border-radius:14px;padding:14px 13px;text-align:center;
+}
+.cifra .v{font-size:15pt;font-weight:800;letter-spacing:-.04em;color:var(--txt);line-height:1.1;}
+.cifra .v .campo{min-width:82px;border-bottom-width:2px;}
+.cifra .l{
+  font-size:7.6pt;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--lime-deep);margin-top:7px;line-height:1.4;
+}
+
+/* ─────────── Listas ─────────── */
+ul{list-style:none;margin:4px 0 8px;}
+ul li{position:relative;padding-left:18px;margin-bottom:3px;text-align:justify;}
 ul li::before{
-  content:"";position:absolute;left:0;top:.62em;width:7px;height:7px;border-radius:2px;
-  background:linear-gradient(135deg,var(--gr),var(--forest));
+  content:"";position:absolute;left:2px;top:.58em;width:6px;height:6px;border-radius:50%;
+  background:var(--lime);box-shadow:0 0 0 3px #c4d60038;
 }
 ul.chk li::before{
-  content:"";width:8px;height:8px;border-radius:50%;
-  background:none;border:2px solid var(--gr);top:.55em;
+  background:#fff;border:1.5px solid #191b1538;box-shadow:none;
+  width:11px;height:11px;border-radius:4px;left:0;top:.42em;
 }
 
 .nota{
-  background:var(--teal-bg);border-left:3px solid var(--teal);
-  border-radius:0 var(--r2) var(--r2) 0;padding:11px 15px;margin:12px 0;
-  font-size:9.5pt;color:var(--t2);text-align:justify;
+  background:linear-gradient(90deg,#c4d60038,#c4d60012);
+  border:1px dashed #8c9b008c;border-radius:13px;
+  padding:10px 14px;margin:9px 0;font-size:8.9pt;color:var(--dim);text-align:justify;
 }
-.nota b{color:var(--teal);}
+.nota b{color:var(--lime-deep);}
 
-/* ─── Firmas ─── */
-.firmas{display:grid;grid-template-columns:1fr 1fr;gap:34px;margin-top:34px;}
+/* ─────────── Firmas ─────────── */
+.firmas{display:grid;grid-template-columns:1fr 1fr;gap:36px;margin-top:26px;}
 .firma{text-align:center;}
-.firma .ln{border-top:1.6px solid var(--forest);margin-bottom:7px;padding-top:9px;}
-.firma .nm{font-size:10pt;font-weight:800;}
-.firma .cg{font-size:8.5pt;color:var(--t2);line-height:1.45;margin-top:2px;}
+.firma .ln{border-top:1.5px solid var(--txt);margin-bottom:7px;padding-top:8px;}
+.firma .nm{font-size:10pt;font-weight:800;letter-spacing:-.02em;}
+.firma .cg{font-size:8.4pt;color:var(--dim);line-height:1.45;margin-top:2px;}
 
 .acuse{
-  margin-top:26px;border:1.6px solid rgba(22,163,74,.28);border-radius:var(--r);
-  background:linear-gradient(160deg,rgba(22,163,74,.07),rgba(255,255,255,0) 62%);
-  padding:18px 20px 20px;
+  margin-top:20px;border:1px solid #8c9b0066;border-radius:16px;
+  background:linear-gradient(120deg,#c4d6004d,#c4d6001a);
+  padding:16px 19px 18px;
 }
 .acuse .tt{
-  font-size:8.5pt;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;
-  color:var(--gr2);margin-bottom:9px;display:flex;align-items:center;gap:7px;
+  display:inline-block;margin-bottom:9px;
+  font-size:8pt;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--lime-deep);background:#ffffffa6;border:1px solid #8c9b0080;
+  border-radius:99px;padding:3px 11px;
 }
-.acuse .tt::before{content:"";width:8px;height:8px;border-radius:2px;background:linear-gradient(135deg,var(--gr),var(--forest));}
-.acuse p{font-size:9.5pt;margin-bottom:0;}
-.acuse-firma{display:grid;grid-template-columns:1.3fr 1fr;gap:30px;margin-top:30px;}
+.acuse p{font-size:9.4pt;margin-bottom:0;}
+.acuse-firma{display:grid;grid-template-columns:1.25fr 1fr;gap:32px;margin-top:28px;}
 
-/* ─── Pie ─── */
+/* ─────────── Pie ─────────── */
 .pie{
-  position:absolute;left:0;right:0;bottom:0;padding:9px 2.0cm 11px;
-  border-top:1px solid var(--line);
-  display:flex;justify-content:space-between;align-items:center;gap:16px;
-  font-size:7.4pt;color:var(--t3);line-height:1.5;
+  flex:none;margin:0 1.9cm;padding:9px 0 14px;border-top:1px solid var(--line);
+  display:flex;justify-content:space-between;align-items:center;gap:14px;
+  font-size:7.2pt;color:var(--dim);letter-spacing:.02em;
 }
-.pie .conf{font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--gr2);}
-.pie .fol{white-space:nowrap;}
+.pie .iso{display:flex;align-items:center;gap:7px;}
+.pie .iso img{height:13px;width:auto;opacity:.85;}
+.pie .conf{font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--lime-deep);}
 
 @page{size:letter;margin:0;}
 @media print{
   body{background:#fff;padding:0;gap:0;display:block;}
-  .hoja{box-shadow:none;border-radius:0;margin:0;width:auto;min-height:auto;height:100vh;page-break-after:always;}
+  .hoja{box-shadow:none;width:21.59cm;height:27.94cm;page-break-after:always;}
   .hoja:last-child{page-break-after:auto;}
 }
 </style>
 </head>
 <body>
 
-<!-- ══════════════════ HOJA 1 ══════════════════ -->
+<!-- ═══════════════ HOJA 1 ═══════════════ -->
 <div class="hoja">
 
-  <header class="membrete">
+  <header class="banda">
     <div class="marca">
-      <div class="logo">
-        <svg width="27" height="27" viewBox="0 0 24 24">
-          <rect x="1" y="3" width="15" height="13" rx="1"/>
-          <path d="M16 8h4l3 4v4h-7V8z"/>
-          <circle cx="5.5" cy="18.5" r="2.5"/>
-          <circle cx="18.5" cy="18.5" r="2.5"/>
-        </svg>
-      </div>
-      <div>
-        <div class="wm">ADVANCE</div>
-        <div class="sub">Telematics Advance · LDR Solutions</div>
-      </div>
+      <img src="data:image/png;base64,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" alt="Advance">
+      <div class="div"></div>
+      <div class="ue">Telemática e <b>IoT vehicular</b><br>LDR Solutions</div>
     </div>
-    <div class="doc-tag">
-      <span class="tipo">Carta Oferta</span>
-      <div class="meta">
-        Folio <b>ADV-RH-2026-<span class="campo" style="min-width:44px">&nbsp;</span></b><br>
-        Dirección Comercial · Advance<br>
-        Confidencial
-      </div>
-    </div>
+    <span class="tipo">Carta Oferta</span>
   </header>
+  <div class="filete"></div>
 
   <div class="cuerpo">
 
-    <div class="lugar-fecha">Ciudad de México, a <span class="campo" style="min-width:34px">&nbsp;</span> de <span class="campo" style="min-width:78px">&nbsp;</span> de 2026.</div>
-
-    <div class="destinataria">
-      <div class="nom">Joana Orozco Hinostroza</div>
-      <div class="car">Directora Comercial — Advance</div>
-      <div class="via">P r e s e n t e.</div>
+    <div class="encabezado">
+      <div class="destinataria">
+        <span class="eyebrow">Dirección Comercial</span>
+        <div class="nom">Joana Orozco Hinostroza</div>
+        <div class="car">P r e s e n t e.</div>
+      </div>
+      <div class="folio">
+        Folio <b>ADV-RH-2026-<span class="campo" style="min-width:38px">&nbsp;</span></b><br>
+        Ciudad de México, a <span class="campo" style="min-width:26px">&nbsp;</span> de
+        <span class="campo" style="min-width:66px">&nbsp;</span> de 2026<br>
+        <b>Documento confidencial</b>
+      </div>
     </div>
 
     <p class="lead">Estimada Joana:</p>
 
-    <p>Es un gusto para nosotros comunicarte que, una vez concluido tu proceso de evaluación y entrevistas
-    —incluida la valoración por parte de nuestra Dirección General y del Presidente del Consejo—, hemos
-    decidido extenderte formalmente la presente <strong>oferta de incorporación</strong> para asumir la
-    <strong class="hl">Dirección Comercial de la marca Advance</strong>.</p>
+    <p>Es un gusto comunicarte que, concluido tu proceso de evaluación y entrevistas —incluida la valoración
+    de nuestra Dirección General y del Presidente del Consejo—, hemos decidido extenderte formalmente la
+    presente oferta para asumir la <strong class="hl">Dirección Comercial de la marca Advance</strong>.</p>
 
-    <p>Tu trayectoria de más de veinte años en desarrollo comercial dentro de los sectores de transporte,
-    logística integral, almacenamiento y comercio internacional, así como tu historial demostrado en la
-    apertura y consolidación de cuentas estratégicas, corresponden con precisión al perfil que esta posición
-    requiere para la siguiente etapa de crecimiento de Advance.</p>
+    <p>Tu trayectoria de más de veinte años en desarrollo comercial en transporte, logística integral,
+    almacenamiento y comercio internacional, junto con tu historial en la apertura y consolidación de cuentas
+    estratégicas, corresponde con precisión al perfil que esta posición requiere para la siguiente etapa de
+    crecimiento de Advance.</p>
 
     <div class="sec"><span class="n">01</span><span class="tt">Posición y adscripción</span></div>
 
-    <div class="card">
+    <div class="glass">
       <div class="ficha">
         <div class="row"><div class="k">Puesto</div><div class="v">Directora Comercial</div></div>
         <div class="row"><div class="k">Unidad de negocio</div><div class="v">Telematics Advance</div></div>
-        <div class="row"><div class="k">Reporta a</div><div class="v">Fernando Ávila Sánchez<br><span style="font-weight:600;color:var(--t2);font-size:9pt">Dirección General — Advance</span></div></div>
+        <div class="row"><div class="k">Reporta a</div><div class="v">Fernando Ávila Sánchez<small>Dirección General — Advance</small></div></div>
         <div class="row"><div class="k">Nivel</div><div class="v">Directivo</div></div>
-        <div class="row"><div class="k">Centro de trabajo</div><div class="v">Lomas Altas, C.P. 11950<br><span style="font-weight:600;color:var(--t2);font-size:9pt">Ciudad de México</span></div></div>
-        <div class="row"><div class="k">Fecha de ingreso</div><div class="v"><span class="campo" style="min-width:150px">&nbsp;</span></div></div>
+        <div class="row"><div class="k">Centro de trabajo</div><div class="v">Lomas Altas, C.P. 11950<small>Ciudad de México</small></div></div>
+        <div class="row"><div class="k">Fecha de ingreso</div><div class="v"><span class="campo" style="min-width:140px">&nbsp;</span></div></div>
       </div>
     </div>
 
     <div class="sec"><span class="n">02</span><span class="tt">Alcance de la posición</span></div>
 
-    <p>Como Directora Comercial serás responsable de la estrategia, la ejecución y el resultado del negocio
-    de la marca. De manera enunciativa, tus responsabilidades comprenden:</p>
+    <p>Serás responsable de la estrategia, la ejecución y el resultado del negocio de la marca:</p>
 
     <ul>
       <li><strong>Estrategia comercial de la marca:</strong> diseñar y ejecutar el plan de crecimiento anual de Advance, con objetivos de ingreso, margen y participación de mercado.</li>
-      <li><strong>Desarrollo de nuevos negocios B2B:</strong> apertura y cierre de cuentas corporativas de flota en los sectores de transporte, logística, distribución, construcción y arrendamiento.</li>
-      <li><strong>Canal y alianzas estratégicas:</strong> desarrollo del negocio a través de distribuidores y socios OEM, así como consolidación de las alianzas ya existentes del grupo.</li>
+      <li><strong>Desarrollo de nuevos negocios B2B:</strong> apertura y cierre de cuentas corporativas de flota en transporte, logística, distribución, construcción y arrendamiento.</li>
+      <li><strong>Canal y alianzas estratégicas:</strong> crecimiento vía distribuidores y socios OEM, y consolidación de las alianzas ya existentes del grupo.</li>
       <li><strong>Dirección del equipo comercial:</strong> integración, desarrollo y gestión del desempeño del equipo de ventas y de la fuerza de prospección.</li>
       <li><strong>Gestión del embudo y del pronóstico:</strong> disciplina de <em>pipeline</em>, <em>forecast</em>, cuota y ciclo de venta, con reporte periódico a la Dirección General.</li>
-      <li><strong>Política de precios y rentabilidad:</strong> definición de precios, márgenes, esquemas de membresía y estrategia de renovación de la base instalada.</li>
+      <li><strong>Precios y rentabilidad:</strong> definición de precios, márgenes, esquemas de membresía y estrategia de renovación de la base instalada.</li>
       <li><strong>Coordinación transversal:</strong> alineación con Marketing B2B, Operaciones, Soporte Técnico y Centro de Atención para asegurar la experiencia del cliente de principio a fin.</li>
-    </ul>
-
-    <div class="sec"><span class="n">03</span><span class="tt">Paquete de compensación</span></div>
-
-    <div class="stats">
-      <div class="stat">
-        <div class="v">$<span class="campo">&nbsp;</span></div>
-        <div class="l">Sueldo mensual bruto</div>
-      </div>
-      <div class="stat">
-        <div class="v">$<span class="campo">&nbsp;</span></div>
-        <div class="l">Variable objetivo mensual<br>por cumplimiento de cuota</div>
-      </div>
-      <div class="stat">
-        <div class="v">$<span class="campo">&nbsp;</span></div>
-        <div class="l">Compensación total objetivo<br>(anualizada)</div>
-      </div>
-    </div>
-
-    <ul>
-      <li><strong>Sueldo base:</strong> pagadero de forma quincenal mediante depósito a cuenta bancaria, sujeto a las retenciones de ley.</li>
-      <li><strong>Compensación variable:</strong> ligada al cumplimiento de los objetivos comerciales que se establezcan en el plan de compensación anual, el cual se te entregará firmado a tu ingreso y se revisará al cierre de cada ejercicio.</li>
-      <li><strong>Revisión salarial:</strong> conforme a la política institucional de revisión anual, con base en desempeño y resultados del negocio.</li>
     </ul>
 
   </div>
 
   <footer class="pie">
-    <span class="conf">Documento confidencial</span>
-    <span>Telematics Advance · LDR Solutions · telematicsadvance.com.mx</span>
-    <span class="fol">Página 1 de 2</span>
+    <span class="iso"><img src="data:image/png;base64,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" alt=""> Telematics Advance · LDR Solutions</span>
+    <span class="conf">Confidencial</span>
+    <span>telematicsadvance.com.mx · Página 1 de 3</span>
   </footer>
 </div>
 
 
-<!-- ══════════════════ HOJA 2 ══════════════════ -->
+<!-- ═══════════════ HOJA 2 ═══════════════ -->
 <div class="hoja">
 
-  <header class="membrete">
+  <header class="banda">
     <div class="marca">
-      <div class="logo">
-        <svg width="27" height="27" viewBox="0 0 24 24">
-          <rect x="1" y="3" width="15" height="13" rx="1"/>
-          <path d="M16 8h4l3 4v4h-7V8z"/>
-          <circle cx="5.5" cy="18.5" r="2.5"/>
-          <circle cx="18.5" cy="18.5" r="2.5"/>
-        </svg>
-      </div>
-      <div>
-        <div class="wm">ADVANCE</div>
-        <div class="sub">Telematics Advance · LDR Solutions</div>
-      </div>
+      <img src="data:image/png;base64,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" alt="Advance">
+      <div class="div"></div>
+      <div class="ue">Telemática e <b>IoT vehicular</b><br>LDR Solutions</div>
     </div>
-    <div class="doc-tag">
-      <span class="tipo">Carta Oferta</span>
-      <div class="meta">
-        Joana Orozco Hinostroza<br>
-        Dirección Comercial · Advance<br>
-        Confidencial
-      </div>
-    </div>
+    <span class="tipo">Carta Oferta</span>
   </header>
+  <div class="filete"></div>
 
   <div class="cuerpo">
 
-    <div class="sec" style="margin-top:0"><span class="n">04</span><span class="tt">Prestaciones</span></div>
+    <div class="sec" style="margin-top:2px"><span class="n">03</span><span class="tt">Paquete de compensación</span></div>
+
+    <div class="cifras">
+      <div class="cifra"><div class="v">$<span class="campo">&nbsp;</span></div><div class="l">Sueldo mensual bruto</div></div>
+      <div class="cifra"><div class="v">$<span class="campo">&nbsp;</span></div><div class="l">Variable objetivo mensual</div></div>
+      <div class="cifra"><div class="v">$<span class="campo">&nbsp;</span></div><div class="l">Total objetivo anual</div></div>
+    </div>
+
+    <ul>
+      <li><strong>Sueldo base:</strong> pagadero de forma quincenal por depósito a cuenta bancaria, sujeto a las retenciones de ley.</li>
+      <li><strong>Compensación variable:</strong> ligada al cumplimiento de los objetivos del plan de compensación anual, que se te entregará firmado a tu ingreso y se revisará al cierre de cada ejercicio.</li>
+      <li><strong>Revisión salarial:</strong> conforme a la política institucional de revisión anual, con base en desempeño y resultados del negocio.</li>
+    </ul>
+
+    <div class="sec"><span class="n">04</span><span class="tt">Prestaciones</span></div>
 
     <p>Desde tu fecha de ingreso quedarás inscrita ante el Instituto Mexicano del Seguro Social y gozarás de
     la totalidad de las prestaciones que establece la Ley Federal del Trabajo:</p>
@@ -341,32 +301,55 @@ ul.chk li::before{
     <ul>
       <li><strong>Seguridad social:</strong> alta ante el IMSS, INFONAVIT y SAR desde el primer día.</li>
       <li><strong>Aguinaldo:</strong> 15 días de salario, pagaderos antes del 20 de diciembre y proporcionales al tiempo laborado.</li>
-      <li><strong>Vacaciones:</strong> 12 días hábiles al cumplir el primer año de servicio, con incremento progresivo conforme a la Ley.</li>
+      <li><strong>Vacaciones:</strong> 12 días hábiles al cumplir el primer año, con incremento progresivo conforme a la Ley.</li>
       <li><strong>Prima vacacional:</strong> 25% sobre los días de vacaciones que te correspondan.</li>
       <li><strong>Participación de utilidades (PTU):</strong> conforme a la Ley y a los resultados del ejercicio fiscal.</li>
-      <li><strong>Prestaciones superiores:</strong> <span class="campo" style="min-width:230px">&nbsp;</span></li>
+      <li><strong>Prestaciones superiores:</strong> <span class="campo" style="min-width:215px">&nbsp;</span></li>
     </ul>
 
     <div class="nota">
-      <b>Nota.</b> Las prestaciones superiores a la ley que en su caso apliquen a nivel directivo —seguro de gastos
-      médicos mayores, seguro de vida, fondo de ahorro y vales de despensa— se confirmarán por escrito por parte
-      de Recursos Humanos junto con el detalle de coberturas y periodos de espera.
+      <b>Nota.</b> Las prestaciones superiores a la ley que apliquen a nivel directivo —seguro de gastos médicos
+      mayores, seguro de vida, fondo de ahorro y vales de despensa— se confirmarán por escrito por Recursos
+      Humanos junto con el detalle de coberturas y periodos de espera.
     </div>
 
     <div class="sec"><span class="n">05</span><span class="tt">Condiciones generales</span></div>
 
     <ul>
-      <li><strong>Jornada:</strong> de lunes a viernes, de 9:00 a 18:00 horas, bajo el esquema híbrido vigente en la organización, con la flexibilidad propia de una posición directiva.</li>
-      <li><strong>Viajes:</strong> la posición requiere disponibilidad para viajar dentro del territorio nacional para la atención de clientes, distribuidores y eventos de la industria.</li>
-      <li><strong>Herramientas de trabajo:</strong> equipo de cómputo portátil, línea telefónica corporativa, tarjetas de presentación y acceso a las plataformas comerciales y de telemetría de la empresa.</li>
-      <li><strong>Relación laboral:</strong> contrato individual de trabajo por tiempo indeterminado, sujeto a las disposiciones de la Ley Federal del Trabajo.</li>
-      <li><strong>Confidencialidad:</strong> a tu ingreso firmarás el convenio de confidencialidad y protección de datos, así como el código de ética de la organización.</li>
-      <li><strong>Exclusividad:</strong> la posición es de dedicación exclusiva y no podrá desempeñarse simultáneamente con actividades que representen conflicto de interés con el giro de la empresa.</li>
+      <li><strong>Jornada:</strong> de lunes a viernes, de 9:00 a 18:00 horas, bajo el esquema híbrido vigente, con la flexibilidad propia de una posición directiva.</li>
+      <li><strong>Viajes:</strong> disponibilidad para viajar dentro del territorio nacional para atención de clientes, distribuidores y eventos de la industria.</li>
+      <li><strong>Herramientas de trabajo:</strong> equipo de cómputo portátil, línea telefónica corporativa, tarjetas de presentación y acceso a las plataformas comerciales y de telemetría.</li>
+      <li><strong>Relación laboral:</strong> contrato individual de trabajo por tiempo indeterminado, sujeto a la Ley Federal del Trabajo.</li>
+      <li><strong>Confidencialidad:</strong> a tu ingreso firmarás el convenio de confidencialidad y protección de datos, así como el código de ética.</li>
+      <li><strong>Exclusividad:</strong> la posición es de dedicación exclusiva y no podrá desempeñarse con actividades que representen conflicto de interés con el giro de la empresa.</li>
     </ul>
 
-    <div class="sec"><span class="n">06</span><span class="tt">Documentación para el alta</span></div>
+  </div>
 
-    <p>Para formalizar tu contratación, Recursos Humanos te solicitará la siguiente documentación:</p>
+  <footer class="pie">
+    <span class="iso"><img src="data:image/png;base64,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" alt=""> Telematics Advance · LDR Solutions</span>
+    <span class="conf">Confidencial</span>
+    <span>telematicsadvance.com.mx · Página 2 de 3</span>
+  </footer>
+</div>
+
+
+<!-- ═══════════════ HOJA 3 ═══════════════ -->
+<div class="hoja">
+
+  <header class="banda">
+    <div class="marca">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAATwAAAB0CAYAAAAYeY6zAAAACXBIWXMAAAsSAAALEgHS3X78AAAL10lEQVR4nO3d63XbOBoG4Dd79r/VgbUV2FOBORVEU0G4FYxTQZgKVlvBMBWMU8HQFaxcwdAdSBVwf0A8Bj6CIMCLeMH7nMMTMyJBiJdPAAiCn6qqAhFRDP4xdwaIiG6FAY+IosGAR0TRYMAjomgw4BFRNBjwiCgaDHhEFA0GPCKKBgMeEUWDAY+IosGAR0TRYMAjomgw4BFRNBjwiCgaDHhEFA0GPCKKBgMeEUWDAY+IosGAR0TRYMAjomgw4BFRNBjwiCgaDHhEFI1/zp2BFsl12qISQHH9l4huaGkBLwPwDOBu5nzcwivUdz3NnRGiWHyqqmruPADADqrU8zBzPm7tAhX08pnzQRSFpQS8FwCf587ETC5Q1XeW9IgmtoSbFgfEG+wAVX0/zp0JohgsIeA9z52BBXgC8Dh3Joi2bu6At4O62EmVdIloQnMHPJZqPnBfEE1s7oBHH3ZzZ4Bo6xjwiCgaDHhEFA0GPCKKxtIeLevyfe4MBEoB3M+dCSJS1hbwsrkzECgBAx7RYrBKS0TRYMAjomgw4BFRNBjwiCgaDHhEFI213aVdxOB9RLROLOERUTQY8IgoGmur0hKRv+Q67a8ToN6WV0K9ViG61wqwhBe3HKpdtAJwRvgQVZm2ftdUQl1kz/i4+NrsLOv3GT5rL9LwucBfYO6TPmTeix5pZCINX7vrumcAfwH4BuAL1EC7T9e/vwH4H9QxyRxpJfA/vrapCMj3TTDgxWsHdfLX7jDtqMv3UO8u+Q+Av6GC7b5l2TOAn+L/+uRNrpN3LL+H+X6VO6jnoYd6wm1eZXCACmLf4Peq0/vrsidEMgBt7AHvDcBvAH7F+gYmGMp2Ad7y/SJf4L7QcjHfJ+ClHWlKtu8v0+grQ3fJdogUwJ+wB7oL1HuQX1vWfYAqjW0+6MXchvcKVWSvFVC/jn/MkJc5pJb/e4DaJ0XPNF0/Ggma7y+5u24rQbO6+QJ1odYX8GeoUqlvNXMP8z3HPz3WTS3/93RNq/Tcbpv67XRTlKJT2M/bH9dtyn17gAru+vGoS/iuav8rws6NMmDZ26iqas4pqeZxrqpq35KnfKY8FS35mWI6OPKRB6STiXW7lt9Z1qkqdTweLcvLY/EckLejWPfQsXw60j6BIx2ffITu20fLNk6VfX/K6Vlbx7Zv5fWZBe6HxU2xVmmPaP/1eYYqWWyZXnV7g9le9gXTvV/jDFW1+wXmPm57N6/8vzRgW3pJ6gJVYnTR98kr1H7R0+q7T2Q1Mh+Qlo3cR2/wf7H7EcC/oZp0ong3cowB7x3ug3vu+Hzt9jCrMkc0g0E6cR5OUBelHvSeYDYx1Mu9a/MP8GsHe4Q5DmHusbxe/c1hngNDbugUUFVLPa2sZ1pSAvNYXqDyGXJ3OccC76ZOJcaAl6H7hMhgXmhbopdk6pJPDjP43OLmxQnNC9+23VzM+wQemY5Mw7X85bp83YbYlmYIWWv4Hc3g3kcq5l01F0J8Ae8V3Sd/7ZZ3LG9lB/MiecFH8M+1/7/HOBdklyPMH5b6xoQuF/OpR7p6UHyDu3onu+fU2zvDLPk+oP9dzDPswWkoGfy3XDMZRWwBLwtY9gXtt/HX6gCz20Le8jcwfbW2JqvTiZgvYR6Hrmqt6zvapGJeDxpy3SE/gi8w20ofMKxqm8D8nj53oaMXU8D7gfC2iq2V8vTv8w5zf5xgNtRPefNCJwOerRSVi3lXtTa0s7G8gVNq8wXMEuiQmxf1tvSq7Tf075sn1yt6phO6zcRzWmSfvlgC3gX9fk1PMBuc1yyB2TDvc1f0FgG/FPO2gOJ7U0VWT7tKPQeYNze69snQp1FKNM/DvGdaezHvc1d2qC9Qj6v5TIusXscS8FyNuQe426u20k0lFfO5ZZlb360FmsfFVjI4w/zhaavWhpbuUu3vtq4r8v+G/ggcYVbRb/XYGSGOgOfqhrK7fpY71t9CNxVZ8vkBe8lHBpZ7TPt8bQifYBzS924P87lZ/QaOrkSz7S1xpOsjFfMZbtN8EL0YAl6G9mrNM9RFfQ/3r2yGdXdTkd/NFQhyMZ+OmpMmWaJrq5rJbiKp+HwHM4DlHduV+8T1oybTktsOVcJ8DO/Oso0l+gHVSdlnWmSpdesBz9UNZQfzoGRw/8ou8gB6SrW/3+EOeAWaXUX2o+fogwx4pWPZXPv7XqybOpa10Zd/h7sNTAbbMW7oZDBvEn1GWGla5jcZmB8fJdT54TPdok0x2NYDXub47Ajztv4d3EFtrd1UUpgN8/foHsfs3kxi0lKevMgLx7K5mE9b/u7qe5fCPPY++0SOQpJiOFsp0zeQyu+3yLuiS7PlgOfqhvIIs02r1tVNYI2lvHQhadg8wqyGdpW0Tmh2EwGaI6PkHdsd4ziOkUYB4L/a/D38exOUaJYQ9yPkadO2GvC6uqG42mtcn62tm8oezSGZ+pji5sUOzcAk523041NXa9OAdB5hBse+xnoaJYMZxEMeO8staZHDVsfDc3VDSeAOAp/hHhPuGc3e/EuVifnv8O+g+gg1OnEtRfeII75213zogecCv7vhL5Z86cG4q++dLJl9hX97UwJVC9C3XXiu2+Z8Tecv7f+O8NvXOdQxrs/FL9f1Qo5T3ZadBayzXjOPTyXH2xpDWalx19q2WXqkUTjWt41VNoaubYZOu0qNM1c790hDX7+qmmMIyv3ge8xtx8B3nDhc95X+vXRpxz7RlYH7Q+7TqrKfa7rMM+0XsZ7cTtt6z5b1koDvU2/3ZPkuSc/vsthpi1XaDO2/8CmaDfI2T3C3W2VYfjcVWQrtUzrLxXzfdqvH67oFVElGHoOvCMufni/9O17grs6GdM+xOVvWSQPTaJOiOUagjyPMfoJ3UPs4g/sGyB7qeNRtqA9QtaJN9wf8VFUhL0QaXQKzKD+UHLZdt4M6oPICaavOlHCfzAeodwiMxZX3PkqYgeUXhHcV2EO9cKd2gXlBZDCreH18RXjHbtuxBFT7aupYr4S5T/6F8OGUHqHe+FV7R/NmgX5RfYd/ddF1Tn1yrGdrIgA+Ol8X+Piee6jzzHbTTu6/BMOvz1+xpPH2Zi5iyiLzUK6ifGZZPqQaZZuKEfNeDMyLa7+WA9I6ibRS7TPbPvVVVv5VL9uUW9J0DWsuh7U/Ddh2KdKS55EuC0y77ZzqWk+vnvZhy6c8j/oYcoxHn7ZUpXV1Q9mjWRJ5xfBG+KV2U0nF/JBH4+S6Mu1Qb1DDiu8x7JdfHruuLi0hT1Z0GXufyLT6PLt9hiohfg1c/x3qzX1Zj22uzlbu0nZ1Q7F9Nkawqrup2KoHcyphPrqUD0jrBe39u4qAdE7XqRyQF90LzO/YlZdCLDPkxy6Hu60rJF9SCRX0+nYkrp8NT69TWxec+imkvCMvQ19fWg5cf1RbacNztZPYttHV1hOirT0p1NhteES1RPv7jIU+9nULWyjhdb2UJxPzfcfGa3O+bn9o4z3RVIq5M7AUW2jDy9DeDeUA+8uf/0b3s5Nycj1pcMTyu6kQRW/tAa/rpTxDGqZD0jojkkZfojVbe8DLOj7z6WTsq+vB7hzrHE2FKBprDniubihyrLuxPMN9dy6bYJtENJK1BjyfbihTPNzf9db4AusaTYUoKmsNeK7RUPZQQ+xM5Xe4xx3LsI2X/hBtzhoDXlc3lDFvVLTJHZ+VN8oDEQVaY8DL0N4NJYE5gu5UnuDuJMxuKkQLtJUnLbaAT1oQTWyNJTwiol4Y8IgoGgx4RBQNBjwiisbcAc/1dqnYlHNngGjr5g54J7CTbq2YOwNEWzd3wAPGe9fpmtUvWyGiCS0h4GVgKe8IVu+JJjd3x+NaCuCPuTMxkzf0f38BEQVYQgkPUM+m/ob4Sno/wacriG5mKSW8Wj2O3QHtb1tauwvUDYojeKOC6KaWFvCIiCazlCotEdHkGPCIKBoMeEQUDQY8IooGAx4RRYMBj4iiwYBHRNFgwCOiaDDgEVE0GPCIKBoMeEQUDQY8IooGAx4RRYMBj4iiwYBHRNFgwCOiaDDgEVE0GPCIKBoMeEQUDQY8IorG/wFHfcLZS/JnngAAAABJRU5ErkJggg==" alt="Advance">
+      <div class="div"></div>
+      <div class="ue">Telemática e <b>IoT vehicular</b><br>LDR Solutions</div>
+    </div>
+    <span class="tipo">Carta Oferta</span>
+  </header>
+  <div class="filete"></div>
+
+  <div class="cuerpo">
+
+    <div class="sec" style="margin-top:2px"><span class="n">06</span><span class="tt">Documentación para el alta</span></div>
 
     <ul class="chk">
       <li>Acta de nacimiento e identificación oficial vigente (INE o pasaporte).</li>
@@ -374,19 +357,18 @@ ul.chk li::before{
       <li>Comprobante de domicilio con antigüedad no mayor a tres meses.</li>
       <li>Comprobante del último grado de estudios.</li>
       <li>Estado de cuenta bancario para depósito de nómina (CLABE).</li>
-      <li>Dos referencias laborales verificables y carta de no antecedentes penales, en su caso.</li>
+      <li>Dos referencias laborales verificables.</li>
     </ul>
 
     <div class="sec"><span class="n">07</span><span class="tt">Vigencia de la oferta</span></div>
 
-    <p>La presente oferta tiene una vigencia de <span class="campo" style="min-width:52px">&nbsp;</span> días naturales
-    contados a partir de su fecha de emisión y está sujeta a la validación satisfactoria de tus referencias
-    laborales y de la documentación señalada en el numeral 06. Este documento no constituye un contrato
-    individual de trabajo; sus términos se formalizarán en el contrato correspondiente a tu ingreso.</p>
+    <p>La presente oferta tiene una vigencia de <span class="campo" style="min-width:46px">&nbsp;</span> días
+    naturales a partir de su fecha de emisión y está sujeta a la validación satisfactoria de tus referencias
+    laborales y de la documentación del numeral 06. Este documento no constituye un contrato individual de
+    trabajo; sus términos se formalizarán en el contrato correspondiente a tu ingreso.</p>
 
-    <p>Joana, confiamos plenamente en que tu liderazgo y tu experiencia serán determinantes para consolidar
-    a Advance como el referente de telemetría e IoT vehicular en México. Será un gusto darte la bienvenida
-    al equipo.</p>
+    <p>Joana, confiamos en que tu liderazgo y tu experiencia serán determinantes para consolidar a Advance
+    como el referente de telemetría e IoT vehicular en México. Será un gusto darte la bienvenida al equipo.</p>
 
     <div class="firmas">
       <div class="firma">
@@ -402,10 +384,10 @@ ul.chk li::before{
     </div>
 
     <div class="acuse">
-      <div class="tt">Acuse de conformidad</div>
+      <span class="tt">Acuse de conformidad</span>
       <p>Manifiesto haber leído y comprendido en su totalidad los términos descritos en la presente carta oferta
-      y expreso mi <strong>aceptación</strong> a los mismos, comprometiéndome a presentarme a laborar en la fecha
-      de ingreso convenida.</p>
+      y expreso mi <strong>aceptación</strong> a los mismos, comprometiéndome a presentarme a laborar en la
+      fecha de ingreso convenida.</p>
       <div class="acuse-firma">
         <div class="firma">
           <div class="ln"></div>
@@ -423,9 +405,9 @@ ul.chk li::before{
   </div>
 
   <footer class="pie">
-    <span class="conf">Documento confidencial</span>
-    <span>Telematics Advance · LDR Solutions · telematicsadvance.com.mx</span>
-    <span class="fol">Página 2 de 2</span>
+    <span class="iso"><img src="data:image/png;base64,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" alt=""> Telematics Advance · LDR Solutions</span>
+    <span class="conf">Confidencial</span>
+    <span>telematicsadvance.com.mx · Página 3 de 3</span>
   </footer>
 </div>
 
