@@ -26,3 +26,16 @@
   from = "/plantilla"
   to = "/index.html"
   status = 200
+
+# Liga corta de la presentación comercial para JET VAN
+[[redirects]]
+  from = "/jetvan"
+  to = "/presentaciones/jetvan/index.html"
+  status = 200
+
+# Los briefings internos NO se publican, aunque vivan en el repo.
+[[redirects]]
+  from = "/presentaciones/*/BRIEFING-INTERNO.md"
+  to = "/index.html"
+  status = 404
+  force = true
