@@ -143,7 +143,60 @@ por anuncio, lenguaje de calle, precio siempre visible.
 
 ---
 
-## 5. Plan de arranque (primeros 90 días)
+## 5. El precio correcto
+
+### Los tres números que delimitan tu precio
+
+| Referencia | Valor | Qué significa para ti |
+|---|---|---|
+| **Piso (tus costos)** | Equipo dual 4G tipo JC400: ~$1,600–2,300 MXN puesto en México (mayoreo) + instalación ~$300–450 + costo recurrente ~$130–200/mes (SIM de datos con video + plataforma + soporte) | Debajo de esto pierdes dinero; el video consume muchos más datos que un GPS solo — no lo subestimes |
+| **Referencia (GPS local)** | Mensualidades de $129–$399; instalación ~$500 | Tu mensualidad puede ir **arriba** de este rango medio porque das video, algo que ninguno de ellos incluye |
+| **Techo (AT&T)** | $899/mes con plazo forzoso de 36 meses | Todo lo que cobres muy por debajo de $899 *con video* se percibe como ganga |
+
+**La posición correcta: 20–40% arriba del GPS local premium y ~65% abajo de AT&T.**
+Eso pone la mensualidad ideal en **$299 MXN/mes** — psicológicamente "menos de $10 al
+día", dentro de lo que un conductor de plataforma absorbe con un viaje, y con video
+incluido donde la competencia de $250–300 solo da un punto en el mapa.
+
+### Estructura recomendada: dos planes (resuelven la barrera de entrada sin romper el "sin plazo forzoso")
+
+| | **Plan Libre** (bandera) | **Plan Conductor / Fácil** |
+|---|---|---|
+| Entrada (equipo + instalación) | **$2,499** (promo de lanzamiento: $1,999) | **$1,499** |
+| Mensualidad | **$299, sin plazo forzoso** | **$349 × 12 meses mínimo**; del mes 13 baja a $299 |
+| Para quién | Familias (pueden pagar entrada; valoran el "sin contrato") | Conductores de plataforma y quien no junta la entrada completa |
+
+- El **Plan Libre** recupera el costo del equipo desde el día uno: cada mensualidad de
+  $299 deja ~$100–170 de margen y el cliente puede irse cuando quiera sin dejarte pérdida.
+- El **Plan Fácil** subsidia $1,000 del equipo y los recupera con los $50 extra
+  mensuales y la permanencia de 12 meses. La permanencia aquí no es abuso: es el
+  financiamiento del equipo, y así se explica ("te financiamos el equipo, por eso son
+  12 meses; si pagas todo de entrada, no hay plazo").
+- **Anual prepagado:** 12 meses al precio de 10 ($2,990) — mejora tu flujo, reduce
+  cancelaciones y da un tercer precio que hace ver barato al mensual.
+
+### Reglas de precio (igual de importantes que el número)
+
+1. **No compitas hacia abajo contra el GPS de $129.** Esa guerra la gana el que no da
+   video ni servicio; tú vendes una categoría distinta. Si un lead solo quiere lo más
+   barato, no es tu cliente.
+2. **Comunica el precio en pesos por día** ("protege tu auto y a los tuyos por menos de
+   $10 al día"), y la entrada como equivalencia ("lo que cuesta una llanta").
+3. **Nunca regales la instalación** — es tu diferenciador. La promo correcta es
+   "instalación **a domicilio** sin costo extra este mes", no "instalación gratis".
+4. **Ancla siempre contra AT&T en el pitch:** "las empresas pagan $899 al mes con
+   contrato de 3 años por esto mismo; tú, $299 y te vas cuando quieras."
+5. Cada cliente vale ~**$7,200 MXN de mensualidades en 2 años** más la entrada: por eso
+   el CAC de hasta 3 mensualidades (~$900) es sano, y por eso pagar $200–300 por un
+   referido es negocio redondo.
+
+> **Antes de publicar precios:** confirma tu costo real por unidad (cotización de
+> mayoreo + importación + SIM). Si tu costo recurrente supera ~$200/mes, sube la
+> mensualidad a $349 en ambos planes antes que recortar servicio.
+
+---
+
+## 6. Plan de arranque (primeros 90 días)
 
 | Semana | Acción |
 |---|---|
@@ -160,7 +213,7 @@ el producto o el servicio postventa no están gustando.
 
 ---
 
-## 6. Fuentes consultadas
+## 7. Fuentes consultadas
 
 - Comparativa de rastreo GPS México 2026 — locatebyteli.com (desde $130 MXN/mes sin contrato)
 - Precios de rastreo satelital en México — zeekgps.com
