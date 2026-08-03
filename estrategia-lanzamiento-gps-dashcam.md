@@ -2,127 +2,165 @@
 
 **Producto:** dispositivo económico que combina rastreo GPS y dashcam (cámara de tablero),
 con instalación profesional **en oficina o a domicilio**.
+**Mercado objetivo: consumo masivo (B2C)** — conductores de plataforma (Uber, DiDi) y
+familias que quieren proteger su auto y a los suyos.
 **Fecha:** agosto 2026 · **Mercado:** México
 
 ---
 
-## 1. El hueco en el mercado (por qué este producto tiene sentido)
+## 1. Los dos segmentos masivos (y qué compra cada uno)
 
-El mercado mexicano hoy está partido en tres bloques, y ninguno cubre bien al cliente
-que quiere *video + GPS* a precio accesible con instalación profesional:
+### A) Conductores de plataforma (Uber, DiDi, inDrive, taxis)
+Su auto **es su herramienta de trabajo**: si se los roban o chocan, se quedan sin ingreso.
+Además viven un riesgo que las familias no tienen: **acusaciones falsas de pasajeros**
+(agresión, cobros indebidos, objetos "perdidos") y asaltos a bordo.
 
-| Bloque | Ejemplos | Precio típico | Debilidad que puedes explotar |
-|---|---|---|---|
-| **Autoinstalables baratos** (Amazon / MercadoLibre) | GPS7000, trackers genéricos 4G | $500–$1,500 MXN el equipo; $0–$200/mes | Sin video, sin instalación oculta, sin soporte local, el cliente se queda solo |
-| **Rastreo GPS local tradicional** | Zeek GPS, Obit, MG Sistemas, Tracknel, CarCity, Rastreator.mx, Locate by TELI, Navego | Instalación ~$500; mensualidad **$129–$399 MXN** | Solo GPS: **no ofrecen video**, que es lo que da evidencia ante choques, robos y aseguradoras |
-| **Videotelemetría corporativa** | AT&T Flotilla Dashcam (con Geotab/Lytx), Webfleet, Samsara, CCURITY, Tracksolid | AT&T: **$899 MXN/mes con plazo forzoso de 36 meses** | Caro, con contrato largo, pensado para flotas grandes; inaccesible para particulares y micro-flotillas |
+- **Qué compran:** protección del patrimonio-chamba + evidencia en video que los defiende.
+- **Sensibilidad al precio:** alta, pero piensan en *ingreso diario* — el precio debe
+  comunicarse en pesos por día/semana ("te cuesta menos que un viaje corto a la semana").
+- **Dónde están:** grupos de Facebook y WhatsApp de conductores (enormes y muy activos),
+  bases/puntos de espera (aeropuerto, plazas), TikTok.
 
-**Posicionamiento recomendado:** *"Video + GPS en un solo equipo, instalado por
-profesionales, sin plazo forzoso, a una fracción del precio corporativo."*
-El competidor de referencia contra el que anclar precio es AT&T ($899/mes + 36 meses);
-el competidor del que diferenciarse en calidad es el tracker chino autoinstalable.
+### B) Familias — seguridad del auto y de los suyos
+El auto familiar lo usan los hijos, la pareja, se presta; el miedo real es el **robo del
+auto** y **no saber dónde están**.
 
-**Clientes objetivo, en orden de facilidad de venta:**
-1. **Clientes actuales de Advance** (flotas que ya reciben tus informes) — cross-sell, costo de adquisición casi cero.
-2. **Micro-flotillas (2–20 unidades):** repartidores, materialistas, transporte de personal — quieren evidencia de video pero AT&T les queda grande.
-3. **Particulares con miedo a robo/choque:** conductores de plataforma (Uber/DiDi), autos financiados, foráneos que viajan por carretera.
+- **Qué compran:** tranquilidad. Ver el auto en el celular, saber que si se lo roban se
+  recupera, y que si hay un choque el video protege a quien iba manejando.
+- **Quién decide:** muchas veces compra el padre/madre para el auto del hijo joven o
+  de la pareja. El anuncio debe hablarle al que paga, no solo al que maneja.
+- **Dónde están:** Facebook/Instagram (el comprador familiar), Google (busca "gps para
+  auto" tras un robo cercano), recomendación de boca en boca.
+
+> Las **flotillas y clientes actuales de Advance** dejan de ser el foco del lanzamiento,
+> pero siguen siendo un canal lateral barato: cada flota tiene decenas de operadores
+> que también tienen auto propio y familia — ofréceles precio de empleado.
 
 ---
 
-## 2. Canales de comunicación (en orden de prioridad)
+## 2. La competencia vista desde el cliente masivo
+
+| Bloque | Ejemplos | Precio típico | Por qué les ganas |
+|---|---|---|---|
+| **Autoinstalables baratos** (Amazon / MercadoLibre) | GPS7000, trackers genéricos 4G | $500–$1,500 MXN equipo; $0–$200/mes | Sin video, sin instalación oculta (el ladrón lo encuentra), sin nadie que responda por WhatsApp cuando algo falla |
+| **Rastreo GPS local tradicional** | Zeek GPS, Obit, MG Sistemas, Tracknel, CarCity, Rastreator.mx, Locate by TELI | Instalación ~$500; mensualidad $129–$399 MXN | Solo GPS, **sin video**: no defienden al conductor en un choque ni ante una acusación falsa |
+| **Videotelemetría corporativa** | AT&T Flotilla Dashcam (Geotab/Lytx), Webfleet, Samsara | AT&T: $899 MXN/mes, plazo forzoso 36 meses | Ni siquiera atienden al particular; sirven como **precio ancla**: "lo que las empresas pagan a $899, tú lo tienes desde $X" |
+
+**Posicionamiento:** *"El guardián de tu auto: GPS + cámara en un solo equipo, instalado
+por profesionales en tu casa o en nuestra oficina, sin plazo forzoso."*
+Nadie en el bloque económico ofrece la combinación **video + GPS + instalación a
+domicilio + soporte por WhatsApp**; ése es el paquete a defender.
+
+---
+
+## 3. Canales de comunicación para las masas (en orden de prioridad)
 
 ### Canal de cierre: WhatsApp Business (todo apunta aquí)
-En México la venta de servicios locales para auto se cierra por WhatsApp, no por
-formularios ni carritos. Configura **WhatsApp Business** con catálogo, respuestas
-rápidas y mensaje de bienvenida, y haz que *todos* los demás canales terminen en un
-clic a WhatsApp. Ahí mismo se agenda la cita de instalación (oficina o domicilio).
+La venta masiva local en México se cierra por WhatsApp. Catálogo, respuestas rápidas,
+y agenda de instalación (oficina o domicilio) en la misma conversación. Todos los
+canales de abajo terminan en un clic a WhatsApp.
 
-### 1) Meta Ads (Facebook/Instagram) con clic a WhatsApp — canal principal de demanda
-- Campañas geolocalizadas al radio de cobertura de tu oficina/instaladores.
-- **El creativo que convierte es video real de dashcam**: un choque donde el video salvó
-  al cliente, un intento de robo, la app mostrando el auto en vivo. Nada vende una
-  dashcam mejor que su propio footage.
-- Formato: video 15–30 s + botón "Enviar mensaje por WhatsApp". Presupuesto inicial
-  sugerido: $150–$300 MXN/día por ciudad, optimizando a conversaciones iniciadas.
-- **Facebook Marketplace** (publicación orgánica del paquete con precio) genera leads
-  gratis en este rubro; atiéndelo con las mismas plantillas de WhatsApp.
+### 1) Meta Ads (Facebook/Instagram) con clic a WhatsApp — el canal masivo por excelencia
+- Dos campañas separadas, una por segmento, porque el mensaje es distinto:
+  - **Conductores:** segmentar por intereses (Uber Driver, DiDi Conductor, taxi) y por
+    comportamiento; creativo = video real de dashcam defendiendo a un conductor.
+  - **Familias:** segmentar por zona + edad 30–55; creativo = la app mostrando el auto
+    en vivo + historia de robo recuperado, con el mensaje "sabes dónde están los tuyos".
+- Presupuesto inicial: $150–$300 MXN/día por ciudad y por campaña, optimizando a
+  conversaciones iniciadas.
+- **Facebook Marketplace**: publicar el paquete con precio; en productos de auto genera
+  leads orgánicos constantes y gratis.
 
-### 2) Google — captura de la demanda con intención
-- **Google Business Profile** de la oficina (categoría: instalación de GPS/alarmas para
-  auto) + pedir reseña a cada cliente instalado. Para "gps para autos + ciudad" el mapa
-  local es lo primero que aparece.
-- **Google Ads de búsqueda** en palabras de intención: "gps para auto precio",
-  "dashcam para auto instalación", "rastreo satelital + ciudad". Menos volumen que
-  Meta, pero el lead llega listo para comprar.
+### 2) Grupos de conductores de plataforma — el atajo al segmento A
+- Grupos de Facebook y WhatsApp de conductores Uber/DiDi por ciudad: son masivos,
+  activos y desconfiados de la publicidad — entra con **prueba social**, no con anuncio:
+  instala gratis o a mitad de precio a 2–3 administradores/líderes de grupo a cambio
+  de reseña en video.
+- **Precio de grupo / convenio**: "presentando tu perfil de conductor activo, X% de
+  descuento". Volantes/QR en bases y puntos de espera (aeropuerto, centrales).
+- El argumento estrella con ellos: **"el video te defiende de acusaciones falsas de
+  pasajeros"** — es un dolor que todos han vivido o temen, y nadie más se los resuelve.
 
-### 3) TikTok / Reels orgánico — combustible barato de marca
-El contenido de dashcam es viral por naturaleza (choques, robos frustrados,
-conductores imprudentes). Publicar 3–4 clips/semana con marca de agua y CTA a
-WhatsApp crea demanda sin pauta. Los mejores clips se reciclan como anuncios en Meta.
+### 3) TikTok / Reels orgánico — demanda gratis con contenido dashcam
+El contenido de dashcam es viral por naturaleza: choques, intentos de robo, pasajeros
+conflictivos, "así se ve cuando intentan robarte el auto". 3–4 clips/semana con marca
+de agua y CTA a WhatsApp. Este canal le pega a los dos segmentos y los mejores clips
+se reciclan como anuncios pagados en Meta.
 
-### 4) Alianzas locales (B2B2C) — volumen sin pauta
-- **Agentes y brokers de seguros:** el video de dashcam acelera siniestros y deslindes;
-  ofréceles comisión por referido.
-- **Talleres mecánicos y autolavados premium:** exhibidor + comisión.
-- **Lotes de seminuevos y financieras:** paquete GPS+dashcam al momento de la venta del auto.
-- **Grupos de conductores de plataforma (Uber/DiDi/taxis):** precio de grupo; el video
-  los protege de acusaciones falsas — argumento muy fuerte para ellos.
+### 4) Google — capturar al que ya busca
+- **Google Business Profile** de la oficina + reseña de cada cliente instalado (la
+  familia investiga y compara antes de comprar; las reseñas deciden).
+- **Google Ads de búsqueda**: "gps para auto precio", "gps para mi carro", "dashcam
+  para uber", "rastreo satelital + ciudad". El lead llega listo para comprar.
 
-### 5) Flotillas: venta directa + base instalada de Advance
-- Correo/llamada a los clientes actuales de informes: *"tu informe ya te dice quién
-  maneja mal; la dashcam te enseña el video del porqué"*. Es la extensión natural de la
-  sección de Seguridad Vial del informe.
-- LinkedIn y visitas a parques industriales para prospectar micro-flotillas nuevas.
+### 5) Referidos — el motor de crecimiento en mercado masivo
+En consumo masivo mexicano el boca en boca vende más que la pauta. Desde el día uno:
+- **"Recomienda y gana":** un mes gratis (o $200) por cada amigo instalado; al amigo,
+  descuento en la instalación. Ambos lados deben ganar.
+- Pedir la recomendación **en el momento de la instalación**, cuando el cliente está
+  más contento, con un QR/tarjeta que lleve a WhatsApp.
+- Los conductores de plataforma son multiplicadores naturales: conviven a diario con
+  decenas de colegas.
 
-**Qué NO priorizar al inicio:** espectaculares, radio, volanteo genérico y vender el
-equipo suelto en MercadoLibre (ahí compites contra el tracker chino por precio y
-regalas tu diferenciador, que es la instalación y el servicio).
+### 6) Alianzas de barrio (soporte, no protagonista)
+Talleres, autolavados, lotes de seminuevos y agentes de seguros con exhibidor y
+comisión. Suman goteo constante de leads sin pauta.
 
----
-
-## 3. Cómo comunicarlo (mensaje)
-
-**Regla de oro: no vendas el aparato, vende el resultado.** "GPS 4G con cámara dual
-1080p" no mueve a nadie; esto sí:
-
-- **Seguridad / robo:** "Si te lo roban, lo ves en tu celular y lo recuperas."
-- **Evidencia:** "Tu testigo en video: en un choque, el video decide quién tuvo la culpa."
-- **Protección legal:** "Evidencia para tu aseguradora y para el Ministerio Público."
-- **Familia:** "Sabes dónde están tu auto y los tuyos, en tiempo real."
-- **Flotillas:** "Ve el video de cada frenazo y cada exceso; baja accidentes y diésel."
-
-**Estructura de la oferta (comunicar siempre como paquete, con precio ancla):**
-> "Equipo GPS + dashcam **instalado** (en nuestra oficina o vamos a donde estés) +
-> app de rastreo. Desde $X de instalación y $X/mes. **Sin plazo forzoso.**
-> Lo mismo que a las flotas grandes les cuesta $899 al mes con contrato de 3 años."
-
-**La instalación es tu diferenciador — dilo explícito:**
-- "Instalación profesional y oculta en 45–60 min. Ven a nuestra oficina o **vamos a tu
-  casa o trabajo**." (El autoinstalable no ofrece esto; AT&T no atiende a particulares así.)
-- Garantía sobre la instalación y soporte por WhatsApp en español.
-
-**Confianza (crítico en un rubro con mucho proveedor informal):**
-- Reseñas de Google, video del proceso de instalación, factura CFDI, años de Advance
-  operando flotas, casos reales (con permiso del cliente).
+**Qué NO priorizar:** espectaculares, radio, volanteo genérico, y vender el equipo
+suelto en MercadoLibre (ahí compites por precio contra el tracker chino y regalas tu
+diferenciador: la instalación y el servicio).
 
 ---
 
-## 4. Plan de arranque sugerido (primeros 90 días)
+## 4. Cómo comunicarlo (mensaje por segmento)
+
+**Regla de oro: no vendas el aparato, vende el resultado.** Y en masivo: una sola idea
+por anuncio, lenguaje de calle, precio siempre visible.
+
+### Mensajes para conductores de plataforma
+- "Tu auto es tu chamba. Si te lo roban, lo ves en tu celular y lo recuperas."
+- "¿Pasajero que te acusa de algo que no hiciste? **El video habla por ti.**"
+- "En un choque, el video decide quién tuvo la culpa — no el que grita más fuerte."
+- Precio en su idioma: "Protege tu herramienta de trabajo por menos de $X al día."
+
+### Mensajes para familias
+- "Sabes dónde está tu auto — y los tuyos — en todo momento, desde tu celular."
+- "¿Tu hijo ya maneja? Tú lo acompañas desde tu pantalla."
+- "Si te lo roban, no lo perdiste: lo ves en vivo y lo recuperas."
+- "Si chocan a tu familia, el video los protege ante la aseguradora y el MP."
+
+### La oferta (siempre como paquete, con ancla)
+> "GPS + cámara **instalados** (ven a nuestra oficina o **vamos a tu casa**) + app en tu
+> celular. $X de instalación y $X/mes. **Sin plazo forzoso.** Lo que a las empresas les
+> cuesta $899 al mes con contrato de 3 años, tú lo tienes desde $X."
+
+### Confianza (crítico para vender a las masas)
+- Reseñas de Google y testimonios en video de clientes reales (un conductor de DiDi y
+  una mamá — uno por segmento).
+- Video del proceso de instalación ("así lo escondemos, así de fácil es tu app").
+- Factura CFDI, garantía por escrito, años de Advance operando rastreo de flotas
+  ("la misma tecnología que usan las empresas de transporte, ahora para tu auto").
+
+---
+
+## 5. Plan de arranque (primeros 90 días)
 
 | Semana | Acción |
 |---|---|
-| 1–2 | WhatsApp Business + Google Business Profile listos; definir paquete y precio; grabar 10 clips de dashcam propios |
-| 3–4 | Lanzar Meta Ads clic-a-WhatsApp en la ciudad base + publicar en Marketplace; ofrecer el producto a 10 clientes actuales de Advance (precio de lanzamiento a cambio de testimonio) |
-| 5–8 | Google Ads de búsqueda; firmar 3–5 alianzas (agente de seguros, taller, lote); TikTok 3 clips/semana |
-| 9–12 | Medir costo por instalación por canal; duplicar presupuesto en el canal ganador; armar paquete micro-flotilla (5+ unidades) |
+| 1–2 | WhatsApp Business + Google Business Profile listos; definir paquete y precio por segmento; grabar 10 clips de dashcam e instalar a 3–5 "clientes semilla" (incluye líderes de grupos de conductores) a cambio de testimonio |
+| 3–4 | Lanzar las 2 campañas de Meta (conductores / familias) con clic a WhatsApp; publicar en Marketplace; activar programa de referidos desde la primera instalación |
+| 5–8 | Google Ads de búsqueda; entrar a 5–10 grupos de conductores con prueba social; TikTok 3 clips/semana; primeras alianzas de barrio |
+| 9–12 | Medir costo por instalación por canal y por segmento; duplicar presupuesto en el ganador; evaluar convenio formal de descuento con colectivos de conductores |
 
-**Métricas a vigilar:** costo por conversación de WhatsApp, % de conversaciones que
-agendan instalación, costo por instalación (CAC), churn mensual del servicio.
-Regla práctica: el CAC debe recuperarse en ≤3 mensualidades.
+**Métricas:** costo por conversación de WhatsApp, % de conversaciones que agendan
+instalación, costo por instalación (CAC) **por segmento**, % de clientes que llegan por
+referido, churn mensual. Regla práctica: el CAC debe recuperarse en ≤3 mensualidades,
+y en mercado masivo el % de referidos debería crecer mes contra mes — si no crece,
+el producto o el servicio postventa no están gustando.
 
 ---
 
-## 5. Fuentes consultadas
+## 6. Fuentes consultadas
 
 - Comparativa de rastreo GPS México 2026 — locatebyteli.com (desde $130 MXN/mes sin contrato)
 - Precios de rastreo satelital en México — zeekgps.com
