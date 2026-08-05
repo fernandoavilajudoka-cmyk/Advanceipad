@@ -65,9 +65,7 @@ function construir(H, filtro) {
   const desdeExces = meses.find(m => R[m].exces > 0);
   const desdeDrain = meses.find(m => R[m].drain > 0);
 
-  const fugaDrain = R[cerrado].drainL * DIESEL;
   const fugaIdle = R[cerrado].ralenti * IDLE_LH * DIESEL;
-  const fugaMes = fugaDrain + fugaIdle;
   const ahorroIdle = Math.max(0, (pctIdle(C) - OBJ.ralenti) / (pctIdle(C) || 1)) * fugaIdle;
 
   const delta = (a, b, inv) => {
@@ -81,7 +79,6 @@ function construir(H, filtro) {
   // ── Indicadores contra objetivo (mes cerrado) ──
   const ind = [
     { n: 'Rendimiento de combustible', a: nf(kml(C), 2) + ' km/L', o: OBJ.kml.toFixed(2), br: `${kml(C) >= OBJ.kml ? '+' : ''}${((kml(C) / OBJ.kml - 1) * 100).toFixed(1)}% vs ficha`, e: kml(C) >= OBJ.kml ? 'ok' : 'wr', d: delta(kml(C), kml(P)) },
-    { n: 'Drenajes de diésel', a: nf(C.drain) + ' eventos', o: '0', br: nf(C.drainL) + ' L perdidos', e: 'cr', d: delta(C.drain, P.drain, true) },
     { n: 'Excesos de velocidad', a: nf(C.exces), o: '0', br: nf(C.exces / (C.km / 100), 1) + ' por 100 km', e: 'cr', d: delta(C.exces, P.exces, true) },
     { n: 'Velocidad máxima registrada', a: nf(C.vmax) + ' km/h', o: OBJ.vel + ' km/h', br: `+${nf(C.vmax - OBJ.vel)} km/h`, e: 'cr', d: delta(C.vmax, P.vmax, true) },
     { n: 'Tiempo en ralentí', a: nf(pctIdle(C), 1) + '%', o: OBJ.ralenti + '%', br: `+${nf(pctIdle(C) - OBJ.ralenti, 1)} puntos`, e: pctIdle(C) > OBJ.ralenti ? 'wr' : 'ok', d: delta(pctIdle(C), pctIdle(P), true) },
@@ -104,10 +101,9 @@ function construir(H, filtro) {
     const r = R[m];
     return `<tr><td class="met">${mesLbl(m)}</td><td class="r">${nf(r.activas)}</td><td class="r">${nf(r.km)}</td>
       <td class="r">${nf(r.l)}</td><td class="r act">${nf(kml(r), 2)}</td><td class="r">${nf(pctIdle(r), 1)}%</td>
-      <td class="r">${nf(r.vmax)}</td><td class="r">${r.exces ? nf(r.exces) : '<span class="sd">s/reg</span>'}</td>
-      <td class="r">${r.drain ? nf(r.drain) : '<span class="sd">s/reg</span>'}</td>
-      <td class="r">${r.drainL ? nf(r.drainL) : '—'}</td>
-      <td class="r cr">${r.drainL ? money(Math.round(r.drainL * DIESEL)) : '—'}</td></tr>`;
+      <td class="r">${nf(r.vmax)}</td><td class="r">${nf(r.nocturno / (r.manejo || 1) * 100, 0)}%</td>
+      <td class="r">${r.exces ? nf(r.exces) : '<span class="sd">s/reg</span>'}</td>
+      <td class="r">${nf(r.jammer)}</td></tr>`;
   }).join('');
 
   // ── Matriz unidad × mes ──
@@ -125,6 +121,19 @@ function construir(H, filtro) {
       meses: u.porMes,
     };
   }).sort((a, b) => b.km - a.km);
+
+  // Cuanto combustible de mas queman las unidades por debajo del promedio de la
+  // flota: es dinero recuperable sin cambiar ruta ni equipo, solo emparejando.
+  const flotaKml = kml(C);
+  let litrosBrecha = 0, unidsBrecha = 0, peorKml = Infinity, peorU = '';
+  for (const u of U) {
+    const m = u.meses[cerrado]; if (!m?.l || !m.km) continue;
+    const k = m.km / m.l;
+    if (k < peorKml) { peorKml = k; peorU = u.number; }
+    if (k < flotaKml) { litrosBrecha += m.l - m.km / flotaKml; unidsBrecha++; }
+  }
+  const fugaBrecha = litrosBrecha * DIESEL;
+  const fugaMes = fugaIdle + fugaBrecha;
 
   const celda = (v, tipo) => {
     if (v == null) return '<td class="mz nd">·</td>';
@@ -342,9 +351,9 @@ tbody tr:nth-child(odd) .mz-u{background:#e4f0dd}
   </header>
 
   <div class="leaks">
-    <div class="leak card"><div class="k">Diésel drenado · ${mesLbl(cerrado)}</div><div class="v">${money(Math.round(fugaDrain))}</div>
-      <div class="y">ACUMULADO ${nf(acc.drainL)} L · ${money(Math.round(acc.drainL * DIESEL))}</div>
-      <div class="d">${nf(C.drain)} descargas medidas este mes: <b>${nf(C.drainL)} litros</b>, el ${nf(C.drainL / C.l * 100, 1)}% del combustible. Van <b>${nf(acc.drain)} eventos</b> desde ${mesLbl(desdeDrain)}, sin un solo mes limpio.</div></div>
+    <div class="leak card"><div class="k">Brecha entre unidades · ${mesLbl(cerrado)}</div><div class="v">${money(Math.round(fugaBrecha))}</div>
+      <div class="y">${nf(litrosBrecha)} LITROS DE MÁS EN EL MES</div>
+      <div class="d"><b>${unidsBrecha} unidades</b> rinden por debajo del promedio de la flota (${nf(flotaKml, 2)} km/L). La más baja, ${esc(peorU)}, da <b>${nf(peorKml, 2)} km/L</b>: ${nf((1 - peorKml / flotaKml) * 100, 0)}% peor con el mismo modelo y la misma ruta.</div></div>
     <div class="leak warn card"><div class="k">Combustible en ralentí</div><div class="v">${money(Math.round(fugaIdle))}</div>
       <div class="y">ACUMULADO ${nf(Math.round(acc.ralenti))} H · ${money(Math.round(acc.ralenti * IDLE_LH * DIESEL))}</div>
       <div class="d">${nf(C.ralenti)} horas de motor encendido sin avanzar — <b>${nf(pctIdle(C), 1)}% del tiempo motor</b>. Equivale a ${nf(C.ralenti / 24, 0)} días completos de un camión quemando diésel parado.</div></div>
@@ -356,13 +365,13 @@ tbody tr:nth-child(odd) .mz-u{background:#e4f0dd}
   <div class="total card">
     <div><div class="k">Fuga identificada · ${mesLbl(cerrado)}</div>
       <div class="v">${money(Math.round(fugaMes))} <span style="font-size:.38em;font-weight:600;letter-spacing:0;color:var(--t2)">/ mes</span></div></div>
-    <div class="n">Es el <b style="color:var(--t)">${nf(fugaMes / (C.l * DIESEL) * 100, 1)}% del gasto en diésel</b> del mes. Eliminar el drenaje y llevar el ralentí al ${OBJ.ralenti}% libera del orden de <b style="color:var(--gr2)">${money(Math.round((fugaDrain + ahorroIdle) * 12))} al año</b>, sin comprar una sola unidad ni cambiar de ruta.</div>
+    <div class="n">Es el <b style="color:var(--t)">${nf(fugaMes / (C.l * DIESEL) * 100, 1)}% del gasto en diésel</b> del mes. Emparejar el rendimiento de la cola con el promedio y llevar el ralentí al ${OBJ.ralenti}% libera del orden de <b style="color:var(--gr2)">${money(Math.round((fugaBrecha + ahorroIdle) * 12))} al año</b>, sin comprar una sola unidad ni cambiar de ruta.</div>
   </div>
 
   <div class="acts">
-    <div class="act-c card"><div class="n">DECISIÓN 01</div><div class="t">Auditar el drenaje de diésel</div>
-      <div class="b">Cada una de las ${nf(acc.drain)} descargas del histórico tiene fecha, hora y ubicación. Cruzarlas contra bitácora de carga y ruta identifica el patrón en días. Válvula antisifón en las unidades reincidentes.</div>
-      <div class="g">RECUPERA HASTA ${money(Math.round(fugaDrain * 12))} / AÑO</div></div>
+    <div class="act-c card"><div class="n">DECISIÓN 01</div><div class="t">Emparejar a las unidades rezagadas</div>
+      <div class="b">${unidsBrecha} unidades rinden por debajo del promedio de la flota, con el mismo modelo y rutas comparables: la diferencia es mecánica o de hábito de manejo, no de equipo. Diagnóstico a las ${Math.min(5, unidsBrecha)} más bajas y seguimiento mensual en el desglose de la vista 3.</div>
+      <div class="g">RECUPERA HASTA ${money(Math.round(fugaBrecha * 12))} / AÑO</div></div>
     <div class="act-c card"><div class="n">DECISIÓN 02</div><div class="t">Política de apagado y bono al operador</div>
       <div class="b">Apagar en espera mayor a 5 minutos, con el ahorro medido por unidad y una parte compartida con el operador. El ralentí lleva ${meses.length} meses entre ${nf(Math.min(...meses.map(m => pctIdle(R[m]))), 0)}% y ${nf(Math.max(...meses.map(m => pctIdle(R[m]))), 0)}%: es estructural, no un mal mes.</div>
       <div class="g">RECUPERA ~${money(Math.round(ahorroIdle * 12))} / AÑO AL ${OBJ.ralenti}%</div></div>
@@ -392,7 +401,7 @@ tbody tr:nth-child(odd) .mz-u{background:#e4f0dd}
       <div class="panel-t"><h2>Totales por mes</h2><span>${meses.length} MESES</span></div>
       <div class="scroll"><table>
         <thead><tr><th>Mes</th><th class="r">Unid.</th><th class="r">km</th><th class="r">Litros</th><th class="r">km/L</th>
-          <th class="r">Ralentí</th><th class="r">V.máx</th><th class="r">Excesos</th><th class="r">Drenajes</th><th class="r">Litros</th><th class="r">Pérdida</th></tr></thead>
+          <th class="r">Ralentí</th><th class="r">V.máx</th><th class="r">Nocturna</th><th class="r">Excesos</th><th class="r">Inhibidor</th></tr></thead>
         <tbody>${filasMes}</tbody></table></div>
     </div>
   </div>
@@ -418,7 +427,7 @@ tbody tr:nth-child(odd) .mz-u{background:#e4f0dd}
   </div>
 
   <div class="foot">
-    <b>Cobertura de eventos:</b> los excesos de velocidad se registran desde ${mesLbl(desdeExces)} y los drenajes desde ${mesLbl(desdeDrain)}, cuando se configuraron esas alertas. Un cero en meses previos significa «sin registro», no «sin evento».
+    <b>Cobertura de eventos:</b> los excesos de velocidad se registran desde ${mesLbl(desdeExces)}, cuando se configuró esa alerta. Un cero en meses previos significa «sin registro», no «sin evento».
     Frenada y aceleración bruscas: sin dato — la telemetría instalada no publica acelerómetro ni giroscopio.
     <b>Velocidad máxima:</b> se descartan lecturas por encima de 130 km/h — son picos de GPS de una sola muestra (el 0.3% de los registros), no velocidad sostenida; los tramos de ruta no rebasan 129 km/h.
     Se descartan también saltos de contador físicamente imposibles (mayores a 2,500 km en un día). Analítica potencializada por Advance.
