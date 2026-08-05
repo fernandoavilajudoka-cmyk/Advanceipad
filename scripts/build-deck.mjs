@@ -14,6 +14,9 @@ let CLIENTS = {};
 try { CLIENTS = JSON.parse(readFileSync('clientes.json', 'utf8')); } catch (e) {}
 
 const DIESEL = 25.99;      // $/L
+// Kilometraje minimo para comparar rendimiento entre unidades: por debajo de
+// esto la unidad estuvo parada y su km/L es ruido, no desempeno.
+const MIN_KM_COMPARABLE = 1000;
 const IDLE_LH = 5;         // L/h de motor en ralenti
 const OBJ = { kml: 3.0, ralenti: 15, nocturno: 20, vel: 85 };
 
@@ -126,8 +129,10 @@ function construir(H, filtro) {
   // flota: es dinero recuperable sin cambiar ruta ni equipo, solo emparejando.
   const flotaKml = kml(C);
   let litrosBrecha = 0, unidsBrecha = 0, peorKml = Infinity, peorU = '';
+  let fueraDeMuestra = 0;
   for (const u of U) {
     const m = u.meses[cerrado]; if (!m?.l || !m.km) continue;
+    if (m.km < MIN_KM_COMPARABLE) { fueraDeMuestra++; continue; }
     const k = m.km / m.l;
     if (k < peorKml) { peorKml = k; peorU = u.number; }
     if (k < flotaKml) { litrosBrecha += m.l - m.km / flotaKml; unidsBrecha++; }
@@ -429,6 +434,7 @@ tbody tr:nth-child(odd) .mz-u{background:#e4f0dd}
   <div class="foot">
     <b>Cobertura de eventos:</b> los excesos de velocidad se registran desde ${mesLbl(desdeExces)}, cuando se configuró esa alerta. Un cero en meses previos significa «sin registro», no «sin evento».
     Frenada y aceleración bruscas: sin dato — la telemetría instalada no publica acelerómetro ni giroscopio.
+    <b>Comparación entre unidades:</b> solo entran las que recorrieron más de ${nf(MIN_KM_COMPARABLE)} km en el mes${fueraDeMuestra ? ` (quedaron fuera ${fueraDeMuestra} por poca actividad)` : ''}; con menos kilómetros el rendimiento es ruido, no desempeño.
     <b>Velocidad máxima:</b> se descartan lecturas por encima de 130 km/h — son picos de GPS de una sola muestra (el 0.3% de los registros), no velocidad sostenida; los tramos de ruta no rebasan 129 km/h.
     Se descartan también saltos de contador físicamente imposibles (mayores a 2,500 km en un día). Analítica potencializada por Advance.
   </div>
