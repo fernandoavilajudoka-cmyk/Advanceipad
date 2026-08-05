@@ -98,6 +98,7 @@ async function historicoCliente(slug, KEY) {
   const U = units.map(u => ({
     id: u.unit_id,
     number: u.number || u.vin || String(u.unit_id),
+    vin: norm(u.vin),
     make: norm(u.make),
     model: norm(u.model),
     label: esVin(norm(u.label)) ? 'Sin modelo asignado' : norm(u.label),

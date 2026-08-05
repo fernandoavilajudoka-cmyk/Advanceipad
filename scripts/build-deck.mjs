@@ -116,7 +116,7 @@ function construir(H, filtro) {
     const km = t.reduce((s, x) => s + x.km, 0), l = t.reduce((s, x) => s + x.l, 0);
     const motor = t.reduce((s, x) => s + x.motor, 0), ral = t.reduce((s, x) => s + x.ralenti, 0);
     return {
-      number: u.number, model: u.model || u.label, alta: u.alta,
+      number: u.number, vin: u.vin || '', model: u.model || u.label, alta: u.alta,
       km, l, kml: l ? km / l : 0, idle: motor ? ral / motor * 100 : 0,
       vmax: Math.max(0, ...t.map(x => x.vmax)),
       exces: t.reduce((s, x) => s + x.exces, 0),
@@ -134,11 +134,11 @@ function construir(H, filtro) {
       drainL: () => v.drainL ? nf(v.drainL) : '0' }[tipo]();
     return `<td class="mz">${val}</td>`;
   };
-  const matriz = tipo => U.map(u => `<tr><td class="mz-u">${esc(u.number)}</td>` +
+  const matriz = tipo => U.map(u => `<tr><td class="mz-u" title="VIN ${esc(u.vin || 'no capturado')}">${esc(u.number)}</td>` +
     meses.map(m => celda(u.meses[m], tipo)).join('') + '</tr>').join('');
 
   const filasU = U.map(u => `<tr>
-    <td class="met">${esc(u.number)}</td><td class="mod">${esc(u.model)}</td>
+    <td class="met">${esc(u.number)}</td><td class="vin">${esc(u.vin || '—')}</td><td class="mod">${esc(u.model)}</td>
     <td class="r">${nf(Object.keys(u.meses).length)}</td>
     <td class="r act">${nf(u.km)}</td><td class="r">${nf(u.l)}</td>
     <td class="r ${u.kml >= OBJ.kml ? 'ok' : u.kml >= OBJ.kml * .9 ? 'wr' : 'cr'}">${nf(u.kml, 2)}</td>
@@ -149,7 +149,7 @@ function construir(H, filtro) {
     <td class="r cr">${money(Math.round(u.drainL * DIESEL))}</td></tr>`).join('')
     // Las unidades que nunca reportaron también se listan: omitirlas escondería
     // que la flota registrada es mayor que la flota medida.
-    + H.sinDatos.map(u => `<tr><td class="met">${esc(u.number)}</td><td class="mod">${esc(u.label || '—')}</td>
+    + H.sinDatos.map(u => `<tr><td class="met">${esc(u.number)}</td><td class="vin">${esc(u.vin || '—')}</td><td class="mod">${esc(u.label || '—')}</td>
       <td class="r cr">0</td><td class="r" colspan="7" style="text-align:center;color:var(--t3);font-style:italic">
       sin un solo viaje ni lectura de motor${u.ultimo ? ` · última señal ${u.ultimo}` : ''}</td>
       <td class="r"><span class="st st-cr">Sin reportar</span></td></tr>`).join('');
@@ -224,6 +224,7 @@ tbody tr:nth-child(odd){background:var(--s3)}
 tbody tr:last-child td{border-bottom:none}
 .met{font-weight:700;color:var(--t)}
 .mod{color:var(--t2);font-size:11px}
+.vin{font-family:var(--mono);font-size:10px;color:var(--t2);letter-spacing:-.2px;white-space:nowrap}
 .act{font-family:var(--mono);font-weight:700;color:var(--forest)}
 .obj{font-family:var(--mono);color:var(--t3)}
 .r{text-align:right;font-family:var(--mono)}
@@ -411,7 +412,7 @@ tbody tr:nth-child(odd) .mz-u{background:#e4f0dd}
       </div>
     </div>
     <div class="scroll">
-      <table id="tTot"><thead><tr><th>Unidad</th><th>Modelo</th><th class="r">Meses</th><th class="r">km</th><th class="r">Litros</th>
+      <table id="tTot"><thead><tr><th>Unidad</th><th>VIN</th><th>Modelo</th><th class="r">Meses</th><th class="r">km</th><th class="r">Litros</th>
         <th class="r">km/L</th><th class="r">Ralentí</th><th class="r">V.máx</th><th class="r">Excesos</th><th class="r">L drenados</th><th class="r">Pérdida</th></tr></thead>
         <tbody>${filasU}</tbody></table>
       <table id="tMz" hidden><thead><tr><th class="mz-u" style="text-align:left">Unidad</th>${meses.map(m => `<th class="r">${mesLbl(m)}</th>`).join('')}</tr></thead>
