@@ -82,6 +82,11 @@ function dailyDelta(arr, maxPerDay) {
 // Techos físicos, no operativos: un tracto con relevo de operador registra 1,600 km/día
 // sin problema. Solo se descarta lo imposible (24 h a 105 km/h ≈ 2,500 km).
 const MAX_KM_DIA = 2500, MAX_L_DIA = 1200, MAX_H_DIA = 24;
+// Techo de velocidad creible para un tracto: por encima son picos de GPS de una
+// sola muestra (0.3% de las lecturas), no velocidad sostenida. Sin este filtro un
+// solo artefacto define la "velocidad maxima" de todo el informe.
+const MAX_VEL = 130;
+const velOk = v => (v > 0 && v <= MAX_VEL ? v : 0);
 function drains(fuel, tankL) {
   let n = 0, big = 0, L = 0;
   for (let i = 1; i < (fuel || []).length; i++) {
@@ -146,7 +151,7 @@ async function buildClient(slug, KEY, template) {
     cell[k]++; evTot[k]++;
     evDay[d] = evDay[d] || { exces: 0, jammer: 0, drain: 0, power: 0 }; evDay[d][k]++;
     if (k === 'drain') { const L = +val.volume || 0; cell.drainL += L; drainLTot += L; if (L > 10) cell.drainBig++; }
-    if (k === 'exces' && +val.speed > cell.maxs) cell.maxs = +val.speed;
+    if (k === 'exces' && velOk(+val.speed) > cell.maxs) cell.maxs = velOk(+val.speed);
     // Hora local del cliente (la API entrega UTC; la flota opera en horario de México).
     evHour[(new Date(a.time).getUTCHours() + 18) % 24]++;
   }
@@ -169,7 +174,7 @@ async function buildClient(slug, KEY, template) {
         const hl = (new Date(r.start.time).getUTCHours() + 18) % 24;
         if (hl >= 22 || hl < 6) rdaily[d].night += h;
         // max_speed es dato real del tramo, no un promedio.
-        if ((r.max_speed || 0) > rdaily[d].maxs) rdaily[d].maxs = r.max_speed;
+        if (velOk(r.max_speed) > rdaily[d].maxs) rdaily[d].maxs = velOk(r.max_speed);
       }
     }
     const V = Math.min(75, Math.max(15, rdrive > 1 ? rkm / rdrive : 40));

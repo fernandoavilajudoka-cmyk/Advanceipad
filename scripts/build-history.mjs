@@ -16,6 +16,9 @@ const BASE = 'https://portal.smart-connect.com.mx/api/v1';
 const INICIO = '2025-10';          // primer mes con datos en la plataforma
 const CONCURRENCIA = 4;            // peticiones simultaneas por cliente
 const MAX_KM_DIA = 2500, MAX_L_DIA = 1200, MAX_H_DIA = 24;
+// Ver build-report.mjs: por encima de este techo son picos de GPS, no velocidad real.
+const MAX_VEL = 130;
+const velOk = v => (v > 0 && v <= MAX_VEL ? v : 0);
 
 let CLIENTS = {};
 try { CLIENTS = JSON.parse(readFileSync('clientes.json', 'utf8')); } catch (e) {}
@@ -124,7 +127,7 @@ async function historicoCliente(slug, KEY) {
       const c = ev[a.unit_id] = ev[a.unit_id] || { exces: 0, jammer: 0, drain: 0, drainL: 0, power: 0, vmaxEv: 0 };
       c[k]++;
       if (k === 'drain') c.drainL += +val.volume || 0;
-      if (k === 'exces' && +val.speed > c.vmaxEv) c.vmaxEv = +val.speed;
+      if (k === 'exces' && velOk(+val.speed) > c.vmaxEv) c.vmaxEv = velOk(+val.speed);
     }
 
     await enLotes(U, async u => {
@@ -144,7 +147,7 @@ async function historicoCliente(slug, KEY) {
         if (r.type !== 'route' || !r.start?.time || !r.end?.time) continue;
         const d = dur(r.start.time, r.end.time);
         drive += d; tramos++;
-        if ((r.max_speed || 0) > vmax) vmax = r.max_speed;
+        if (velOk(r.max_speed) > vmax) vmax = velOk(r.max_speed);
         const hl = (new Date(r.start.time).getUTCHours() + 18) % 24;   // hora local MX
         if (hl >= 22 || hl < 6) night += d;
       }

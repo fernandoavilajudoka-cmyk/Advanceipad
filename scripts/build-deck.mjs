@@ -144,13 +144,11 @@ function construir(H, filtro) {
     <td class="r ${u.kml >= OBJ.kml ? 'ok' : u.kml >= OBJ.kml * .9 ? 'wr' : 'cr'}">${nf(u.kml, 2)}</td>
     <td class="r ${u.idle > 30 ? 'cr' : u.idle > OBJ.ralenti ? 'wr' : 'ok'}">${nf(u.idle, 1)}%</td>
     <td class="r ${u.vmax > 120 ? 'cr' : 'wr'}">${nf(u.vmax)}</td>
-    <td class="r">${nf(u.exces)}</td>
-    <td class="r ${u.drainL > 3000 ? 'cr' : ''}">${nf(u.drainL)}</td>
-    <td class="r cr">${money(Math.round(u.drainL * DIESEL))}</td></tr>`).join('')
+    <td class="r">${nf(u.exces)}</td></tr>`).join('')
     // Las unidades que nunca reportaron también se listan: omitirlas escondería
     // que la flota registrada es mayor que la flota medida.
     + H.sinDatos.map(u => `<tr><td class="met">${esc(u.number)}</td><td class="vin">${esc(u.vin || '—')}</td><td class="mod">${esc(u.label || '—')}</td>
-      <td class="r cr">0</td><td class="r" colspan="7" style="text-align:center;color:var(--t3);font-style:italic">
+      <td class="r cr">0</td><td class="r" colspan="5" style="text-align:center;color:var(--t3);font-style:italic">
       sin un solo viaje ni lectura de motor${u.ultimo ? ` · última señal ${u.ultimo}` : ''}</td>
       <td class="r"><span class="st st-cr">Sin reportar</span></td></tr>`).join('');
 
@@ -408,12 +406,11 @@ tbody tr:nth-child(odd) .mz-u{background:#e4f0dd}
         <button class="tab" role="tab" aria-selected="false" data-m="idle">Ralentí por mes</button>
         <button class="tab" role="tab" aria-selected="false" data-m="vmax">Vel. máx por mes</button>
         <button class="tab" role="tab" aria-selected="false" data-m="exces">Excesos por mes</button>
-        <button class="tab" role="tab" aria-selected="false" data-m="drainL">Litros drenados por mes</button>
       </div>
     </div>
     <div class="scroll">
       <table id="tTot"><thead><tr><th>Unidad</th><th>VIN</th><th>Modelo</th><th class="r">Meses</th><th class="r">km</th><th class="r">Litros</th>
-        <th class="r">km/L</th><th class="r">Ralentí</th><th class="r">V.máx</th><th class="r">Excesos</th><th class="r">L drenados</th><th class="r">Pérdida</th></tr></thead>
+        <th class="r">km/L</th><th class="r">Ralentí</th><th class="r">V.máx</th><th class="r">Excesos</th></tr></thead>
         <tbody>${filasU}</tbody></table>
       <table id="tMz" hidden><thead><tr><th class="mz-u" style="text-align:left">Unidad</th>${meses.map(m => `<th class="r">${mesLbl(m)}</th>`).join('')}</tr></thead>
         <tbody>${matriz('km')}</tbody></table>
@@ -423,7 +420,8 @@ tbody tr:nth-child(odd) .mz-u{background:#e4f0dd}
   <div class="foot">
     <b>Cobertura de eventos:</b> los excesos de velocidad se registran desde ${mesLbl(desdeExces)} y los drenajes desde ${mesLbl(desdeDrain)}, cuando se configuraron esas alertas. Un cero en meses previos significa «sin registro», no «sin evento».
     Frenada y aceleración bruscas: sin dato — la telemetría instalada no publica acelerómetro ni giroscopio.
-    Se descartan saltos de contador físicamente imposibles (mayores a 2,500 km en un día). Analítica potencializada por Advance.
+    <b>Velocidad máxima:</b> se descartan lecturas por encima de 130 km/h — son picos de GPS de una sola muestra (el 0.3% de los registros), no velocidad sostenida; los tramos de ruta no rebasan 129 km/h.
+    Se descartan también saltos de contador físicamente imposibles (mayores a 2,500 km en un día). Analítica potencializada por Advance.
   </div>
 </section>
 </div>
@@ -433,7 +431,7 @@ tbody tr:nth-child(odd) .mz-u{background:#e4f0dd}
 </nav>
 
 <script>
-const MZ=${JSON.stringify(Object.fromEntries(['km', 'kml', 'idle', 'vmax', 'exces', 'drainL'].map(t => [t, matriz(t)])))};
+const MZ=${JSON.stringify(Object.fromEntries(['km', 'kml', 'idle', 'vmax', 'exces'].map(t => [t, matriz(t)])))};
 const tot=document.getElementById('tTot'), mz=document.getElementById('tMz');
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected','false'));
