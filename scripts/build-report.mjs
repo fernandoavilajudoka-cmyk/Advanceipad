@@ -114,18 +114,27 @@ async function buildClient(slug, KEY, template) {
 
   // 1) Unidades
   const ul = await api(KEY, 'unit/list.json');
-  const units = ul.data?.units || [];
+  let units = ul.data?.units || [];
+  // soloModelos limita el informe a un subconjunto de la flota (p. ej. solo tractocamiones).
+  const solo = cfgC.soloModelos;
+  if (solo?.length) {
+    const antes = units.length;
+    units = units.filter(u => solo.some(f => norm(u.model + ' ' + u.label).toUpperCase().includes(f.toUpperCase())));
+    console.log(`[${slug}] filtro soloModelos [${solo.join(', ')}]: ${units.length} de ${antes} unidades`);
+  }
   console.log(`[${slug}] unidades: ${units.length} · periodo ${from} → ${till}`);
 
   // 1.b) Eventos reales del periodo (excesos, inhibidor, drenajes, corte de energía).
   //      La API NO expone eventos de acelerómetro/giroscopio (frenada/aceleración brusca):
   //      si no vienen, se reportan como «sin dato» en vez de estimarse.
   const alerts = await fetchAlerts(KEY, FROM, TILL);
+  const idsIncluidos = new Set(units.map(u => u.unit_id));
   const EV_MAP = { speeding: 'exces', jammer_detection_event: 'jammer', fuel_change: 'drain', no_power: 'power', battery_level: 'power', switch: 'power' };
   const evUnit = {}, evHour = new Array(24).fill(0), evTot = { exces: 0, jammer: 0, drain: 0, power: 0 }, evDay = {};
   let drainLTot = 0;
   for (const a of alerts) {
     const k = EV_MAP[a.alert_type]; if (!k) continue;
+    if (!idsIncluidos.has(a.unit_id)) continue;
     const d = a.time.slice(0, 10);
     let val = {}; try { val = JSON.parse(a.alert_val || '{}'); } catch (e) {}
     // fuel_change trae subidas y bajas; solo interesa el drenaje.

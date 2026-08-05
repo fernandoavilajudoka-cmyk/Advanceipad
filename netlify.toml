@@ -15,6 +15,17 @@
   to = "/clientes/tepeyac/index.html"
   status = 200
 
+# Ligas cortas de J&T Express (para compartir sin la ruta larga)
+[[redirects]]
+  from = "/jt"
+  to = "/clientes/jytexpress/tablero.html"
+  status = 200
+
+[[redirects]]
+  from = "/jt/informe"
+  to = "/clientes/jytexpress/index.html"
+  status = 200
+
 # Compatibilidad con la liga antigua (/tepeyac.html)
 [[redirects]]
   from = "/tepeyac.html"

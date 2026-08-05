@@ -10,6 +10,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'fs';
 
+let CLIENTS = {};
+try { CLIENTS = JSON.parse(readFileSync('clientes.json', 'utf8')); } catch (e) {}
+
 const DIESEL = 25.99;      // $/L
 const IDLE_LH = 5;         // L/h de motor en ralenti
 const OBJ = { kml: 3.0, ralenti: 15, nocturno: 20, vel: 85 };
@@ -23,10 +26,22 @@ const MESL = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oc
 const mesLbl = ym => { const [y, m] = ym.split('-'); return `${MESL[+m - 1]} ${y.slice(2)}`; };
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-function construir(H) {
-  const meses = H.meses.filter(m => (H.resumenMes[m]?.km || 0) > 100);
-  const ultimo = meses[meses.length - 1], previo = meses[meses.length - 2];
-  const R = H.resumenMes;
+function construir(H, filtro) {
+  // Con soloModelos activo, los totales mensuales se recalculan sobre el
+  // subconjunto: reutilizar los del historico incluiria unidades excluidas.
+  const pasa = u => !filtro || filtro.some(f => (u.model + ' ' + u.label).toUpperCase().includes(f.toUpperCase()));
+  if (filtro) { H = { ...H, unidades: H.unidades.filter(pasa), sinDatos: H.sinDatos.filter(pasa) }; }
+  const R = {};
+  for (const ym of H.meses) {
+    const filas = H.unidades.map(u => u.porMes[ym]).filter(Boolean);
+    if (!filas.length) continue;
+    const s = k => filas.reduce((a, b) => a + (b[k] || 0), 0);
+    R[ym] = { activas: filas.length, km: s('km'), l: s('l'), motor: s('motor'), manejo: s('manejo'),
+      ralenti: s('ralenti'), nocturno: s('nocturno'), vmax: Math.max(0, ...filas.map(f => f.vmax)),
+      exces: s('exces'), drain: s('drain'), drainL: s('drainL'), jammer: s('jammer'), power: s('power') };
+  }
+  const meses = H.meses.filter(m => (R[m]?.km || 0) > 100);
+  const ultimo = meses[meses.length - 1];
   // El mes en curso esta incompleto: el detalle operativo se lee del ultimo mes cerrado.
   const hoyYM = new Date().toISOString().slice(0, 7);
   const cerrado = ultimo === hoyYM ? meses[meses.length - 2] : ultimo;
@@ -435,13 +450,15 @@ document.addEventListener('keydown',e=>{
 }
 
 const dirs = existsSync('clientes') ? readdirSync('clientes') : [];
-let n = 0;
+let hechos = 0;
 for (const slug of dirs) {
   const f = `clientes/${slug}/historico.json`;
   if (!existsSync(f)) continue;
   const H = JSON.parse(readFileSync(f, 'utf8'));
-  writeFileSync(`clientes/${slug}/tablero.html`, construir(H));
-  console.log(`[${slug}] OK · clientes/${slug}/tablero.html · ${H.meses.length} meses · ${H.unidades.length} unidades`);
-  n++;
+  const filtro = CLIENTS[slug]?.soloModelos;
+  writeFileSync(`clientes/${slug}/tablero.html`, construir(H, filtro));
+  const n = filtro ? H.unidades.filter(u => filtro.some(f => (u.model + ' ' + u.label).toUpperCase().includes(f.toUpperCase()))).length : H.unidades.length;
+  console.log(`[${slug}] OK · clientes/${slug}/tablero.html · ${H.meses.length} meses · ${n} unidades${filtro ? ` (filtro: ${filtro.join(', ')})` : ''}`);
+  hechos++;
 }
-if (!n) console.error('No hay historico.json. Corre antes: node scripts/build-history.mjs');
+if (!hechos) console.error('No hay historico.json. Corre antes: node scripts/build-history.mjs');
