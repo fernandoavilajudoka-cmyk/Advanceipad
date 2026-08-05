@@ -282,7 +282,7 @@ input[type=number]:focus{outline:none;border-color:var(--gr);box-shadow:0 0 0 3p
     <div class="card"><div class="card-title" style="color:var(--rd)">Top 10 unidades más inseguras</div><div class="card-sub">Mayor índice de riesgo de accidente (0–100)</div><div style="position:relative;height:300px"><canvas id="cUnsafe"></canvas></div></div>
   </div>
   <div class="row2" style="margin-bottom:20px">
-    <div class="card"><div class="card-title">Concentrado de tipos de alerta</div><div class="card-sub">Distribución de todas las alertas de seguridad del periodo</div><div style="position:relative;height:280px"><canvas id="cAlerts"></canvas></div></div>
+    <div class="card"><div class="card-title">Concentrado de tipos de alerta</div><div class="card-sub">Distribución de todas las alertas de seguridad del periodo</div><div style="position:relative;height:280px"><canvas id="cAlerts"></canvas></div><div id="notaGyro" style="font-size:11px;color:var(--t3);margin-top:10px;line-height:1.5"></div></div>
     <div class="card"><div class="card-title">Franja horaria de alertas</div><div class="card-sub" id="subFranja">Eventos de seguridad por horario del día</div><div style="position:relative;height:280px"><canvas id="cFranja"></canvas></div></div>
   </div>
   <div class="card">
@@ -503,6 +503,9 @@ const D=RAW.map((r,i)=>{
 });
 
 // ════════ HELPERS ════════
+// EVENTS lo inyecta el build cuando la cuenta del cliente entrega eventos medidos.
+// Si no existe (plantilla demo), el informe cae a su comportamiento procedural.
+const EV=(typeof EVENTS!=='undefined')?EVENTS:null;
 function H(i,s){const x=Math.sin((i+1)*s)*10000;return x-Math.floor(x);}
 const intES=v=>Math.round(v||0).toLocaleString('es-MX');
 const decES=(v,d=1)=>(v||0).toLocaleString('es-MX',{minimumFractionDigits:d,maximumFractionDigits:d});
@@ -623,7 +626,7 @@ function render(){
 function scopeLbl(){const m=MONTHS.find(x=>x.id===STATE.month).label;const w=STATE.week==='all'?'todo el mes':weeksOf(STATE.month).find(x=>x.id===STATE.week)?.label;const d=STATE.day==='all'?null:new Date(STATE.day+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short'});const z=STATE.zona==='all'?'todas las zonas':STATE.zona;return `${m} · ${d?d:w} · ${z}`;}
 
 function fillPortada(){
-  document.getElementById('portMeta').innerHTML=`${A.fleetTotal} ${META.tipoUnidad} · ${META.zona}<br>Periodo base: Feb–Jun 2026 &nbsp;·&nbsp; ${META.cliente} · Tier ${META.tier}<br>Analítica potencializada por Advance`;
+  document.getElementById('portMeta').innerHTML=`${A.fleetTotal} ${META.tipoUnidad} · ${META.zona}<br>Periodo base: ${META.periodo||'Feb–Jun 2026'} &nbsp;·&nbsp; ${META.cliente} · Tier ${META.tier}<br>Analítica potencializada por Advance`;
   document.getElementById('portStats').innerHTML=[{v:intES(A.total),l:'Unidades'},{v:A.active,l:'Activas'},{v:A.total-A.active,l:'Sin actividad'},{v:MODELS.length,l:'Modelos'},{v:[...new Set(D.map(u=>u.zona).filter(Boolean))].length,l:'Zonas / sedes'},{v:A.days.length,l:'Días con datos',t:'Cantidad de días incluidos en el periodo seleccionado (según los filtros de mes / semana / día del Resumen ejecutivo). Es el rango de tiempo sobre el que se calculan todas las métricas.'}].map(s=>`<div class="pstat"${s.t?` title="${s.t}" style="cursor:help"`:''}><div class="v">${s.v}</div><div class="l">${s.l}${s.t?' <span style="opacity:.45;font-size:9px;vertical-align:super">ⓘ</span>':''}</div></div>`).join('');
   const nd=document.getElementById('portNoData');
   if(META.sinSenal.length){nd.style.display='';nd.innerHTML=`<strong>⚠ ${META.sinSenal.length} unidades sin señal GPS:</strong> `+META.sinSenal.map(s=>`${s.n} (desde ${s.desde})`).join(' · ')+`. Posible robo o desconexión.`;}else nd.style.display='none';
@@ -700,6 +703,10 @@ function buildSeg(){
   // ── Tendencia diaria de seguridad + eventos apilados + mejora del periodo ──
   const sdays=A.days, sunits=scopeUnits();
   const ser=sdays.map(ds=>{let viol=0,harsh=0;sunits.forEach(u=>{const m=dayMetric(u,ds);viol+=m.viol;harsh+=(m.harsh||0);});
+    // Con datos reales (EVENTS) cada serie es su propio conteo medido. Sin ellos, la
+    // plantilla demo reparte el total con pesos fijos.
+    if(EV){const e=EV.byDay[ds]||{};const exces=e.exces||0,jam=e.jammer||0,drn=e.drain||0,pow=e.power||0;
+      return {ds,exces,fren:0,acel:0,noct:jam,desc:pow+drn,total:exces+jam+drn+pow};}
     const exces=Math.round(viol),fren=Math.round(harsh*0.55),acel=Math.round(harsh*0.45),noct=Math.round(viol*0.25),desc=Math.round(viol*0.05);
     return {ds,exces,fren,acel,noct,desc,total:exces+fren+acel+noct+desc};});
   const lbls=sdays.map(d=>new Date(d+'T00:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short'}));
@@ -707,7 +714,8 @@ function buildSeg(){
   const stepL=Math.max(1,Math.ceil(lbls.length/8));
   chart('cSegTrend',{type:'line',data:{labels:lbls,datasets:[{label:'Eventos de seguridad',data:ser.map(d=>d.total),borderColor:C.gr,backgroundColor:'rgba(22,163,74,.12)',borderWidth:2.5,pointRadius:2.5,fill:true,tension:.35}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${intES(c.raw)} eventos`}},datalabels:dlV({color:C.gr2,align:'top',offset:6,display:(c)=>c.dataIndex%stepL===0,formatter:v=>intES(v)})},scales:{x:axX({ticks:{color:C.txt,font:{size:9},callback:(v,i)=>i%step===0?lbls[i]:''}}),y:axY({beginAtZero:true})}}});
-  const types=[['Excesos','exces',C.gr],['Frenadas','fren',C.teal],['Aceleraciones','acel',C.lime],['Nocturna','noct',C.or],['Desconexión','desc',C.rd]];
+  const types=EV?[['Excesos de velocidad','exces',C.gr],['Inhibidor de señal','noct',C.or],['Energía / drenaje','desc',C.rd]]
+    :[['Excesos','exces',C.gr],['Frenadas','fren',C.teal],['Aceleraciones','acel',C.lime],['Nocturna','noct',C.or],['Desconexión','desc',C.rd]];
   chart('cSegStack',{type:'bar',data:{labels:lbls,datasets:types.map(([lb,k,co],ti)=>({label:lb,data:ser.map(d=>d[k]),backgroundColor:co,stack:'s',borderRadius:2,datalabels:ti===types.length-1?dlV({color:_dlC,anchor:'end',align:'top',offset:3,display:(c)=>c.dataIndex%stepL===0,formatter:(v,c)=>intES(ser[c.dataIndex].total)}):{display:false}}))},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:C.txt,font:{size:11},usePointStyle:true,padding:10}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${intES(c.raw)}`,footer:it=>'Total: '+intES(ser[it[0].dataIndex].total)}}},scales:{x:axX({stacked:true,ticks:{color:C.txt,font:{size:9},callback:(v,i)=>i%step===0?lbls[i]:''}}),y:axY({stacked:true,beginAtZero:true})}}});
   // mejora: primera mitad vs segunda mitad del periodo
@@ -728,9 +736,17 @@ function buildSeg(){
   const altoN=acc.filter(a=>a.r>=66).length;
   // tipos de alerta
   const harshTot=ua.reduce((s,u)=>s+(u.harsh||0),0);
-  const alerts=[['Excesos de velocidad',Math.round(A.viol),C.gr],['Frenadas bruscas',Math.round(harshTot*0.55),C.teal],['Aceleraciones bruscas',Math.round(harshTot*0.45),C.lime],['Conducción nocturna',Math.round(A.viol*0.25),C.or],['Desconexión GPS',Math.round(A.viol*0.05)+META.sinSenal.length,C.rd]];
+  const alerts=EV?[['Excesos de velocidad',EV.tot.exces,C.gr],['Inhibidor de señal',EV.tot.jammer,C.or],['Drenajes de diésel',EV.tot.drain,C.rd],['Corte de energía',EV.tot.power,C.teal]]
+    :[['Excesos de velocidad',Math.round(A.viol),C.gr],['Frenadas bruscas',Math.round(harshTot*0.55),C.teal],['Aceleraciones bruscas',Math.round(harshTot*0.45),C.lime],['Conducción nocturna',Math.round(A.viol*0.25),C.or],['Desconexión GPS',Math.round(A.viol*0.05)+META.sinSenal.length,C.rd]];
   const totAlert=alerts.reduce((s,a)=>s+a[1],0)||1;
-  const fr=FRANJAS.map(([lbl,w])=>({lbl,v:Math.round(w*totAlert)})); const pico=fr.reduce((a,b)=>b.v>a.v?b:a,fr[0]); const fmax=Math.max(...fr.map(f=>f.v)); const frTot=fr.reduce((s,f)=>s+f.v,0)||1;
+  const ng=document.getElementById('notaGyro');
+  if(ng) ng.innerHTML=(EV&&!EV.gyro)
+    ?'<b>Frenada y aceleración bruscas: sin dato.</b> La telemetría instalada en esta flota no publica eventos de acelerómetro/giroscopio, así que no se reportan. Ausencia de dato no equivale a ausencia de evento; para medirlos hay que habilitar ese módulo en las unidades.'
+    :'';
+  // Franja horaria: con EVENTS se agrupan las horas reales de cada alerta.
+  const fr=EV?FRANJAS.map(([lbl],i)=>({lbl,v:EV.byHour.slice(i*4,i*4+4).reduce((s,x)=>s+x,0)}))
+    :FRANJAS.map(([lbl,w])=>({lbl,v:Math.round(w*totAlert)}));
+  const pico=fr.reduce((a,b)=>b.v>a.v?b:a,fr[0]); const fmax=Math.max(...fr.map(f=>f.v)); const frTot=fr.reduce((s,f)=>s+f.v,0)||1;
   document.getElementById('kpiSeg').innerHTML=[
     {l:'Total de alertas',v:intES(totAlert),k:'k-rd',f:`${decES(A.exc100,2)} excesos por 100 km`},
     {l:'Riesgo accidente alto',v:altoN,k:'k-or',f:`de ${ua.length} unidades activas`},
