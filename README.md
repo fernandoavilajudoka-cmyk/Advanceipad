@@ -19,6 +19,8 @@ Un mismo análisis sirve para **cualquier cliente**: solo cambian los datos, que
 ├── clientes.json                   ← Config OPCIONAL por cliente (nombre + benchmarks por modelo).
 ├── clientes/
 │   └── <cliente>/index.html        ← Informe GENERADO de cada cliente (lo crea el build). Una carpeta = una liga.
+├── equipo/
+│   └── plataforma.html             ← Documento interno: cómo se construyó Advance 3.0 y hacia dónde va (liga: /plataforma).
 ├── .github/workflows/
 │   └── update-report.yml           ← Automatización: corre el build a diario y en cada push, y commitea.
 ├── netlify.toml                    ← Config de Netlify (qué se publica y qué muestra la raíz "/").
@@ -67,6 +69,8 @@ Botón **Descargar PDF**. Todas las gráficas muestran **etiquetas numéricas / 
 3. Deploy. La raíz `/` mostrará el informe de Tepeyac; cada cliente queda en `/<carpeta>`:
    - `https://<tu-sitio>.netlify.app/` → Tepeyac (raíz, configurable en `netlify.toml`)
    - `https://<tu-sitio>.netlify.app/clientes/<cliente>/` → cualquier otro cliente
+   - `https://<tu-sitio>.netlify.app/plataforma` → documento interno del equipo de desarrollo
+     (Advance 3.0: cómo se construyó y hacia dónde va). No es un informe de cliente y no lo toca el build.
 4. **Recomendado:** renombrar el sitio a algo neutro (Site settings → *Change site name*),
    ej. `informes-advance`, para que las ligas se vean `informes-advance.netlify.app/clientes/<cliente>`.
 

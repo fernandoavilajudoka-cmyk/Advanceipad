@@ -2,6 +2,7 @@
 # Sitio estático: se publica la raíz del repo (sin build).
 #  · Cada cliente vive en /clientes/<slug>/  (una carpeta = una liga).
 #  · La raíz "/" sirve un informe destacado (hoy: Tepeyac).
+#  · /plataforma sirve el documento interno del equipo de desarrollo.
 #  · La plantilla reutilizable queda en /plantilla y /index.html
 # Para cambiar qué informe se muestra en la raíz, edita el "to" del primer redirect.
 
@@ -24,6 +25,12 @@
 [[redirects]]
   from = "/jt/informe"
   to = "/clientes/jytexpress/index.html"
+  status = 200
+
+# Documento interno de plataforma (para el equipo de desarrollo)
+[[redirects]]
+  from = "/plataforma"
+  to = "/equipo/plataforma.html"
   status = 200
 
 # Compatibilidad con la liga antigua (/tepeyac.html)

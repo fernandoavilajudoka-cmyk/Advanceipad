@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Advance 3.0 · Cómo se construyó y hacia dónde va</title>
+<meta name="description" content="Advance 3.0: punto de partida, metodo de construccion, cronologia, arquitectura actual y ruta a mediano plazo.">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Advance 3.0 · Cómo se construyó y hacia dónde va">
+<meta property="og:description" content="De revendedor sobre Mapon a plataforma telematica propia: como se construyo y hacia donde va.">
+<link rel="icon" href="/assets/isotipo-advance.png">
+<style>
+  :root{
+    --lima:#C4D600; --lima-ink:#67750a; --lima-soft:rgba(196,214,0,.16);
+    --tinta:#14160f; --bg:#f5f6f4; --card:#ffffff; --line:#e3e6de;
+    --muted:#6b7263; --faint:#8a917f;
+    --crit:#E2554B; --warn:#c9820b; --ok:#5c9a13;
+    --dato:#4A7EBB; --pant:#8b5cf6; --modelos:#0e9f6e;
+    --hero-bg:#14160f; --hero-tx:#ffffff; --hero-sub:#b9bdb2;
+    --hero-card:#1e2118; --hero-line:#2e3327;
+    --code-bg:#f0f2ec;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --tinta:#e8eae2; --bg:#101208; --card:#181b10; --line:#272b1d;
+      --muted:#9aa18c; --faint:#6e7560;
+      --lima-ink:#c9d94a; --lima-soft:rgba(196,214,0,.12);
+      --hero-bg:#181b10; --hero-tx:#f2f4ea; --hero-sub:#9aa18c;
+      --hero-card:#202415; --hero-line:#313622;
+      --code-bg:#1d2113;
+      --ok:#8abf4a; --warn:#e0a32a;
+    }
+  }
+  :root[data-theme="light"]{
+    --lima:#C4D600; --lima-ink:#67750a; --lima-soft:rgba(196,214,0,.16);
+    --tinta:#14160f; --bg:#f5f6f4; --card:#ffffff; --line:#e3e6de;
+    --muted:#6b7263; --faint:#8a917f;
+    --crit:#E2554B; --warn:#c9820b; --ok:#5c9a13;
+    --hero-bg:#14160f; --hero-tx:#ffffff; --hero-sub:#b9bdb2;
+    --hero-card:#1e2118; --hero-line:#2e3327;
+    --code-bg:#f0f2ec;
+  }
+  :root[data-theme="dark"]{
+    --tinta:#e8eae2; --bg:#101208; --card:#181b10; --line:#272b1d;
+    --muted:#9aa18c; --faint:#6e7560;
+    --lima-ink:#c9d94a; --lima-soft:rgba(196,214,0,.12);
+    --hero-bg:#181b10; --hero-tx:#f2f4ea; --hero-sub:#9aa18c;
+    --hero-card:#202415; --hero-line:#313622;
+    --code-bg:#1d2113;
+    --ok:#8abf4a; --warn:#e0a32a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tinta);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,"Segoe UI",Roboto,sans-serif;
+    font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1100px;margin:0 auto;padding:28px 24px 90px}
+  h1{font-size:clamp(26px,4vw,34px);line-height:1.12;margin:0 0 8px;letter-spacing:-.02em;text-wrap:balance}
+  h2{font-size:12px;text-transform:uppercase;letter-spacing:.13em;color:var(--faint);
+    margin:48px 0 14px;font-weight:700}
+  h3{font-size:17px;margin:0 0 6px;letter-spacing:-.01em}
+  p{margin:0 0 10px;max-width:72ch}
+  .sub{color:var(--muted);font-size:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:18px 20px;margin-bottom:12px}
+  b{font-weight:650}
+
+  /* ---------- hero ---------- */
+  .hero{background:var(--hero-bg);color:var(--hero-tx);border-radius:4px;padding:28px 30px 26px;margin-bottom:16px}
+  .hero h1{color:var(--hero-tx)}
+  .hero .sub{color:var(--hero-sub);max-width:78ch}
+  .chip{display:inline-block;background:var(--lima);color:#14160f;font-weight:700;
+    font-size:11px;letter-spacing:.09em;text-transform:uppercase;padding:4px 9px;border-radius:3px;margin-bottom:14px}
+  .clocks{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:20px 0 0}
+  .clock{background:var(--hero-card);border:1px solid var(--hero-line);border-radius:4px;padding:14px 16px}
+  .clock .n{font-size:25px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--lima);line-height:1.15}
+  .clock .l{font-size:12px;color:var(--hero-sub);margin-top:3px}
+
+  /* ---------- two-col ---------- */
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:760px){.two{grid-template-columns:1fr}}
+
+  /* ---------- estrangulador ---------- */
+  .strang{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:0;align-items:stretch;margin:14px 0 6px}
+  .strang .st{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:14px 16px}
+  .strang .arr{display:flex;align-items:center;justify-content:center;padding:0 10px;color:var(--faint);font-size:20px}
+  .strang .st h4{margin:0 0 4px;font-size:13.5px}
+  .strang .st p{font-size:12.5px;color:var(--muted);margin:0}
+  .strang .st .tag{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--faint);margin-bottom:6px;font-weight:700}
+  .strang .st.on{border-color:var(--lima-ink);box-shadow:inset 3px 0 0 var(--lima)}
+  @media (max-width:760px){.strang{grid-template-columns:1fr}.strang .arr{transform:rotate(90deg);padding:4px 0}}
+
+  /* ---------- timeline ---------- */
+  .tl{position:relative;margin:6px 0 0;padding:0}
+  .tl-mes{margin:26px 0 10px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--lima-ink)}
+  .tl-it{position:relative;padding:0 0 16px 26px;border-left:1px solid var(--line);margin-left:6px}
+  .tl-it:last-child{padding-bottom:4px}
+  .tl-it::before{content:"";position:absolute;left:-5px;top:6px;width:9px;height:9px;border-radius:50%;
+    background:var(--card);border:2px solid var(--faint)}
+  .tl-it.big::before{background:var(--lima);border-color:var(--lima-ink)}
+  .tl-it .f{font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.06em}
+  .tl-it h4{margin:2px 0 3px;font-size:15px}
+  .tl-it p{font-size:13.5px;color:var(--muted);margin:0;max-width:80ch}
+
+  /* ---------- capas de arquitectura ---------- */
+  .stack{display:flex;flex-direction:column;gap:8px;margin:14px 0 6px}
+  .layer{display:grid;grid-template-columns:150px 1fr;gap:14px;background:var(--card);
+    border:1px solid var(--line);border-radius:4px;padding:13px 16px;align-items:start}
+  .layer .ln{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--faint);padding-top:3px}
+  .layer .lc{font-size:13.5px}
+  .layer .lc b{display:inline}
+  .layer .lc .dim{color:var(--muted)}
+  .layer.core{border-color:var(--lima-ink);box-shadow:inset 3px 0 0 var(--lima)}
+  .pill{display:inline-block;border:1px solid var(--line);border-radius:3px;padding:2px 8px;
+    font-size:12px;margin:2px 4px 2px 0;background:var(--bg);white-space:nowrap}
+  .pill.hot{border-color:var(--lima-ink);background:var(--lima-soft)}
+  @media (max-width:640px){.layer{grid-template-columns:1fr;gap:6px}}
+  .downarrow{text-align:center;color:var(--faint);font-size:15px;line-height:1;margin:-2px 0}
+
+  /* ---------- barra de hardware ---------- */
+  .hwbar{display:flex;gap:2px;height:30px;margin:10px 0 8px;min-width:260px}
+  .hwbar div{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;border-radius:2px}
+  .hw-leg{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--muted)}
+  .hw-leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+  /* ---------- método: pasos + matriz de benchmark ---------- */
+  .flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:12px 0 4px}
+  .fstep{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:14px 16px;border-top:3px solid var(--line)}
+  .fstep .fn{font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--lima-ink);font-variant-numeric:tabular-nums}
+  .fstep h4{margin:4px 0 5px;font-size:14.5px}
+  .fstep p{font-size:12.5px;color:var(--muted);margin:0}
+  .fstep.on{border-top-color:var(--lima)}
+  .bench{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;margin:12px 0 4px}
+  .bench .b{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:13px 15px}
+  .bench .b h4{margin:0 0 8px;font-size:14px}
+  .rlbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.11em;color:var(--faint);display:block;margin-bottom:5px}
+  .rchips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+  .rchip{display:inline-block;border:1px solid var(--line);border-radius:3px;padding:2px 7px;font-size:11.5px;background:var(--bg);white-space:nowrap}
+  .bench .b .toma{font-size:12px;color:var(--muted);margin:0}
+  .bench .b .toma b{color:var(--lima-ink)}
+
+  /* ---------- barras apiladas de estado ---------- */
+  :root{--on-status:#ffffff}
+  @media (prefers-color-scheme: dark){:root{--on-status:#12150a}}
+  :root[data-theme="light"]{--on-status:#ffffff}
+  :root[data-theme="dark"]{--on-status:#12150a}
+  .sbar{display:flex;gap:2px;height:34px;margin:12px 0 6px}
+  .sbar div{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;
+    color:var(--on-status);overflow:hidden;white-space:nowrap;font-variant-numeric:tabular-nums;border-radius:2px}
+  .sbar-cap{font-size:12px;color:var(--faint);margin:0 0 2px}
+
+  /* ---------- auditoría tiles ---------- */
+  .aud{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0}
+  .aud .a{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:14px 16px;border-top:3px solid var(--line)}
+  .aud .a .n{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+  .aud .a .l{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .aud .a.ok{border-top-color:var(--ok)} .aud .a.ok .n{color:var(--ok)}
+  .aud .a.warn{border-top-color:var(--warn)} .aud .a.warn .n{color:var(--warn)}
+  .aud .a.crit{border-top-color:var(--crit)} .aud .a.crit .n{color:var(--crit)}
+  @media (max-width:640px){.aud{grid-template-columns:1fr}}
+
+  /* ---------- tabla benchmark ---------- */
+  .tbl{overflow-x:auto;margin:12px 0}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:640px}
+  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.08em;
+    color:var(--faint);font-weight:700;padding:0 12px 8px 0;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:11px 12px 11px 0;border-bottom:1px solid var(--line);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  td .dim{color:var(--muted);font-size:12.5px;display:block;margin-top:2px}
+  .est{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:3px 8px;border-radius:3px;white-space:nowrap}
+  .est.si{background:rgba(92,154,19,.14);color:var(--ok)}
+  .est.parc{background:rgba(201,130,11,.14);color:var(--warn)}
+  .est.no{background:rgba(226,85,75,.12);color:var(--crit)}
+
+  /* ---------- horizontes ---------- */
+  .hz{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0}
+  .hz .h{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:16px 18px}
+  .hz .h .k{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--lima-ink);margin-bottom:6px}
+  .hz .h h4{margin:0 0 8px;font-size:15.5px}
+  .hz .h ul{margin:0;padding-left:17px;font-size:13px;color:var(--muted)}
+  .hz .h li{margin-bottom:5px}
+  .hz .h.now{border-color:var(--lima-ink);box-shadow:inset 0 3px 0 var(--lima)}
+  @media (max-width:820px){.hz{grid-template-columns:1fr}}
+
+  /* ---------- reglas ---------- */
+  .rules{counter-reset:r;list-style:none;margin:0;padding:0}
+  .rules li{position:relative;padding:11px 0 11px 42px;border-top:1px solid var(--line);max-width:86ch}
+  .rules li:first-child{border-top:0}
+  .rules li::before{counter-increment:r;content:counter(r);position:absolute;left:0;top:11px;
+    width:26px;height:26px;border-radius:3px;background:var(--lima-soft);color:var(--lima-ink);
+    font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;
+    font-variant-numeric:tabular-nums}
+  .rules b{display:block}
+  .rules span{color:var(--muted);font-size:13.5px}
+
+  .note{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--lima);
+    border-radius:4px;padding:16px 18px;margin:14px 0}
+  .note p:last-child{margin-bottom:0}
+  code{font-family:inherit;background:var(--code-bg);border-radius:3px;padding:1px 6px;font-size:13px}
+  .foot{margin-top:44px;padding-top:14px;border-top:1px solid var(--line);font-size:12.5px;color:var(--faint)}
+  a{color:var(--lima-ink)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="hero">
+    <span class="chip">Para el equipo de desarrollo · Advance 3.0</span>
+    <h1>Cómo se construyó esta plataforma, y hacia dónde va</h1>
+    <p class="sub">De revendedor sobre Mapon a plataforma telemática propia. Este documento registra el
+    punto de partida, el método con el que se construyó cada módulo, la cronología real, la arquitectura
+    de hoy, y la ruta a mediano plazo: tener las capacidades de Gurtam (Wialon) y Navixy, para nuestra cartera.</p>
+    <div class="clocks">
+      <div class="clock"><div class="n">5 sem</div><div class="l">de construcción intensiva (28 jun → hoy)</div></div>
+      <div class="clock"><div class="n">11</div><div class="l">módulos con datos reales en advance30.com</div></div>
+      <div class="clock"><div class="n">50 M</div><div class="l">viajes históricos rescatados a base propia (3+ años)</div></div>
+      <div class="clock"><div class="n">Oct 2026</div><div class="l">expo + apagado de Mapon: la fecha que ordena todo</div></div>
+    </div>
+  </div>
+
+  <h2>1 · El punto de partida</h2>
+  <div class="two">
+    <div class="card">
+      <h3>Lo que teníamos</h3>
+      <p class="sub" style="margin-bottom:8px">Advance operaba como <b>revendedor de Mapon</b> con dos cuentas
+      distribuidor (Advance y SmartConnect): ~13,000 unidades GPS de ~1,256 clientes reportando a los
+      servidores de Mapon, más ~200 dashcams Streamax en FT Cloud. La plataforma que veían los clientes
+      era la de Mapon con otra piel.</p>
+      <p class="sub" style="margin-bottom:0">Existía además un sistema propio anterior
+      (<code>Telematics-Advance/app</code>, el que ustedes conocen): un visor sobre la API de Mapon con
+      unos cuantos endpoints. Hoy ya no lo usa ningún cliente y está en ruta de apagado.</p>
+    </div>
+    <div class="card">
+      <h3>El problema</h3>
+      <p class="sub" style="margin-bottom:8px">Todo el valor del negocio — el dato, el histórico, la relación
+      con el cliente, los módulos — vivía en la casa de un tercero. Mapon no solo era la plataforma:
+      <b>es el servidor al que reportan los GPS</b>. Sin dato propio no hay producto propio, no hay
+      diferenciación, y cada mensualidad financia al competidor.</p>
+      <p class="sub" style="margin-bottom:0">La decisión de fondo (jun–jul 2026): <b>construir plataforma
+      propia con el dato en AWS propio</b>, y salir de Mapon de forma ordenada, sin que ningún cliente
+      pierda servicio un solo día.</p>
+    </div>
+  </div>
+
+  <h2>2 · La estrategia: patrón estrangulador</h2>
+  <div class="card">
+    <p>No se intentó reemplazar a Mapon de golpe. Se aplicó el <b>patrón estrangulador</b> (strangler fig):
+    cada capacidad de Mapon se replicó primero como <b>espejo/sombra</b> — leyendo de su API mientras el
+    servicio al cliente sigue intacto — y solo cuando la copia propia demuestra paridad, se hace el corte.
+    El interruptor vive en un solo lugar: el BFF. Los módulos nunca hablan con Mapon directo, así que
+    cambiar la fuente no toca ninguna pantalla.</p>
+    <div class="strang">
+      <div class="st">
+        <span class="tag">Fase 1 · Sombra</span>
+        <h4>Ingesta espejo</h4>
+        <p>Leemos TODO de la API de Mapon con las llaves reseller y lo historizamos a bases propias cada 5 min. El cliente no nota nada.</p>
+      </div>
+      <div class="arr">→</div>
+      <div class="st on">
+        <span class="tag">Fase 2 · Paridad — aquí estamos</span>
+        <h4>Plataforma propia lee lo propio</h4>
+        <p>advance30.com sirve desde nuestras bases; Mapon queda como respaldo y como servidor de los equipos. Se verifica paridad dato por dato.</p>
+      </div>
+      <div class="arr">→</div>
+      <div class="st">
+        <span class="tag">Fase 3 · Corte (sep–oct)</span>
+        <h4>Re-apuntar los equipos</h4>
+        <p>Comando remoto por fabricante para que cada GPS reporte a nuestro gateway. Cliente por cliente, con rollback. Al final: Mapon se apaga.</p>
+      </div>
+    </div>
+    <p class="sub" style="margin-top:8px;margin-bottom:0">La clave del método: <b>en ningún punto del camino hay
+    un salto de fe</b>. Cada fase convive con la anterior y se puede revertir.</p>
+  </div>
+
+  <h2>3 · El método: cada módulo nació de un benchmark</h2>
+  <div class="card">
+    <p>Ningún módulo se diseñó en el vacío. El proceso fue el mismo para todos: estudiar en vivo a los
+    mejores del mercado, tomar el molde de cada capacidad, construirlo contra datos reales y auditarlo
+    antes de darlo por bueno.</p>
+    <div class="flow">
+      <div class="fstep on">
+        <span class="fn">PASO 01</span>
+        <h4>Benchmark en vivo</h4>
+        <p>Se abren las plataformas de referencia — sesiones reales, pantallas reales, specs de API — y se documenta qué hace cada una y cómo.</p>
+      </div>
+      <div class="fstep">
+        <span class="fn">PASO 02</span>
+        <h4>Elegir el molde</h4>
+        <p>De cada herramienta se toma lo mejor de su clase, se adapta a México y a nuestra cartera, y se detecta el hueco que nadie cubre.</p>
+      </div>
+      <div class="fstep">
+        <span class="fn">PASO 03</span>
+        <h4>Construir con datos reales</h4>
+        <p>El módulo se levanta contra la base de producción en solo-lectura desde el primer día — nunca contra mocks bonitos.</p>
+      </div>
+      <div class="fstep">
+        <span class="fn">PASO 04</span>
+        <h4>Auditar y publicar</h4>
+        <p>Cifras verificadas contra la base, estados vacíos honestos, y verificación final en advance30.com.</p>
+      </div>
+    </div>
+    <p class="sub" style="margin:10px 0 4px">Las referencias que moldearon cada módulo:</p>
+    <div class="bench">
+      <div class="b">
+        <h4>CRM · Advance Central</h4>
+        <span class="rlbl">Referencias estudiadas</span>
+        <div class="rchips">
+          <span class="rchip">CRM de Mapon</span><span class="rchip">Geotab MyAdmin</span>
+          <span class="rchip">Wialon CMS Manager</span><span class="rchip">Navixy</span>
+          <span class="rchip">Flespi Toolbox</span><span class="rchip">Samsara</span><span class="rchip">Motive</span>
+        </div>
+        <p class="toma"><b>Qué se tomó:</b> réplica 1:1 del rail de Mapon (spec de 547 endpoints), facturación por dispositivo de Geotab, jerarquía de cuentas de Wialon, diagnóstico en 3 capas de Flespi.</p>
+      </div>
+      <div class="b">
+        <h4>Mapa · Monitoreo</h4>
+        <span class="rlbl">Referencias estudiadas</span>
+        <div class="rchips">
+          <span class="rchip">Samsara</span><span class="rchip">Geotab</span><span class="rchip">Mapon</span>
+        </div>
+        <p class="toma"><b>Qué se tomó:</b> movimiento fluido e interpolado de Samsara, marcadores de flecha por estado de Geotab, contadores-filtro y seguimiento del activo.</p>
+      </div>
+      <div class="b">
+        <h4>App móvil · AdvanceGo</h4>
+        <span class="rlbl">Referencias estudiadas</span>
+        <div class="rchips">
+          <span class="rchip">Samsara</span><span class="rchip">Motive</span><span class="rchip">FT Cloud</span>
+        </div>
+        <p class="toma"><b>Qué se tomó:</b> tabs y jerarquía de información de Samsara; auditoría comparativa formal contra los tres antes de tiendas. Diferenciadores propios: cuenta espejo, DTC en español.</p>
+      </div>
+      <div class="b">
+        <h4>Alertas</h4>
+        <span class="rlbl">Referencias estudiadas</span>
+        <div class="rchips">
+          <span class="rchip">Navixy IoT Logic</span><span class="rchip">Wialon</span>
+        </div>
+        <p class="toma"><b>Qué se tomó:</b> el motor de reglas configurable como pipeline. Propio: el módulo ES el registro de la atención, y el canal WhatsApp.</p>
+      </div>
+      <div class="b">
+        <h4>Dispositivos · Diagnóstico</h4>
+        <span class="rlbl">Referencias estudiadas</span>
+        <div class="rchips">
+          <span class="rchip">Gbox de Mapon</span><span class="rchip">Flespi Toolbox</span><span class="rchip">Navixy Air Console</span>
+        </div>
+        <p class="toma"><b>Qué se tomó:</b> cuadrícula de conectividad hora×día, registro de datos brutos con decodificador, ficha editable con auditoría de quién cambió qué.</p>
+      </div>
+      <div class="b">
+        <h4>Mantenimiento</h4>
+        <span class="rlbl">Referencias estudiadas</span>
+        <div class="rchips">
+          <span class="rchip">Mapon</span><span class="rchip">Samsara</span><span class="rchip">Motive</span>
+        </div>
+        <p class="toma"><b>Qué se tomó:</b> el hallazgo clave fue el hueco — Mapon no tiene API de mantenimiento. Se construyó API-first con escaneo IA de facturas: aquí vamos adelante.</p>
+      </div>
+      <div class="b">
+        <h4>Visión · Cámaras</h4>
+        <span class="rlbl">Referencias estudiadas</span>
+        <div class="rchips">
+          <span class="rchip">Streamax FT Cloud</span>
+        </div>
+        <p class="toma"><b>Qué se tomó:</b> árbol de video con semáforo, timeline de grabaciones, evidencias DSM/ADAS — replicado sobre nuestra propia ingesta de alarmas.</p>
+      </div>
+      <div class="b">
+        <h4>Marketplace</h4>
+        <span class="rlbl">Referencias estudiadas</span>
+        <div class="rchips">
+          <span class="rchip">Navixy (~65 apps)</span><span class="rchip">Wialon</span>
+        </div>
+        <p class="toma"><b>Qué se tomó:</b> el modelo de tienda de add-ons por categoría con 4 mecanismos de conexión (API, retransmisor, webhook, módulo embebido). Mapon no tiene tienda: otro hueco.</p>
+      </div>
+      <div class="b">
+        <h4>Combustible</h4>
+        <span class="rlbl">Referencias estudiadas</span>
+        <div class="rchips">
+          <span class="rchip">Mapon fuel</span><span class="rchip">Edenred</span><span class="rchip">Si Vale</span><span class="rchip">WEX</span>
+        </div>
+        <p class="toma"><b>Qué se tomó:</b> detección de cargas/mermas del aforador y CAN, más la estrategia de integrarse con las tarjetas de combustible de México.</p>
+      </div>
+    </div>
+    <p class="sub" style="margin:10px 0 0"><b>El benchmark no es para copiar: es la vara y el radar.</b> Da la
+    paridad mínima que el cliente espera, y revela los huecos donde nadie compite — Carta Porte 3.1, coaching
+    de operadores con puntos, WhatsApp como canal, paro de motor auditado. Ahí es donde se gana.</p>
+  </div>
+
+  <h2>4 · El camino, semana por semana</h2>
+  <div class="card">
+    <div class="tl">
+      <div class="tl-mes">Junio 2026 — nace el núcleo</div>
+      <div class="tl-it big">
+        <span class="f">28 jun</span>
+        <h4>Nace advance-app: BFF + web + móvil en un día</h4>
+        <p>Un monorepo nuevo: BFF Fastify (puerto 8810) con proveedores intercambiables (mock, Postgres,
+        Streamax, Mapon), web React/Vite, y la app móvil Expo que hoy es AdvanceGo. Dato curioso: ese día
+        se instaló Node en la Mac por primera vez — la plataforma completa tiene cinco semanas de vida.</p>
+      </div>
+      <div class="tl-it">
+        <span class="f">30 jun</span>
+        <h4>Datos reales desde el día 3</h4>
+        <p>El BFF se conectó en solo-lectura a la base del sistema anterior (<code>telematics_prod</code>).
+        Regla que nació aquí y sigue viva: se construye contra datos reales, no contra mocks bonitos.</p>
+      </div>
+      <div class="tl-mes">Julio · semana 1 — identidad y cimientos</div>
+      <div class="tl-it">
+        <span class="f">1–2 jul</span>
+        <h4>Login multi-tenant, video real, la app en un iPhone físico</h4>
+        <p>JWT con alcance por cliente (company_id) — el aislamiento multi-tenant se diseñó desde el
+        principio, no se parchó después. Video en vivo de las dashcams Streamax vía HLS. AdvanceGo
+        instalada en dispositivo real.</p>
+      </div>
+      <div class="tl-it">
+        <span class="f">7 jul</span>
+        <h4>Advance Lab: el primer receptor de protocolo propio</h4>
+        <p>Banco de pruebas con servidor TCP que decodifica Teltonika, y paro de motor con doble
+        validación y bitácora auditada. El embrión del gateway.</p>
+      </div>
+      <div class="tl-it big">
+        <span class="f">9–10 jul</span>
+        <h4>Infra propia en AWS: un servidor para todo el ecosistema</h4>
+        <p>Servidor único (Lightsail) con Docker + Traefik y HTTPS automático: BFF, panel web, CRM,
+        ENLACE (campañas WhatsApp), Nabi (bot de WhatsApp) y Visión (cámaras). El 10 de julio Nabi
+        respondió su primera consulta real de flota por WhatsApp, punta a punta en producción.</p>
+      </div>
+      <div class="tl-mes">Julio · semana 2 — soberanía del dato</div>
+      <div class="tl-it big">
+        <span class="f">11 jul</span>
+        <h4>El día de las decisiones grandes</h4>
+        <p>Se definió la arquitectura de datos completa (documento <code>ARQUITECTURA_DATOS.md</code>):
+        bases propias por dominio, ingesta idempotente por fuente, multi-tenant por company_id, y el plan
+        de 3 fases para apagar Mapon. Mismo día: arrancó la ingesta directa con llaves reseller
+        (~13,000 unidades cada 5 min), se decidió el CRM propio y el sistema de diseño de la plataforma.</p>
+      </div>
+      <div class="tl-it big">
+        <span class="f">12 jul</span>
+        <h4>Rescate del histórico: 3 años de operación a casa</h4>
+        <p>En ~15 horas se extrajo de Mapon la vida completa de la cartera: <b>48 millones de
+        viajes/paradas con trazo (240 millones de km, 2023→2026)</b>, resúmenes de combustible y el CRM
+        completo (dispositivos, SIMs, contactos). Aunque Mapon desapareciera mañana, la historia ya es nuestra.</p>
+      </div>
+      <div class="tl-it">
+        <span class="f">13–15 jul</span>
+        <h4>CRM Advance Central a paridad con el CRM de Mapon</h4>
+        <p>Clientes, dispositivos (con catálogo dimensional fabricante→modelo→tipo), SIMs, soporte,
+        instalaciones, monitoreo de conectividad hora×día por IMEI. Además: los stores de módulos
+        migraron de JSON a Postgres (<code>advance_ops</code>) y se publicó una <b>API compatible con la
+        de Mapon</b> para que las integraciones existentes puedan re-apuntarse sin reescribirse.</p>
+      </div>
+      <div class="tl-mes">Julio · semanas 3–4 — la beta abre</div>
+      <div class="tl-it big">
+        <span class="f">17–19 jul</span>
+        <h4>advance30.com: dominio, login soberano y primeros usuarios reales</h4>
+        <p>Se compró el dominio y quedó en producción. Login contra usuarios propios (ya no contra la base
+        del sistema anterior), wizard de creación de cuentas con sedes/grupos y alcance por unidad, y dos
+        leyes de producto: <b>cuenta virgen</b> (cliente nuevo nace limpio) y <b>colaboración</b> (dentro
+        de una cuenta, todo se comparte). Los primeros usuarios beta reales entraron el 18 de julio.</p>
+      </div>
+      <div class="tl-it">
+        <span class="f">18–20 jul</span>
+        <h4>El gateway propio probado a escala y el primer cliente en migración</h4>
+        <p>El receptor propio ya decodifica Queclink, Teltonika y Ruptela, y escribió más de 800,000
+        posiciones reales device→base sin intermediarios. Transbus (271 unidades Queclink) se eligió como
+        primer cliente del switch, con estrategia de dos fases: doble reporte primero (riesgo cero),
+        corte después — y rollback documentado en runbook para soporte.</p>
+      </div>
+      <div class="tl-it">
+        <span class="f">29 jul</span>
+        <h4>Auditoría funcional: la plataforma se midió a sí misma</h4>
+        <p>96 endpoints ejercitados y 15 pantallas revisadas: 11 módulos reales, 4 reales pero vacíos,
+        3 maquetas. De ahí salió otra regla dura: <b>un mosaico sin fuente declara el hueco, nunca
+        inventa un número</b>.</p>
+      </div>
+      <div class="tl-mes">Agosto 2026 — el relevo: ustedes</div>
+      <div class="tl-it big">
+        <span class="f">1–4 ago</span>
+        <h4>Nuevo equipo, nuevo método</h4>
+        <p>Plan agosto–octubre con carriles de dueño único (Dato · Pantalla · Modelos), 33 issues en
+        GitHub con tablero por semanas, y escalera de accesos a producción. Este documento es parte del
+        mismo onboarding: para operar la plataforma hay que conocer su historia.</p>
+      </div>
+    </div>
+  </div>
+
+  <h2>5 · La arquitectura de hoy, por capas</h2>
+  <div class="card">
+    <p class="sub">El dato fluye de arriba hacia abajo. La regla de oro está en la capa marcada:
+    <b>los módulos solo hablan con el BFF</b> — por eso el switch de fuentes es una operación de
+    backend, invisible para las pantallas.</p>
+    <div class="stack">
+      <div class="layer">
+        <div class="ln">Dispositivos</div>
+        <div class="lc">
+          <div class="hwbar">
+            <div style="flex:82;background:#4A7EBB">Queclink · ~9,700 · 82%</div>
+            <div style="flex:10;background:#c9820b" title="Ruptela ~1,150 · 10%">10%</div>
+            <div style="flex:9;background:#0e9f6e" title="Teltonika ~1,050 · 9%">9%</div>
+          </div>
+          <div class="hw-leg" style="margin-bottom:8px">
+            <span><i style="background:#4A7EBB"></i>Queclink ~9,700</span>
+            <span><i style="background:#c9820b"></i>Ruptela ~1,150</span>
+            <span><i style="background:#0e9f6e"></i>Teltonika ~1,050</span>
+          </div>
+          <span class="pill">+ ~200 dashcams Streamax</span><span class="pill">+ TPMS RF433</span>
+          <div class="dim" style="margin-top:6px">La mezcla real del parque de ~11,900 GPS. Cada fabricante tiene su carril de migración — nunca se mezclan marcas en la misma ruta.</div>
+        </div>
+      </div>
+      <div class="downarrow">↓</div>
+      <div class="layer">
+        <div class="ln">Fuentes</div>
+        <div class="lc">
+          <span class="pill">API Mapon (reseller) — transitoria</span>
+          <span class="pill">Streamax FT Cloud</span>
+          <span class="pill hot">Gateway propio TCP — el destino</span>
+          <div class="dim" style="margin-top:6px">Hoy conviven las tres. El plan es que la primera desaparezca en octubre y la tercera reciba a todo el parque.</div>
+        </div>
+      </div>
+      <div class="downarrow">↓</div>
+      <div class="layer">
+        <div class="ln">Ingesta</div>
+        <div class="lc">Ingestores idempotentes por fuente, en contenedores y crons: posiciones cada 5 min,
+          viajes diarios, combustible semanal, CRM semanal, alarmas de cámara cada hora, más respaldo
+          nocturno a S3. <span class="dim">Cada ingestor re-corre sin duplicar — la idempotencia es requisito, no adorno.</span></div>
+      </div>
+      <div class="downarrow">↓</div>
+      <div class="layer">
+        <div class="ln">Bases propias (AWS)</div>
+        <div class="lc">
+          <span class="pill">advance_core — catálogo (16 mil vehículos, 1,450 empresas)</span>
+          <span class="pill">advance_telemetry — posiciones + 50 M viajes</span>
+          <span class="pill">advance_ops — captura de los módulos</span>
+          <span class="pill">registry — CRM: clientes, dispositivos, SIMs, usuarios</span>
+          <span class="pill">streamax_history — alarmas de cámara</span>
+        </div>
+      </div>
+      <div class="downarrow">↓</div>
+      <div class="layer core">
+        <div class="ln">BFF · la única puerta</div>
+        <div class="lc">Fastify. Autenticación JWT, aislamiento multi-tenant por company_id, proveedores
+          intercambiables por bandera de entorno. <b>Aquí vive el interruptor del estrangulador.</b>
+          <span class="dim">También expone la API compatible Mapon para integraciones de terceros.</span></div>
+      </div>
+      <div class="downarrow">↓</div>
+      <div class="layer">
+        <div class="ln">Superficies</div>
+        <div class="lc">
+          <span class="pill hot">advance30.com — la superficie canónica</span>
+          <span class="pill">AdvanceGo (móvil) + Copiloto (operadores)</span>
+          <span class="pill">Nabi — bot WhatsApp</span>
+          <span class="pill">CRM Advance Central</span>
+          <span class="pill">Tableros / DataLab</span>
+          <div class="dim" style="margin-top:6px">El CRM es el plano de control: lo que ahí se configura (módulos, marca, alcance) es lo que el cliente ve — una sola fuente de verdad, sin sincronización.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2>6 · Qué es real hoy (auditoría del 29 de julio)</h2>
+  <div class="card" style="padding-bottom:12px">
+    <p class="sbar-cap">18 pantallas evaluadas contra la base real · 96 endpoints ejercitados</p>
+    <div class="sbar">
+      <div style="flex:11;background:var(--ok)">11 reales</div>
+      <div style="flex:4;background:var(--warn)">4</div>
+      <div style="flex:3;background:var(--crit)">3</div>
+    </div>
+  </div>
+  <div class="aud">
+    <div class="a ok"><div class="n">11</div><div class="l">módulos reales con cifras auditables — mapa, alertas,
+      mantenimiento, gerencial, seguridad vial, DTC, capacitación, entre otros</div></div>
+    <div class="a warn"><div class="n">4</div><div class="l">reales pero vacíos — el motor funciona, falta
+      conectar la fuente o la configuración (ej. combustible era una línea de configuración)</div></div>
+    <div class="a crit"><div class="n">3</div><div class="l">maquetas — identificadas y marcadas; la regla es
+      declararlas como hueco, nunca disfrazarlas de dato</div></div>
+  </div>
+  <div class="card">
+    <p style="margin-bottom:8px"><b>El motor es bueno; lo que fallaba eran las puertas de entrada.</b> La auditoría
+    encontró que los módulos de fondo entregan cifras verificables contra la base, y que los problemas se
+    concentraban en portadas con números fijos y en fuentes mal conectadas (el IRO de conductores leía solo
+    eventos de cámara e ignoraba 100 mil eventos de telemetría que otro módulo sí contaba).</p>
+    <p class="sub" style="margin-bottom:0">De ahí el estándar que ustedes heredan: <b>estados vacíos honestos</b>.
+    Todo mosaico declara su fuente; si no la tiene, muestra el hueco y el motivo.</p>
+  </div>
+
+  <h2>7 · El objetivo a mediano plazo: lo que hacen Gurtam y Navixy</h2>
+  <div class="card">
+    <p><b>Gurtam (Wialon)</b> y <b>Navixy</b> son plataformas telemáticas completas: no revenden la
+    plataforma de nadie — <b>son</b> la plataforma. Reciben el protocolo crudo de miles de modelos de
+    hardware, derivan ellos mismos los viajes y eventos, guardan el histórico, y le dan a sus socios un
+    plano de control con jerarquía de cuentas, marca blanca, API pública y marketplace. Ese es el lugar
+    al que vamos: <b>ser la plataforma, para nuestra cartera</b> — no perseguir sus 3.5 millones de
+    unidades, sino tener sus capacidades sobre nuestras ~13 mil.</p>
+    <p class="sub">Así se compara Advance hoy contra esa vara, capacidad por capacidad:</p>
+    <p class="sbar-cap" style="margin-top:12px">Las 8 capacidades de una plataforma telemática · estado en Advance</p>
+    <div class="sbar">
+      <div style="flex:3;background:var(--ok)">3 logradas</div>
+      <div style="flex:4;background:var(--warn)">4 parciales</div>
+      <div style="flex:1;background:var(--crit)" title="1 por construir: el derivador">1</div>
+    </div>
+    <div class="tbl">
+      <table>
+        <thead>
+          <tr><th>Capacidad de plataforma</th><th>Wialon / Navixy</th><th>Advance hoy</th><th>Estado</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Gateway multi-protocolo</b><span class="dim">Los equipos reportan directo a tu servidor</span></td>
+            <td>Miles de modelos soportados; es su núcleo</td>
+            <td>3 protocolos decodificando en producción (Queclink, Teltonika, Ruptela) — cubren ~95% del parque propio. El grueso de los equipos aún reporta a Mapon</td>
+            <td><span class="est parc">En corte</span></td>
+          </tr>
+          <tr>
+            <td><b>Derivador / motor de cálculo</b><span class="dim">Viajes, paradas, odómetro, horas motor desde el dato crudo</span></td>
+            <td>Nativo</td>
+            <td>Hoy lo deriva Mapon. Es <b>el</b> trabajo grande del carril Dato en agosto (bloque B4 del plan)</td>
+            <td><span class="est no">Por construir</span></td>
+          </tr>
+          <tr>
+            <td><b>Histórico propio</b><span class="dim">El dato vive en tu base, no en la del proveedor</span></td>
+            <td>Nativo</td>
+            <td>50 M de viajes con trazo (3+ años), posiciones, combustible, alarmas de cámara — en bases propias con respaldo nocturno</td>
+            <td><span class="est si">Logrado</span></td>
+          </tr>
+          <tr>
+            <td><b>Plano de control (CRM de partner)</b><span class="dim">Cuentas, dispositivos, SIMs, instalaciones, monitoreo</span></td>
+            <td>CMS Manager / panel de partner</td>
+            <td>Advance Central con paridad funcional del CRM de Mapon; falta el bloque de facturación integrada</td>
+            <td><span class="est parc">Parcial</span></td>
+          </tr>
+          <tr>
+            <td><b>Superficies de cliente</b><span class="dim">Web, móvil, tableros, canales</span></td>
+            <td>Web + apps + white label</td>
+            <td>advance30.com, AdvanceGo, Copiloto, tableros, y Nabi por WhatsApp — <b>el bot es un diferenciador que ellos no tienen</b></td>
+            <td><span class="est si">Logrado</span></td>
+          </tr>
+          <tr>
+            <td><b>Marca blanca</b><span class="dim">La plataforma con la identidad del socio</span></td>
+            <td>Sitios y apps re-tematizables</td>
+            <td>Tenants por cliente con tema propio (SmartConnect ya opera así); falta autoservicio de dominio</td>
+            <td><span class="est parc">Parcial</span></td>
+          </tr>
+          <tr>
+            <td><b>API pública + marketplace</b><span class="dim">Terceros construyen sobre tu plataforma</span></td>
+            <td>API/SDK + tiendas de apps</td>
+            <td>API compatible Mapon publicada (35 endpoints); marketplace diseñado en el CRM, sin terceros aún</td>
+            <td><span class="est parc">Parcial</span></td>
+          </tr>
+          <tr>
+            <td><b>Motor de alertas y automatización</b><span class="dim">Reglas, notificaciones, flujos</span></td>
+            <td>Nativo (Navixy: IoT Logic)</td>
+            <td>Constructor de reglas con plantillas, popup/SSE en vivo y canal WhatsApp; en mejora continua contra falsos positivos</td>
+            <td><span class="est si">Logrado</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="sub" style="margin-bottom:0">Lectura honesta del cuadro: <b>de 8 capacidades, 3 están logradas,
+    4 parciales y 1 por construir</b> — y la que falta (el derivador) es exactamente la primera tarea grande
+    del carril Dato. No estamos lejos; estamos en la parte difícil.</p>
+  </div>
+
+  <h2>8 · La ruta desde aquí</h2>
+  <div class="hz">
+    <div class="h now">
+      <div class="k">Ahora → Octubre 2026</div>
+      <h4>Soberanía del dato</h4>
+      <ul>
+        <li>Sostener la beta de advance30.com con clientes reales</li>
+        <li>Gateway fuera del proceso del BFF, como servicio propio</li>
+        <li>Derivador v1: viajes, paradas, odómetro, horas motor</li>
+        <li>Transbus a paridad → re-apuntado del resto de la cartera por fabricante</li>
+        <li><b>Octubre: expo con demo impecable y apagado de Mapon</b></li>
+      </ul>
+    </div>
+    <div class="h">
+      <div class="k">Post-octubre → 2027</div>
+      <h4>Paridad de plataforma</h4>
+      <ul>
+        <li>Biblioteca de protocolos por demanda del parque (no universalidad por deporte; Traccar como referencia de implementación)</li>
+        <li>Facturación integrada al CRM</li>
+        <li>API pública propia documentada (hoy: compatible Mapon)</li>
+        <li>Marca blanca con autoservicio</li>
+        <li>Escalar la base de telemetría a instancia dedicada</li>
+      </ul>
+    </div>
+    <div class="h">
+      <div class="k">2027 →</div>
+      <h4>Ecosistema</h4>
+      <ul>
+        <li>Marketplace real con integraciones de terceros</li>
+        <li>Jerarquía de cuentas multi-nivel (distribuidor → dealer → cliente)</li>
+        <li>Modelos propios como producto: riesgo de robo/accidente, coaching, bonos de operadores</li>
+        <li>Nuevos verticales sobre la misma base: EV, SafeRide, telemetría de pista</li>
+      </ul>
+    </div>
+  </div>
+  <div class="note">
+    <p><b>La regla que ordena las prioridades hasta octubre:</b> ante cualquier feature nueva, la pregunta es
+    «¿ayuda a la demo de octubre?». Si no, va después del corte. La infraestructura importa, pero
+    <b>la beta con clientes reales es lo principal</b> — la soberanía del dato existe para servirla, no al revés.</p>
+  </div>
+
+  <h2>9 · Los principios que explican el código que van a leer</h2>
+  <div class="card">
+    <ol class="rules">
+      <li><b>Los módulos solo hablan con el BFF.</b><span>Ninguna pantalla conoce a Mapon, Streamax ni a las bases. Por eso el switch de octubre no toca frontend.</span></li>
+      <li><b>Datos reales desde el primer día.</b><span>Se construye y se prueba contra producción en solo-lectura. Los mocks existen, pero nunca son la vara.</span></li>
+      <li><b>Estados vacíos honestos.</b><span>Sin fuente no hay número. Un hueco declarado vale más que una cifra inventada — es política de producto, no estilo.</span></li>
+      <li><b>Multi-tenant en el token, no en el cliente.</b><span>El alcance viaja en el JWT (company, grupos, unidades). Ninguna pantalla filtra "su" flota; el backend ya se la dio acotada.</span></li>
+      <li><b>Todo cambio de fuente es reversible.</b><span>Doble reporte antes que corte, bandera de entorno antes que hard-code, rollback documentado antes que Día M.</span></li>
+      <li><b>Un carril, un dueño.</b><span>Dato, Pantalla y Modelos no se cruzan en el mismo archivo. Igual que los fabricantes en la migración: nunca dos marcas en la misma ruta.</span></li>
+      <li><b>La superficie canónica es advance30.com.</b><span>Todo se verifica y se reporta ahí. Los nombres internos de infraestructura no se mencionan a clientes.</span></li>
+      <li><b>Sin acuse, no está ejecutado.</b><span>Un comando a un equipo GPS "se envió" hasta que llega el ACK. La evidencia sella el estado, no el clic del operador.</span></li>
+    </ol>
+  </div>
+
+  <div class="foot">
+    Advance 3.0 · Telematics Advance — documento interno de onboarding · corte de información: 5 de agosto de 2026.
+    Complementa al plan de trabajo agosto–octubre y al tablero de GitHub; profundidad técnica en
+    <code>advance-infra/ARQUITECTURA_DATOS.md</code> y <code>MIGRACION_TRANSBUS.md</code>.
+  </div>
+
+</div>
+
+</body>
+</html>
