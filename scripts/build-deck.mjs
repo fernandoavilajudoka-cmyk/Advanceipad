@@ -39,7 +39,8 @@ function construir(H, filtro) {
     const filas = H.unidades.map(u => u.porMes[ym]).filter(Boolean);
     if (!filas.length) continue;
     const s = k => filas.reduce((a, b) => a + (b[k] || 0), 0);
-    R[ym] = { activas: filas.length, km: s('km'), l: s('l'), motor: s('motor'), manejo: s('manejo'),
+    // "Activa" es la que movió kilómetros: tener registro del mes en cero no es operar.
+    R[ym] = { activas: filas.filter(f => f.km > 0).length, km: s('km'), l: s('l'), motor: s('motor'), manejo: s('manejo'),
       ralenti: s('ralenti'), nocturno: s('nocturno'), vmax: Math.max(0, ...filas.map(f => f.vmax)),
       exces: s('exces'), drain: s('drain'), drainL: s('drainL'), jammer: s('jammer'), power: s('power') };
   }
@@ -71,6 +72,18 @@ function construir(H, filtro) {
   const fugaIdle = R[cerrado].ralenti * IDLE_LH * DIESEL;
   const ahorroIdle = Math.max(0, (pctIdle(C) - OBJ.ralenti) / (pctIdle(C) || 1)) * fugaIdle;
 
+  // Unidades registradas que no movieron un kilometro en el mes cerrado. Se
+  // cuentan aparte las que nunca han reportado y las que ya operaron y dejaron
+  // de hacerlo: con un filtro de modelos activo, las primeras pueden ser cero
+  // y aun asi haber flota detenida.
+  const ultimoMesCon = u => Object.keys(u.porMes).filter(m => u.porMes[m].km > 0).sort().pop();
+  const paradas = H.unidades.filter(u => !(u.porMes[cerrado]?.km > 0))
+    .map(u => ({ number: u.number, ultimo: ultimoMesCon(u) }))
+    .sort((a, b) => String(b.ultimo).localeCompare(String(a.ultimo)));
+  const nunca = H.sinDatos.length;
+  const detenidas = paradas.length + nunca;
+  const flota = H.unidades.length + nunca;
+
   const delta = (a, b, inv) => {
     if (!b) return { t: '—', c: 'nu' };
     const d = (a - b) / Math.abs(b) * 100;
@@ -87,7 +100,7 @@ function construir(H, filtro) {
     { n: 'Tiempo en ralentí', a: nf(pctIdle(C), 1) + '%', o: OBJ.ralenti + '%', br: `+${nf(pctIdle(C) - OBJ.ralenti, 1)} puntos`, e: pctIdle(C) > OBJ.ralenti ? 'wr' : 'ok', d: delta(pctIdle(C), pctIdle(P), true) },
     { n: 'Conducción nocturna', a: nf(pctNoct(C), 1) + '%', o: OBJ.nocturno + '%', br: `+${nf(pctNoct(C) - OBJ.nocturno, 1)} puntos`, e: pctNoct(C) > OBJ.nocturno ? 'wr' : 'ok', d: delta(pctNoct(C), pctNoct(P), true) },
     { n: 'Exposición a inhibidor de señal', a: nf(C.jammer), o: '0', br: 'bloqueo de rastreo', e: 'wr', d: delta(C.jammer, P.jammer, true) },
-    { n: 'Unidades operando', a: `${C.activas} de ${H.unidades.length + H.sinDatos.length}`, o: nf(H.unidades.length + H.sinDatos.length), br: `${H.sinDatos.length} nunca han reportado`, e: 'cr', d: delta(C.activas, P.activas) },
+    { n: 'Unidades operando', a: `${C.activas} de ${flota}`, o: nf(flota), br: detenidas ? `${detenidas} sin un km en el mes` : 'toda la flota operó', e: detenidas ? 'cr' : 'ok', d: delta(C.activas, P.activas) },
   ];
 
   // ── Serie mensual para las barras ──
@@ -165,6 +178,37 @@ function construir(H, filtro) {
       <td class="r cr">0</td><td class="r" colspan="5" style="text-align:center;color:var(--t3);font-style:italic">
       sin un solo viaje ni lectura de motor${u.ultimo ? ` · última señal ${u.ultimo}` : ''}</td>
       <td class="r"><span class="st st-cr">Sin reportar</span></td></tr>`).join('');
+
+  // Tercer frente de la vista 2. Se elige el primero que exista de verdad: una
+  // tarjeta en cero convierte un hallazgo en relleno frente al consejo.
+  const listaParadas = paradas.slice(0, 4)
+    .map(p => `${p.number}${p.ultimo ? ` (última operación ${mesLbl(p.ultimo)})` : ' (nunca)'}`).join(', ');
+  const frente3 = [
+    detenidas && {
+      k: `Flota detenida · ${mesLbl(cerrado)}`, v: `${detenidas} unidades`, y: `DE ${nf(flota)} REGISTRADAS`,
+      d: [nunca && `<b>${nunca}</b> nunca han entregado un viaje ni una lectura de motor`,
+        paradas.length && `<b>${paradas.length}</b> operaron antes y dejaron de reportar: ${esc(listaParadas)}${paradas.length > 4 ? ' y otras' : ''}`]
+        .filter(Boolean).join('; ') +
+        `. <b>No entran en ninguna cifra</b> de este tablero: siguen costando seguro y depreciación, y su consumo y su riesgo son invisibles.`,
+      dt: 'Reactivar o dar de baja la flota detenida',
+      db: `${detenidas} de ${flota} unidades registradas no movieron un kilómetro en ${mesLbl(cerrado)}. Cada una es un activo pagándose sin generar: o vuelve a ruta, o sale del padrón. Mientras siga así, el ahorro estimado se queda corto por definición.`,
+      dg: paradas.length ? `${detenidas} ACTIVOS PAGÁNDOSE SIN GENERAR` : 'HABILITA MEDIR EL 100% DE LA FLOTA',
+    },
+    C.jammer && {
+      k: `Rastreo bloqueado · ${mesLbl(cerrado)}`, v: nf(C.jammer), y: `EXPOSICIONES A INHIBIDOR · ${nf(acc.jammer)} EN EL HISTÓRICO`,
+      d: `Cada evento es un tramo con la unidad fuera de rastreo. <b>La carga viaja sin cobertura</b> y ninguna alerta de este tablero la cubre mientras dura: es el hueco por donde entra un robo.`,
+      dt: 'Cerrar los huecos de rastreo',
+      db: `${nf(C.jammer)} exposiciones a inhibidor en el mes. Protocolo de reacción por evento y revisión de las rutas donde se concentran, antes de que uno termine en pérdida de carga.`,
+      dg: 'PROTEGE LA CARGA EN TRÁNSITO',
+    },
+    {
+      k: `Conducción nocturna · ${mesLbl(cerrado)}`, v: nf(pctNoct(C), 1) + '%', y: `${nf(C.nocturno)} H DE MANEJO DE NOCHE`,
+      d: `<b>${nf(pctNoct(C) - OBJ.nocturno, 1)} puntos por encima</b> del objetivo de ${OBJ.nocturno}%. La noche concentra el riesgo de robo y de accidente por fatiga, y es la franja más cara de asegurar.`,
+      dt: 'Reprogramar la operación nocturna',
+      db: `El ${nf(pctNoct(C), 1)}% del manejo ocurre de noche contra un objetivo de ${OBJ.nocturno}%. Mover la carga programable a franja diurna baja exposición sin tocar la flota.`,
+      dg: `OBJETIVO ${OBJ.nocturno}% DE MANEJO NOCTURNO`,
+    },
+  ].find(Boolean);
 
   const rango = `${mesLbl(meses[0])} – ${mesLbl(meses[meses.length - 1])}`;
   const marca = LOGO ? `<img src="${LOGO}" alt="Advance">` : '<span class="wm">ADVANCE</span>';
@@ -362,9 +406,9 @@ tbody tr:nth-child(odd) .mz-u{background:#e4f0dd}
     <div class="leak warn card"><div class="k">Combustible en ralentí</div><div class="v">${money(Math.round(fugaIdle))}</div>
       <div class="y">ACUMULADO ${nf(Math.round(acc.ralenti))} H · ${money(Math.round(acc.ralenti * IDLE_LH * DIESEL))}</div>
       <div class="d">${nf(C.ralenti)} horas de motor encendido sin avanzar — <b>${nf(pctIdle(C), 1)}% del tiempo motor</b>. Equivale a ${nf(C.ralenti / 24, 0)} días completos de un camión quemando diésel parado.</div></div>
-    <div class="leak warn card"><div class="k">Flota sin medir</div><div class="v">${H.sinDatos.length} unidades</div>
-      <div class="y">DE ${nf(H.unidades.length + H.sinDatos.length)} REGISTRADAS</div>
-      <div class="d">Nunca han entregado un solo viaje ni lectura de motor en ${meses.length} meses. <b>No entran en ninguna cifra</b> de este tablero: su consumo y su riesgo son invisibles.</div></div>
+    <div class="leak warn card"><div class="k">${frente3.k}</div><div class="v">${frente3.v}</div>
+      <div class="y">${frente3.y}</div>
+      <div class="d">${frente3.d}</div></div>
   </div>
 
   <div class="total card">
@@ -380,9 +424,9 @@ tbody tr:nth-child(odd) .mz-u{background:#e4f0dd}
     <div class="act-c card"><div class="n">DECISIÓN 02</div><div class="t">Política de apagado y bono al operador</div>
       <div class="b">Apagar en espera mayor a 5 minutos, con el ahorro medido por unidad y una parte compartida con el operador. El ralentí lleva ${meses.length} meses entre ${nf(Math.min(...meses.map(m => pctIdle(R[m]))), 0)}% y ${nf(Math.max(...meses.map(m => pctIdle(R[m]))), 0)}%: es estructural, no un mal mes.</div>
       <div class="g">RECUPERA ~${money(Math.round(ahorroIdle * 12))} / AÑO AL ${OBJ.ralenti}%</div></div>
-    <div class="act-c card"><div class="n">DECISIÓN 03</div><div class="t">Conectar la flota que no reporta</div>
-      <div class="b">${H.sinDatos.length} unidades sin un solo dato en ${meses.length} meses. Mientras sigan así, ningún tablero las cubre y el ahorro estimado se queda corto por definición.</div>
-      <div class="g">HABILITA MEDIR EL 100% DE LA FLOTA</div></div>
+    <div class="act-c card"><div class="n">DECISIÓN 03</div><div class="t">${frente3.dt}</div>
+      <div class="b">${frente3.db}</div>
+      <div class="g">${frente3.dg}</div></div>
   </div>
 
   <div class="foot">Base: ${nf(acc.km)} km y ${nf(acc.l)} L medidos en ${meses.length} meses · ralentí valorado a ${IDLE_LH} L/h · diésel $${DIESEL}/L. Analítica potencializada por Advance.</div>
